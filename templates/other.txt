@@ -1,0 +1,5 @@
+source /etc/profile
+
+ml load WebProxy
+
+cd [job folder]
