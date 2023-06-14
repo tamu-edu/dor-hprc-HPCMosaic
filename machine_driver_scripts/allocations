@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python2
 import subprocess
 import json
 import os

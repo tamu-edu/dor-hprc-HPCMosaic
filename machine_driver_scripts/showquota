@@ -8,16 +8,23 @@ function parse_disk() {
 
 CLUSTER_NAME=$(/sw/local/bin/clustername);
 
-if [ $CLUSTER_NAME == grace ]; then
+if [ $CLUSTER_NAME == faster ]; then
     # For LUSTRE
     PROJ_ID=$(lfs project -d /home/$USER | awk '{ print $1 }');
-    HOME_QUOTA=$(lfs quota -q -p $PROJ_ID /home/$USER);
+    HOME_QUOTA=$(lfs quota -q -p $PROJ_ID /home/$USER | tr '\n' ' ' );
+    #echo HOME_QUOTA=$HOME_QUOTA
+    HOME_QUOTA=$(tr '\n' ' ' <<< $HOME_QUOTA);
     HOME_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/home", $2, $3, $6, $7}' <<< $HOME_QUOTA);
+    #echo HOME_QUOTA=$HOME_QUOTA
     HOME_QUOTA=$(parse_disk "${HOME_QUOTA}");
-
+    #echo
+    #echo
     PROJ_ID=$(lfs project -d /scratch/user/$USER | awk '{ print $1 }');
-    SCRATCH_QUOTA=$(lfs quota -q -p $PROJ_ID /scratch/user/$USER);
+    #PROJ_ID=$(lfs project -d /home/$USER | awk '{ print $1 }');
+    SCRATCH_QUOTA=$(lfs quota -q -p $PROJ_ID /scratch/user/$USER | tr '\n' ' ' );
+    #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
     SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/scratch", $2, $3, $6, $7}' <<< $SCRATCH_QUOTA);
+    #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
     SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
 
 else
@@ -32,5 +39,6 @@ else
 fi 
 
 OUT='{ "data": ['${HOME_QUOTA}', '${SCRATCH_QUOTA}']}'
-
+echo
+echo
 echo $OUT
