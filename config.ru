@@ -1,4 +1,6 @@
 require 'sinatra'
+require 'net/http'
+require 'json'
 
 require './controllers/resources'
 require './controllers/requests'

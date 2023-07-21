@@ -6,6 +6,7 @@ development: &common_settings
     home_page: 'https://hprc.tamu.edu'
     request_email: '[user-name]@tamu.edu'
     help_email: '[user-name]@tamu.edu'
+    hprcbot_route: 'https://courant.hprc.tamu.edu:8553'
     modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
     driver_scripts_path: '/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts'
     tamubatch_path: '/sw/local/bin/tamubatch'
@@ -17,6 +18,7 @@ production:
     <<: *common_settings
     dashboard_url: '/pun/sys/[app-name]'
     request_email: 'help@hprc.tamu.edu'
+    hprcbot_route: 'https://courant.hprc.tamu.edu:8553'
     driver_scripts_path: '/var/www/ood/apps/sys/[app-name]/machine_driver_scripts'
     send_result_path: '/var/www/ood/apps/sys/[app-name]/machine_driver_scripts/send_result.sh'
     help_email: 'help@hprc.tamu.edu'
