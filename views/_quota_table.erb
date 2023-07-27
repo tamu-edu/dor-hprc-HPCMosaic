@@ -20,6 +20,8 @@
   <div class="card-footer">
     <button type="button" class="btn btn-primary maroon-button" class="nav-link active btn-rounded mb-4" data-toggle="modal"
       data-target="#requestQuotaModal">Request Quota Increase</button>
+    <button type="button" class="btn btn-primary maroon-button" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+      data-target="#requestGroupModal">Request Group </button>
   </div>
   <!-- ./card-footer -->
 </div>
@@ -180,4 +182,115 @@
       </div>
     </div>
   </div>
+</div>
+<!-- Group Request Model Forms -->
+<div class="modal fade" id="requestGroupModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-light text-center">
+  
+        <h5 class="modal-title w-100 font-weight-bold">Group Request</h5>
+        <button type="button" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      
+         
+      <div class="modal-body mx-3">
+        <form class="form" id="modalGroupRequestForm">
+
+          <div class="md-form mb-2">
+            <label>Group Name</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='group_name' class="form-control validate" required >
+          </div>
+
+          <div class="md-form mb-2">
+	        <p> Type of Group(Required) </p>
+            <input type="radio" name="new_group"  value="yes" onclick=checkGroup(value) >New Group
+            &nbsp &nbsp &nbsp
+            <input type="radio" name="new_group"  value="no" onclick=checkGroup(value)>Existing Group 
+
+          </div>
+
+          <div class="md-form mb-2" style="color: maroon;">
+            <div id="group-dir" style="display:none">
+                <input type="checkbox" name="groupdir" id="groupdir" value="yes" >Create Group Directory <br>
+                <br>
+                <input type="text" name='dir_name' class="form-control validate" placeholder="Group Directory Name" >
+            </div>
+            
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" >NetId of members to add </label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="members_to_add" class="md-textarea form-control" 
+            rows="4"></textarea>
+          </div>
+
+          <div class="md-form mb-2">
+          <label data-error="wrong" data-success="right">NetId of members to remove </label>
+          <i class="fas fa-pencil prefix grey-text"></i>
+          <textarea type="text" name="members_to_remove" class="md-textarea form-control" 
+          rows="4"></textarea>
+          </div>
+
+          <input type="checkbox" name="delgroup" id="delgroup" data-toggle="modal"  
+            >Delete this group <br><br>
+
+          <div class="md-form mb-2">
+          <label data-error="wrong" data-success="right" >Comments</label>
+          <i class="fas fa-pencil prefix grey-text"></i>
+          <textarea type="text" name="comments" class="md-textarea form-control" 
+          rows="4"></textarea>
+          </div>
+          
+          <div id="submit-field">
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary request-maroon-button" data-toggle="modal"
+                  >Submit Request</button>
+            </div>
+          </div>
+          
+          
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-light text-center">
+        <h5 class="modal-title w-100 font-weight-bold">Group Deletion Confirmation</h5>
+        <button type="button" data-dismiss="modal" aria-label="Close" data-toggle="modal" data-target="#requestGroupModal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+  
+      <div class="modal-body mx-3">
+        <form class="form" id="confirmdeleteform">
+
+          <div class="md-form mb-2">
+            <label>Are you sure you want to delete the group?</label>
+          </div>
+          
+          <div id="submit-field">
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="button" class="btn btn-primary request-maroon-button" value="no" name='delete' id='delete'data-toggle="modal" data-dismiss="modal" data-target="#requestGroupModal" onclick=approveDel()>Yes! I understand</button>
+            </div>
+          </div>
+          
+          
+        </form>
+      </div>
+    </div>
+  </div>
+
 </div>

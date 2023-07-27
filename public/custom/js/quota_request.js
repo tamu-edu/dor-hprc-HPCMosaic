@@ -19,7 +19,37 @@ function checkLength (value){
         justificationField.required = true;
     }
 }
-
+function checkGroup (value){
+    var x = document.getElementById("group-dir");
+    if (value === "yes") {
+        x.style.display = "block";
+        document.getElementById("dir_name").value=document.getElementById("group-name").value;
+    }
+    else{
+        x.style.display="none"
+    }
+}
+// function checkDelete (){
+    
+//      var x = document.getElementById("delgroup");
+     
+//      if (x.checked == true) {
+//         $('#' +"confirmDeleteModal").modal('show'); 
+//         $('#'+"requestGroupModal").modal('hide')
+//      }
+ 
+// }
+function approveDel (){
+   
+   document.getElementById("delete").value='yes';
+  
+}
+$(document).on('hidden.bs.modal', function () {
+    if($('.modal.show').length)
+    {
+      $('body').addClass('modal-open');
+    }
+  });
 function checkPi (value){
     var PiNotice = document.getElementById("Pi-notice");
     var confirmBuyin = document.getElementById("buyin-option");

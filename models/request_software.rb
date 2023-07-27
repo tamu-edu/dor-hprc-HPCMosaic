@@ -3,7 +3,7 @@ require 'open3'
 class SoftwareRequest
 
     def compose_email(cluster_name, software_name, software_version, 
-            software_link, toolchains, justification, additional_notes)
+            software_link,system_wide, toolchains, justification, additional_notes)
 
         user = ENV["USER"]
         body =  "User: #{user}\n" \
@@ -12,6 +12,7 @@ class SoftwareRequest
                 "Version: #{software_version}\n" \
                 "Software Link: #{software_link}\n"\
                 "Toolchains: #{toolchains}\n" \
+                "SystemWide: #{system_wide}\n" \
                 "Justification: #{justification}\n" \
                 "Additional Notes: #{additional_notes}"
 
@@ -22,6 +23,7 @@ class SoftwareRequest
         cluster_name = params[:cluster_name]
         justification = params[:request_justification]
         software_name = params[:software_name]
+        system_wide=params[:system_wide]
         software_version = params[:software_version]
         software_link = params[:software_link]
         toolchains = params[:toolchains]
@@ -29,7 +31,7 @@ class SoftwareRequest
 
         subject = "SoftwareReq"
         body = compose_email(cluster_name, software_name, software_version, 
-            software_link, toolchains, justification, additional_notes)
+            software_link, system_wide,toolchains, justification, additional_notes)
         return [subject, body]
     end
 
