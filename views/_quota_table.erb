@@ -1,6 +1,6 @@
 <div class="card shadow">
   <div class="card-header maroon-header">
-    Disk Quotas
+    Disk Quotas and Groups
   </div>
   <div class="card-body table-responsive p-0">
     <table id="quota_table" class="table">
@@ -147,14 +147,22 @@
           
           <div id="body-form-fields" style="display:none;">
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="request_justification">Justification (Required)</label>
-            <p>What data is stored with requested quota? <br>
-            What job requires this quota increase? <br>
-            What is the input/output size of the job? <br>
-            What is your long-term plan for this data?</p>
-            <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="request_justification" class="md-textarea form-control" id="justification-field"
-            rows="4"></textarea>
+          
+            <label data-error="wrong" data-success="right" for="request_justification1">Is the PI aware of this request?</label>
+            <textarea type="text" name="request_justification1" class="md-textarea form-control" id="justification-field"
+            rows="4" required></textarea>
+            <label data-error="wrong" data-success="right" for="request_justification2">What data is stored with the requested quota?</label>
+            <textarea type="text" name="request_justification2" class="md-textarea form-control" id="justification-field"
+            rows="4" required></textarea>
+            <label data-error="wrong" data-success="right" for="request_justification3">What job requires this quota increase?</label>
+            <textarea type="text" name="request_justification3" class="md-textarea form-control" id="justification-field"
+            rows="4" required></textarea>
+            <label data-error="wrong" data-success="right" for="request_justification4">What is the input/output size of the job?</label>
+            <textarea type="text" name="request_justification4" class="md-textarea form-control" id="justification-field"
+            rows="4" required></textarea>
+            <label data-error="wrong" data-success="right" for="request_justification5">What is your long-term plan for this data after the quota increase expires?</label>
+            <textarea type="text" name="request_justification5" class="md-textarea form-control" id="justification-field"
+            rows="4" required></textarea>
           </div>
 
           <div class="md-form mb-2">
@@ -204,6 +212,12 @@
             <label>Group Name</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='group_name' class="form-control validate" required >
+          </div>
+
+          <div class="md-form mb-2">
+          <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
+          <i class="fas fa-user prefix grey-text"></i>
+          <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>" readonly>
           </div>
 
           <div class="md-form mb-2">
