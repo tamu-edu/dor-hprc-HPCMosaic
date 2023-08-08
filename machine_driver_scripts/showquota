@@ -60,16 +60,25 @@ CLUSTER_NAME=$(/sw/local/bin/clustername);
 
 if [ $CLUSTER_NAME == faster ]; then
     #retrieves the showquota data after excluding the headers
-    SCRATCH_QUOTA=$( showquota | awk 'NR>=3 { print $1,$2,$3,$4,$5 }'| head -n -1);
+    SCRATCH_QUOTA=$( /sw/local/bin/showquota | awk 'NR>=3 { print $1,$2,$3,$4,$5 }'| head -n -1);
 
     #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
     #converts it with a comma separator
     SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", $1,$2, $3, $4, $5}' <<< $SCRATCH_QUOTA);
     #parses it into json format
     SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
+    OUT='{"data":['${SCRATCH_QUOTA}']}'
+
+else
+    # For GPFS
+    HOME_QUOTA=$(mount | grep -qw general && mmlsquota --block-size 1K -u $USER general:root | tail -n 1);
+    HOME_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/home", $4, $6, $10, $12}' <<< $HOME_QUOTA);
+    HOME_QUOTA=$(parse_disk "${HOME_QUOTA}");
+
+    SCRATCH_QUOTA=$(mount | grep -qw scratch && mmlsquota --block-size 1K -u $USER scratch:root | tail -n 1);
+    SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/scratch", $4, $6, $10, $12}' <<< $SCRATCH_QUOTA);
+    SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
+    OUT='{ "data": ['${HOME_QUOTA}', '${SCRATCH_QUOTA}']}'
 fi 
 
-OUT='{"data":['${SCRATCH_QUOTA}']}'
-#for testing default json
-#OUT='{"data":[{"name":"/home/jayashree", "disk_usage":" 340M", "disk_limit":" 10.0G", "file_usage":" 4347", "file_limit":10000}, {"name":"/scratch/user/jayashree", "disk_usage":" 76K", "disk_limit":" 1.0T", "file_usage":" 19", "file_limit":250000}, {"name":"/scratch/group/hprc", "disk_usage":" 4.1T", "disk_limit":" 10.0T", "file_usage":" 624572", "file_limit":1000000}]}'
 echo $OUT

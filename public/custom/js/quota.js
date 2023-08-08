@@ -28,18 +28,27 @@ function formatKBytes(data) {
 }
 
 function generate_file_explorer_path_for_disk(disk_name) {
-  disk_name = disk_name.trim()
-  var disk_path = ""
-  if (disk_name === '/home') {
-    disk_path = document.file_app_url + `/home/${document.username}`;
-  } else if (disk_name == "/scratch") {
-    disk_path = document.file_app_url + `/scratch/user/${document.username}`; 
-  } else {
-    // default is scratch 
-    disk_path = document.file_app_url + `/scratch/user/${document.username}`
+  disk_path = disk_name.trim()
+  disk_name=disk_name.split('/')[1]
+
+  if (disk_name == "scratch" && disk_path.split('/')[2]=='group') {
+      disk_name=disk_path
   }
 
-  return `<a target="_blank" href="${disk_path}">${disk_name}</a>`
+  return `<a target="_blank" href="${document.file_app_url + disk_path}">${disk_name}</a>`
+
+}
+function check_button(disk_name) {
+  
+  disk_path = disk_name.trim()
+  disk_name=disk_name.split('/')[1]
+
+  if (disk_name == "home" ) {
+      return ``
+  }
+
+  return `<button type="button" class="btn btn-primary maroon-button" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+  data-target="#requestQuotaModal">Request Quota Increase</button>`
 
 }
 
@@ -63,14 +72,14 @@ function populate_quota() {
       },
       {
         "data": "disk_usage", "sClass":  "text-right",
-        render: function (data, type, row) {
-          percent = (row.disk_usage / row.disk_limit) * 100
-          return `${formatKBytes(data)} (${colorize_percentage_value(percent.toFixed(2))})`;
-        }
+        // render: function (data, type, row) {
+        //   percent = (row.disk_usage / row.disk_limit) * 100
+        //   return `${formatKBytes(data)} (${colorize_percentage_value(percent.toFixed(2))})`;
+        // }
       },
       {
         "data": "disk_limit", "sClass":  "text-right",
-        render: formatKBytes
+        // render: formatKBytes
       },
 
       {
@@ -83,6 +92,12 @@ function populate_quota() {
       {
         "data": "file_limit", "sClass":  "text-right",
       },
+      {
+        "data": "null",
+        "render": function (data, type, row,meta ) {
+          return check_button(row['name'])
+        },
+      }
     ]
   });
 }
