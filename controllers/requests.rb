@@ -1,5 +1,6 @@
 require_relative '../models/mailer.rb'
 require_relative '../models/request_help.rb'
+require_relative '../models/request_guidedhelp.rb'
 require_relative '../models/request_quota.rb'
 require_relative '../models/request_software.rb'
 require_relative '../models/request_group.rb'
@@ -17,6 +18,8 @@ def GenerateEmailBody(params)
         newRequest = QuotaRequest.new
     elsif params["request_type"] == "Group"
         newRequest = GroupRequest.new
+    elsif params["request_type"] == "GuidedHelp"
+        newRequest = GuidedHelpRequest.new
     end
     newRequest.generate_email(params)
 end
@@ -101,6 +104,10 @@ class RequestsController < Sinatra::Base
 
 	post '/request/help' do
 		params["request_type"] = "Help"
+        result_msg = HandleRequest(params)
+	end
+    post '/request/guidedhelp' do
+		params["request_type"] = "GuidedHelp"
         result_msg = HandleRequest(params)
 	end
     result_msg

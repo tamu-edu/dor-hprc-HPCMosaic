@@ -61,9 +61,11 @@ function setup_request_sender(request_endpoint, form_id, modal_id,confirm_model_
 (() => {
     GROUP_REQUEST_ENDPOINT = document.dashboard_url + "/request/group";
     HELP_REQUEST_ENDPOINT = document.dashboard_url + "/request/help";
+    GUIDED_HELP_REQUEST_ENDPOINT = document.dashboard_url + "/request/guidedhelp";
     
     setup_request_sender(GROUP_REQUEST_ENDPOINT, "modalGroupRequestForm", "#requestGroupModal","#confirmDeleteModal","confirmdeleteform");
     
     setup_request_sender(HELP_REQUEST_ENDPOINT, "modalHelpRequestForm", "#requestHelpModal");
+    setup_request_sender(GUIDED_HELP_REQUEST_ENDPOINT, "modalGuidedHelpRequestForm", "#requestGuidedHelpModal");
 
 })()
