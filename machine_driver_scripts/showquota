@@ -63,7 +63,7 @@ SCRATCH_QUOTA=$( /sw/local/bin/showquota | awk 'NR>=3 { print $1,$2,$3,$4,$5 }'|
 
 #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
 #converts it with a comma separator
-SCRATCH_QUOTA=$(awk '{for (i=1; i<=NF; i++) {printf "%s%s", $i, (i<NF) ? ", " : "\n"}}' <<< $SCRATCH_QUOTA)
+SCRATCH_QUOTA=$(awk '{for (i=1; i<=NF; i++) {printf "%s%s", $i, (i<NF) ? ", " : "\n"}}' <<< "$SCRATCH_QUOTA")
 #parses it into json format
 SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
 OUT='{"data":['${SCRATCH_QUOTA}']}'
