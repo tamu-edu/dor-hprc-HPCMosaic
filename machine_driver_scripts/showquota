@@ -59,7 +59,7 @@ function parse_disk() {
 CLUSTER_NAME=$(/sw/local/bin/clustername);
 
 #retrieves the showquota data after excluding the headers
-SCRATCH_QUOTA=$(/sw/local/bin/showquota | awk 'NR>=3 && /^[^*]/ { print $1,$2,$3,$4,$5 }' | head -n -1)
+SCRATCH_QUOTA=$(/sw/local/bin/showquota | grep -v "^\s*\*" | awk 'NR>=3 { print $1,$2,$3,$4,$5 }')
 
 #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
 #converts it with a comma separator
