@@ -23,23 +23,72 @@
               <option value="Other">Other</option>
               <option value="Software Usage">Software </option>
               <option value="Running Job">Running Slurm Job</option>
-              <option value="Service Unit related">Account related</option>
-              <option value="Software Installation">Training</option>
+              <option value="Account related">Account related</option>
+              <option value="Training">Training</option>
             </select>
           </div>
-          <div class="md-form mb-2" style="color: maroon;">
+        <div class="md-form mb-2">
           <div id="software-type" style="display:none;">
               <p> Type of Software </p>
               <select name="software-type" onchange="checkSoftware(value);">
               <option value="Other">Other</option>
               <option value="Matlab">Matlab </option>
               <option value="R">R</option>
-              <option value="Service Unit related">Gaussion</option>
-              <option value="Software Installation">LMS</option>
+              <option value="Guassian related">Gaussion</option>
+              <option value="LMS">LMS</option>
             </select>
-          </div>
           
+          <p>What type of software issue </p>
+          <select name="software-issue" onchange="checkSoftwareIssue(value);">
+          <option value="Other">other</option>
+          <option value="LMS Access"> LMS Access</option>
+          <option value="Software Availability">Software Availability</option>
+          <option value="add Software">add Software</option>
+        </select>
+      </div>
         </div>
+        <div id="account-type" style="display:none;">
+        <p> what type of  account issue </p>
+        <select name="account-type" onchange="checkAccount(value);">
+        <option value="Other">Other</option>
+        <option value="SUs">SUs </option>
+        <option value="Shared Directory">Shared Directory</option>
+        <option value="Application">Application</option>
+        <option value="Login">login issue</option>
+        <option value="Quota">Quota Related</option>
+        </select>
+        
+        </div>
+
+        <div id="accounts"></div>
+
+        <div id="slurm-type" style="display:none;">
+        <p> what type of  Slurm issue </p>
+        <select name="slurm-type" onchange="checkSlurm(value);">
+        <option value="Other">Other</option>
+        <option value="Job Ended">Job Ended </option>
+        <option value="Job Status">Job Status</option>
+        <option value="SUs Used">SUs Used</option>
+        <option value="Wall time extension">Wall time extension</option>
+        </select>
+        
+        </div>
+
+        <div id="slurm"></div>
+
+        <div id="training-type" style="display:none;">
+        <p> what type of  Training issue </p>
+        <select name="training-type" onchange="checkTraining(value);">
+        <option value="Other">Other</option>
+        <option value="SCA">SCA </option>
+        <option value="Short Course">Short Course</option>
+        <option value="Workshops">Workshops</option>
+        </select>
+        
+        </div>
+
+        <div id="training"></div>
+      <div id="job-type" style="display:none">
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="issue_description">Issue Descriptions</label>
             <i class="fas fa-pencil prefix grey-text"></i>
@@ -74,7 +123,7 @@
             <input type="text" name='program_file_path' class="form-control validate"
               placeholder="e.g. $SCRATCH/myawsome_research/hello_world.out">
           </div>
-
+      </div>
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="additional_information">Additional Information</label>
             <i class="fas fa-pencil prefix grey-text"></i>
@@ -94,3 +143,4 @@
     </div>
   </div>
 </div>
+
