@@ -7,7 +7,36 @@ function colorize_percentage_value(percent) {
     return `${percent} %`.fontcolor('orange');
   }
 }
+function convertStorageToBytes(storageStr) {
+  const units = {
+    K: 1024,
+    M: 1024 * 1024,
+    G: 1024 * 1024 * 1024,
+    T: 1024 * 1024 * 1024 * 1024, // Add terabyte unit
+    // Add more units as needed (P, E, etc.)
+  };
 
+  const match = storageStr.match(/^(\d+(\.\d+)?)\s*([KMGT]?)$/);
+  if (!match) {
+    throw new Error(`Invalid storage format: ${storageStr}`);
+  }
+
+  const value = parseFloat(match[1]);
+  const unit = match[3] || 'M'; // Default to MB if no unit is specified
+
+  if (!(unit in units)) {
+    throw new Error(`Invalid storage unit: ${unit}`);
+  }
+
+  return value * units[unit];
+}
+function formatStorageValue(usageStr, limitStr) {
+  const usageBytes = convertStorageToBytes(usageStr);
+  const limitBytes = convertStorageToBytes(limitStr);
+
+  const percent = (usageBytes / limitBytes) * 100;
+  return `${usageStr} (${colorize_percentage_value(percent.toFixed(2))})`;
+}
 
 // borrow from this answer: https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
 function formatBytes(bytes, decimals = 2) {
@@ -72,10 +101,9 @@ function populate_quota() {
       },
       {
         "data": "disk_usage", "sClass":  "text-right",
-        // render: function (data, type, row) {
-        //   percent = (row.disk_usage / row.disk_limit) * 100
-        //   return `${formatKBytes(data)} (${colorize_percentage_value(percent.toFixed(2))})`;
-        // }
+        render: function (data, type, row) {
+          return formatStorageValue(row.disk_usage, row.disk_limit)
+        }
       },
       {
         "data": "disk_limit", "sClass":  "text-right",
@@ -85,12 +113,14 @@ function populate_quota() {
       {
         "data": "file_usage", "sClass":  "text-right",
         render: function (data, type, row) {
+          
           percent = (row.file_usage / row.file_limit) * 100
           return `${data} (${colorize_percentage_value(percent.toFixed(2))})`;
         }
       },
       {
         "data": "file_limit", "sClass":  "text-right",
+  
       },
       {
         "data": "null",
