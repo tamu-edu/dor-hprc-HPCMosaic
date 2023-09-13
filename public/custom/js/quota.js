@@ -7,7 +7,7 @@ function colorize_percentage_value(percent) {
     return `${percent} %`.fontcolor('orange');
   }
 }
-function convertStorageToBytes(storageStr) {
+function convertStorageToBytes(storage) {
   const units = {
     K: 1024,
     M: 1024 * 1024,
@@ -15,7 +15,7 @@ function convertStorageToBytes(storageStr) {
     T: 1024 * 1024 * 1024 * 1024, // Add terabyte unit
     // Add more units as needed (P, E, etc.)
   };
-
+  const storageStr = storage.replace('*', '');
   const match = storageStr.match(/^(\d+(\.\d+)?)\s*([KMGT]?)$/);
   if (!match) {
     throw new Error(`Invalid storage format: ${storageStr}`);
@@ -35,7 +35,8 @@ function formatStorageValue(usageStr, limitStr) {
   const limitBytes = convertStorageToBytes(limitStr);
 
   const percent = (usageBytes / limitBytes) * 100;
-  return `${usageStr} (${colorize_percentage_value(percent.toFixed(2))})`;
+  return `${usageStr}<br/>(${colorize_percentage_value(percent.toFixed(2))})`;
+
 }
 
 // borrow from this answer: https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
@@ -114,8 +115,8 @@ function populate_quota() {
         "data": "file_usage", "sClass":  "text-right",
         render: function (data, type, row) {
           
-          percent = (row.file_usage / row.file_limit) * 100
-          return `${data} (${colorize_percentage_value(percent.toFixed(2))})`;
+          percent = (parseInt(row.file_usage ,10)/ row.file_limit) * 100
+          return `${data}<br/>(${colorize_percentage_value(percent.toFixed(2))})`;
         }
       },
       {
