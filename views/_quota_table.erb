@@ -74,7 +74,7 @@
           <div class="md-form mb-2" style="color: maroon;">
             <div id="buyin-option" style="display:none">
                 <p>HPRC offers a Buy-In option for storage:<br>
-                Are you interested in buying in ($130/TB for 5 years, $26/TB for one year) </p>
+                Are you interested in buying in ($175/TB for 5 years, $35/TB for one year) </p>
                 <input type="radio" name="confirmBuyin" id="yesBuy" value="yes" onclick=checkBuyin(value)>Yes
                 <input type="radio" name="confirmBuyin" id="noBuy" value="no" onclick=checkBuyin(value)>No
             </div>
@@ -218,38 +218,42 @@
 
           <div class="md-form mb-2">
 	        <p> Type of Group(Required) </p>
-            <input type="radio" name="new_group"  value="yes" onclick=checkGroup(value) >New Group
-            &nbsp &nbsp &nbsp
-            <input type="radio" name="new_group"  value="no" onclick=checkGroup(value)>Existing Group 
-
+              <input type="radio"  name="group_type" value="new_group" onclick=checkGroup(value) >New Group
+              &nbsp &nbsp &nbsp
+              <input type="radio"  name="group_type" value="existing_group" onclick=checkGroup(value)>Existing Group 
           </div>
+          
+  
+              <div id="groupdirCheckbox" style="display:none">
+                <input type="checkbox" name="groupdir" id="groupdirCheck" value="yes" onclick=toggleTextBox() >Create Group Directory <br/>
+              </div>
+          
+              <input type="text" name='dir_name' id="dirNameInput" class="form-control validate" placeholder="Group Directory Name" style="display: none;">
 
-          <div class="md-form mb-2" style="color: maroon;">
-            <div id="group-dir" style="display:none">
-                <input type="checkbox" name="groupdir" id="groupdir" value="yes" >Create Group Directory <br>
-                <br>
-                <input type="text" name='dir_name' class="form-control validate" placeholder="Group Directory Name" >
-            </div>
-            
+       
+          <div style="display:none" id="existinggroup">
+          <input type="checkbox" name="group" id="addMembersCheckbox"  onclick=checkAction() >Add Members
+          &nbsp &nbsp &nbsp
+          <input type="checkbox" name="group" id="deleteMembersCheckbox"onclick=checkAction() >Delete Members <br>  
           </div>
-
-          <div class="md-form mb-2">
+          <div class="md-form mb-2" id="add-group"  style="display:none">
             <label data-error="wrong" data-success="right" >NetId of members to add </label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="members_to_add" class="md-textarea form-control" 
             rows="4"></textarea>
           </div>
 
-          <div class="md-form mb-2">
+          <div class="md-form mb-2"id="remove-group"  style="display:none">
           <label data-error="wrong" data-success="right">NetId of members to remove </label>
           <i class="fas fa-pencil prefix grey-text"></i>
           <textarea type="text" name="members_to_remove" class="md-textarea form-control" 
           rows="4"></textarea>
           </div>
-
-          <input type="checkbox" name="delgroup" id="delgroup" data-toggle="modal"  
-            >Delete this group <br><br>
-
+          <br/>
+          <div   id="groupDeletionCheckbox" style="display:none">
+          <input type="checkbox" name="delgroup" id="delgroup" value="yes" >Delete this group <br><br>
+          </div>
+            
           <div class="md-form mb-2">
           <label data-error="wrong" data-success="right" >Comments</label>
           <i class="fas fa-pencil prefix grey-text"></i>

@@ -20,13 +20,68 @@ function checkLength (value){
     }
 }
 function checkGroup (value){
-    var x = document.getElementById("group-dir");
-    if (value === "yes") {
+    var x = document.getElementById("groupdirCheckbox");
+    var y=document.getElementById("add-group");
+    var z=document.getElementById("remove-group");    
+    var w = document.getElementById("groupDeletionCheckbox");
+    if (value === "new_group") {
         x.style.display = "block";
+        y.style.display = "block";
+        z.style.display = "none";
+        w.style.display="none"
+        document.getElementById("existinggroup").style.display="none"
         document.getElementById("dir_name").value=document.getElementById("group-name").value;
+       
+    }
+    if (value === "existing_group") {
+        document.getElementById("existinggroup").style.display="block"
+        w.style.display="block"
+        x.style.display="none"
+        y.style.display = "none";
+        z.style.display = "none";
+        
     }
     else{
         x.style.display="none"
+        y.style.display = "none";
+        z.style.display = "none";
+        w.style.display="none"
+    }
+}
+function toggleTextBox() {
+    var check = document.getElementById('groupdirCheck');
+    var textBox = document.getElementById('dirNameInput');
+
+    if (check.checked) {
+       
+        textBox.style.display = 'block';
+    } else {
+        
+        textBox.style.display = 'none';
+    }
+}
+function checkAction() {
+    var addMembersCheckbox = document.getElementById('addMembersCheckbox');
+    var deleteMembersCheckbox = document.getElementById('deleteMembersCheckbox');
+    var addMembersFields = document.getElementById('add-group');
+    var deleteMembersFields = document.getElementById('remove-group');
+
+    if (addMembersCheckbox.checked && deleteMembersCheckbox.checked) {
+        // Both checkboxes are checked, show both sets of fields
+        addMembersFields.style.display = 'block';
+        deleteMembersFields.style.display = 'block';
+    } else if (addMembersCheckbox.checked) {
+        // Only "Add Members" checkbox is checked, show its fields
+        addMembersFields.style.display = 'block';
+        deleteMembersFields.style.display = 'none';
+    } else if (deleteMembersCheckbox.checked) {
+        // Only "Delete Members" checkbox is checked, show its fields
+        addMembersFields.style.display = 'none';
+        deleteMembersFields.style.display = 'block';
+    } else {
+        // Neither checkbox is checked, hide both sets of fields
+        addMembersFields.style.display = 'none';
+        deleteMembersFields.style.display = 'none';
     }
 }
 // function checkDelete (){
