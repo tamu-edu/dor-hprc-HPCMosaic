@@ -220,12 +220,13 @@ function setup_quota_request_form(quota_request_endpoint) {
 
     quotas.forEach(quota => {
       disk_name = quota["name"].trim();
+      disk=disk_name.split('/')[1]
       
-      if (disk_name === '/scratch') {
+      if (disk == "scratch" && disk_name.split('/')[2]=='user') {
+      
         scratch_quota = quota;
       }
     });
-
     if (scratch_quota === null) {
       console.error("Cannot fetch scratch quota");
       return;
@@ -236,13 +237,17 @@ function setup_quota_request_form(quota_request_endpoint) {
     if (current_disk_quota === null) {
       return;
     }
-    current_disk_quota.value = formatKBytes(scratch_quota["disk_limit"]);
 
+    limit=convertStorageToBytes(scratch_quota["disk_limit"])
+    current_disk_quota.value = formatBytes(limit);
+     
     var current_file_limit = document.getElementById("current_file_limit");
     current_file_limit.value = scratch_quota["file_limit"];
 
     // invisible form components (needs this for RT email)
-    $("#current_used_disk_quota").val(formatKBytes(scratch_quota["disk_usage"]));
+
+    usage=convertStorageToBytes(scratch_quota["disk_usage"])
+    $("#current_used_disk_quota").val(formatBytes(usage));
     $("#current_used_file").val(scratch_quota["file_usage"]);
 
   });
