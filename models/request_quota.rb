@@ -52,7 +52,7 @@ class QuotaRequest
                 "#{justification3}\n"\
                 "What is the input/output size of the job?\n"\
                 "#{justification4}\n"\
-                "What is your long-term plan for this data after the quota increase expires?\n"\
+                "What is your long-term storage plan for your data after the quota increase expires?\n"\
                 "#{justification5}\n"\
                 # "Justification: #{justification}\n" \
                 "Comment: #{comment}\n" \

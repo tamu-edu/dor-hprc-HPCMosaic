@@ -65,7 +65,7 @@ function generate_file_explorer_path_for_disk(disk_name) {
       disk_name=disk_path
   }
 
-  return `<a target="_blank" href="${document.file_app_url + disk_path}">${disk_name}</a>`
+  return `<a target="_blank" style="color:#003C71" href="${document.file_app_url + disk_path}">${disk_name}</a>`
 
 }
 function check_button(disk_name) {
