@@ -68,8 +68,7 @@ h6 {
 }
 
 .card {
-  border: 30;
-  border-color: rgba(75, 3, 3, 0.3);
+  border: 2px solid rgb(32 20 22 / 34%);
   border-radius: 15px 15px 15px 15px !important;
   padding: 0.5em;
 }
