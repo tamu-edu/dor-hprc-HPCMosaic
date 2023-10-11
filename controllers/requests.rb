@@ -69,10 +69,10 @@ def HandleRequest(params)
         request_type = params["request_type"]
         subject, body = GenerateEmailBody(params)
         WriteLog(params["request_type"], body)
-		result_msg = SendRequestEmail(subject, body, params["request_type"])
 		res = SendtoHPRCBot(params)
 	rescue => e
         WriteLog(params["request_type"], e.message)
+        result_msg = SendRequestEmail(subject, body, params["request_type"])
         result_msg = "An error has occurred. Please email us at #{settings.help_email}"
 	end
     WriteLog(params["request_type"], "\n------------------------------------------------\n")

@@ -65,7 +65,7 @@ function generate_file_explorer_path_for_disk(disk_name) {
       disk_name=disk_path
   }
 
-  return `<a target="_blank" style="color:#003C71" href="${document.file_app_url + disk_path}">${disk_name}</a>`
+  return `<a target="_blank" style="color:#003C71;font-weight: bold;text-decoration:underline" href="${document.file_app_url + disk_path}">${disk_name}</a>`
 
 }
 function check_button(disk_name) {
@@ -116,11 +116,18 @@ function populate_quota() {
         render: function (data, type, row) {
           
           percent = (parseInt(row.file_usage ,10)/ row.file_limit) * 100
-          return `${data}<br/>(${colorize_percentage_value(percent.toFixed(2))})`;
+         
+          return `${Number(data).toLocaleString()}<br/>(${colorize_percentage_value(percent.toFixed(2))})`;
         }
       },
       {
         "data": "file_limit", "sClass":  "text-right",
+
+        render: function (data, type, row) {
+          
+         
+          return `${Number(data).toLocaleString()}`;
+        }
   
       },
       {
