@@ -2,17 +2,20 @@ require 'open3'
 
 class GroupRequest
 
-    def compose_email(group_name, cluster_name,members_to_add, groupdir, 
-        new_group, members_to_remove,delgroup, comments)
+    def compose_email(group_name, cluster_name,members_to_add, groupdir, addMembers,deleteMembers,addDelegate,removeDelegate,
+        new_group,delgroup, comments)
 
         user = ENV["USER"]
         body =  "User: #{user}\n" \
                 "Cluster: #{cluster_name}\n" \
                 "GroupName: #{group_name}\n" \
-                "MembersToAdd: #{members_to_add}\n" \
+                "NewGroupMembersToAdd: #{members_to_add}\n" \
                 "GroupDirName: #{groupdir}\n" \
+                "addMembers: #{addMembers}\n" \
+                "deleteMembers: #{deleteMembers}\n" \
+                "addDelegate: #{addDelegate}\n" \
+                "removeDelegate: #{removeDelegate}\n" \
                 "NewGroup: #{new_group}\n"\
-                "MembersToRemove: #{members_to_remove}\n" \
                 "DelGroup: #{delgroup}\n" \
                 "Comments: #{comments}\n" 
 
@@ -24,15 +27,18 @@ class GroupRequest
         cluster_name = params[:cluster_name]
         members_to_add = params[:members_to_add]
         groupdir = params[:groupdir]
+        addMembers = params[:addMembers]
+        deleteMembers= params[:deleteMembers]
+        addDelegate = params[:addDelegate]
+        removeDelegate = params[:removeDelegate]
         new_group=params[:new_group]
-        members_to_remove= params[:members_to_remove]
         delgroup = params[:delgroup]
         comments = params[:comments]
       
 
         subject = "GroupReq"
-        body = compose_email(group_name,cluster_name, members_to_add, groupdir, 
-        new_group, members_to_remove,delgroup, comments)
+        body = compose_email(group_name,cluster_name, members_to_add, groupdir, addMembers,deleteMembers,addDelegate,removeDelegate,
+        new_group,delgroup,comments)
         return [subject, body]
     end
 
