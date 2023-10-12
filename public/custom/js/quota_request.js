@@ -24,14 +24,21 @@ function checkGroup (value){
     var y=document.getElementById("add-group");
     var z=document.getElementById("remove-group");    
     var w = document.getElementById("groupDeletionCheckbox");
+    document.getElementById('comments').style.display="block"
     if (value === "new_group") {
+       
         x.style.display = "block";
         y.style.display = "block";
         z.style.display = "none";
         w.style.display="none"
         document.getElementById("existinggroup").style.display="none"
+        var actionDropdown = document.getElementById('actionDropdown');
+        actionDropdown.selectedIndex = 0;
+        
+        document.getElementById('actionField').value=" "
+        
         document.getElementById("dir_name").value=document.getElementById("group-name").value;
-       
+
     }
     if (value === "existing_group") {
         document.getElementById("existinggroup").style.display="block"
@@ -39,13 +46,17 @@ function checkGroup (value){
         x.style.display="none"
         y.style.display = "none";
         z.style.display = "none";
+        document.getElementsByName('members_to_add')[0].value=" "
+        document.getElementById('dirNameInput').value=" "
+        document.getElementById('groupdirCheck').checked = false;
+    
         
     }
     else{
         x.style.display="none"
         y.style.display = "none";
         z.style.display = "none";
-        w.style.display="none"
+        w.style.display="none";
     }
 }
 function toggleTextBox() {
@@ -61,28 +72,28 @@ function toggleTextBox() {
     }
 }
 function checkAction() {
-    var addMembersCheckbox = document.getElementById('addMembersCheckbox');
-    var deleteMembersCheckbox = document.getElementById('deleteMembersCheckbox');
-    var addMembersFields = document.getElementById('add-group');
-    var deleteMembersFields = document.getElementById('remove-group');
+        var actionDropdown = document.getElementById('actionDropdown');
+        var inputField = document.getElementById('inputField');
+        var selectedOption = actionDropdown.options[actionDropdown.selectedIndex].value;
+        document.getElementById('actionField').name=selectedOption
+        
+        
+        // Determine the placeholder text based on the selected option
+        var placeholderText = "";
+        if (selectedOption === 'addMembers') {
+            placeholderText = 'Add Members';
+        } else if (selectedOption === 'deleteMembers') {
+            placeholderText = 'Delete Members';
+        } else if (selectedOption === 'addDelegate') {
+            placeholderText = 'Add Delegate';
+        } else if (selectedOption === 'removeDelegate') {
+            placeholderText = 'Remove Delegate';
+        }
 
-    if (addMembersCheckbox.checked && deleteMembersCheckbox.checked) {
-        // Both checkboxes are checked, show both sets of fields
-        addMembersFields.style.display = 'block';
-        deleteMembersFields.style.display = 'block';
-    } else if (addMembersCheckbox.checked) {
-        // Only "Add Members" checkbox is checked, show its fields
-        addMembersFields.style.display = 'block';
-        deleteMembersFields.style.display = 'none';
-    } else if (deleteMembersCheckbox.checked) {
-        // Only "Delete Members" checkbox is checked, show its fields
-        addMembersFields.style.display = 'none';
-        deleteMembersFields.style.display = 'block';
-    } else {
-        // Neither checkbox is checked, hide both sets of fields
-        addMembersFields.style.display = 'none';
-        deleteMembersFields.style.display = 'none';
-    }
+        // Set the placeholder text and display the input field
+        inputField.querySelector('input').setAttribute('placeholder', placeholderText);
+        inputField.style.display = 'block';
+    
 }
 // function checkDelete (){
     

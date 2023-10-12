@@ -226,27 +226,38 @@
   
               <div id="groupdirCheckbox" style="display:none">
                 <input type="checkbox" name="groupdir" id="groupdirCheck" value="yes" onclick=toggleTextBox() >Create Group Directory <br/>
-              </div>
+              
           
               <input type="text" name='dir_name' id="dirNameInput" class="form-control validate" placeholder="Group Directory Name" style="display: none;">
-
-       
+              </div>
+           <br/>
           <div style="display:none" id="existinggroup">
-          <input type="checkbox" name="group" id="addMembersCheckbox"  onclick=checkAction() >Add Members
-          &nbsp &nbsp &nbsp
-          <input type="checkbox" name="group" id="deleteMembersCheckbox"onclick=checkAction() >Delete Members <br>  
+         
+            <select id="actionDropdown" onchange="checkAction()">
+            <option value="select" selected>Select an action</option>
+            <option value="addMembers" >Add Members</option>
+            <option value="deleteMembers">Delete Members</option>
+            <option value="addDelegate">Add Delegate</option>
+            <option value="removeDelegate">Remove Delegate</option>
+            &nbsp &nbsp &nbsp
+            </select> 
+            <br/><br/>
+            <div id="inputField" style="display: none">
+            <input type="text" id="actionField" name="inputField" placeholder="" class="form-control ">
+            </div>
           </div>
+         
           <div class="md-form mb-2" id="add-group"  style="display:none">
             <label data-error="wrong" data-success="right" >NetId of members to add </label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="members_to_add" class="md-textarea form-control" 
             rows="4"></textarea>
           </div>
-
+          
           <div class="md-form mb-2"id="remove-group"  style="display:none">
           <label data-error="wrong" data-success="right">NetId of members to remove </label>
           <i class="fas fa-pencil prefix grey-text"></i>
-          <textarea type="text" name="members_to_remove" class="md-textarea form-control" 
+          <textarea type="text" class="md-textarea form-control" 
           rows="4"></textarea>
           </div>
           <br/>
@@ -254,7 +265,7 @@
           <input type="checkbox" name="delgroup" id="delgroup" value="yes" >Delete this group <br><br>
           </div>
             
-          <div class="md-form mb-2">
+          <div class="md-form mb-2" id="comments" style="display:none">
           <label data-error="wrong" data-success="right" >Comments</label>
           <i class="fas fa-pencil prefix grey-text"></i>
           <textarea type="text" name="comments" class="md-textarea form-control" 
