@@ -118,7 +118,7 @@ function init_allocation_table() {
 
         if (allocation.default == 'N') {
 
-          return `<a href='javascript:;' onclick='set_default_allocation(${allocation.account});' style="color:#003C71;font-weight: bold;">Set Default</a>`;
+          return `<a href='javascript:;' onclick='set_default_allocation(${allocation.account});' style="color:#003C71;font-weight: bold;text-decoration:underline">Set Default</a>`;
         } else {
           return 'default';
         }
