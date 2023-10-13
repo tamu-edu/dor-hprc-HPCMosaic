@@ -31,7 +31,7 @@ class GroupRequest
       
 
         subject = "GroupReq"
-        body = compose_email(group_name,cluster_name, target_users, groupdir,action
+        body = compose_email(group_name,cluster_name, target_users, groupdir,action,
         new_group,delgroup,comments)
         return [subject, body]
     end
