@@ -25,7 +25,7 @@ function checkGroup (value){
     var z=document.getElementById("remove-group");    
     var w = document.getElementById("groupDeletionCheckbox");
     document.getElementById('comments').style.display="block"
-    if (value === "new_group") {
+    if (value === "True") {
        
         x.style.display = "block";
         y.style.display = "block";
@@ -33,23 +33,24 @@ function checkGroup (value){
         w.style.display="none"
         document.getElementById("existinggroup").style.display="none"
         var actionDropdown = document.getElementById('actionDropdown');
-        actionDropdown.selectedIndex = 0;
+        actionDropdown.selectedIndex = 1;
         
         document.getElementById('actionField').value=" "
-        
+       
         document.getElementById("dir_name").value=document.getElementById("group-name").value;
 
     }
-    if (value === "existing_group") {
+    if (value === "False") {
         document.getElementById("existinggroup").style.display="block"
+        var actionDropdown = document.getElementById('actionDropdown');
+        actionDropdown.selectedIndex = 0;
         w.style.display="block"
         x.style.display="none"
         y.style.display = "none";
         z.style.display = "none";
-        document.getElementsByName('members_to_add')[0].value=" "
+        document.getElementById('NewgroupUsers').value=" "
         document.getElementById('dirNameInput').value=" "
         document.getElementById('groupdirCheck').checked = false;
-    
         
     }
     else{
@@ -59,6 +60,13 @@ function checkGroup (value){
         w.style.display="none";
     }
 }
+function updateTargetUsers() {
+
+    var newGroupUsers = document.getElementById("NewgroupUsers").value;
+     document.getElementById("actionField").value=newGroupUsers
+     
+}
+
 function toggleTextBox() {
     var check = document.getElementById('groupdirCheck');
     var textBox = document.getElementById('dirNameInput');
@@ -75,7 +83,8 @@ function checkAction() {
         var actionDropdown = document.getElementById('actionDropdown');
         var inputField = document.getElementById('inputField');
         var selectedOption = actionDropdown.options[actionDropdown.selectedIndex].value;
-        document.getElementById('actionField').name=selectedOption
+        // document.getElementById('actionDropdown').name=selectedOption
+       
         
         
         // Determine the placeholder text based on the selected option
@@ -89,6 +98,7 @@ function checkAction() {
         } else if (selectedOption === 'removeDelegate') {
             placeholderText = 'Remove Delegate';
         }
+        
 
         // Set the placeholder text and display the input field
         inputField.querySelector('input').setAttribute('placeholder', placeholderText);

@@ -98,7 +98,7 @@ class RequestsController < Sinatra::Base
 	end
     post '/request/group' do
 		params["request_type"] = "Group"
-        params["new_group"] = params.fetch(:new_group, "no")
+        params["new_group"] = params.fetch(:new_group, "False")
         result_msg = HandleRequest(params)
 	end
 

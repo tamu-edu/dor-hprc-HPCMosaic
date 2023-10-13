@@ -218,9 +218,9 @@
 
           <div class="md-form mb-2">
 	        <p> Type of Group(Required) </p>
-              <input type="radio"  name="group_type" value="new_group" onclick=checkGroup(value) >New Group
+              <input type="radio"  name="new_group" value="True" onclick=checkGroup(value) >New Group
               &nbsp &nbsp &nbsp
-              <input type="radio"  name="group_type" value="existing_group" onclick=checkGroup(value)>Existing Group 
+              <input type="radio"  name="new_group" value="False" onclick=checkGroup(value)>Existing Group 
           </div>
           
   
@@ -233,8 +233,8 @@
            <br/>
           <div style="display:none" id="existinggroup">
          
-            <select id="actionDropdown" onchange="checkAction()">
-            <option value="select" selected>Select an action</option>
+            <select id="actionDropdown" onchange="checkAction()" name="Add">
+            <option value="" selected>Select an action</option>
             <option value="addMembers" >Add Members</option>
             <option value="deleteMembers">Delete Members</option>
             <option value="addDelegate">Add Delegate</option>
@@ -243,15 +243,15 @@
             </select> 
             <br/><br/>
             <div id="inputField" style="display: none">
-            <input type="text" id="actionField" name="inputField" placeholder="" class="form-control ">
+            <input type="text" id="actionField" name="target_users" placeholder="" class="form-control ">
             </div>
           </div>
          
           <div class="md-form mb-2" id="add-group"  style="display:none">
             <label data-error="wrong" data-success="right" >NetId of members to add </label>
             <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="members_to_add" class="md-textarea form-control" 
-            rows="4"></textarea>
+            <textarea type="text" id="NewgroupUsers" class="md-textarea form-control" 
+            rows="4" oninput="updateTargetUsers()"></textarea>
           </div>
           
           <div class="md-form mb-2"id="remove-group"  style="display:none">
