@@ -3,7 +3,7 @@ require 'open3'
 class GroupRequest
 
     def compose_email(group_name, cluster_name,target_users, groupdir, action,
-        new_group,delgroup, comments)
+        new_group, comments)
 
         user = ENV["USER"]
         body =  "User: #{user}\n" \
@@ -13,7 +13,6 @@ class GroupRequest
                 "GroupDirName: #{groupdir}\n" \
                 "action: #{action}\n" \
                 "NewGroup: #{new_group}\n"\
-                "DelGroup: #{delgroup}\n" \
                 "Comments: #{comments}\n" 
 
         body.strip
@@ -26,13 +25,12 @@ class GroupRequest
         groupdir = params[:groupdir]
         action = params[:Add]
         new_group=params[:new_group]
-        delgroup = params[:delgroup]
         comments = params[:comments]
       
 
         subject = "GroupReq"
         body = compose_email(group_name,cluster_name, target_users, groupdir,action,
-        new_group,delgroup,comments)
+        new_group,comments)
         return [subject, body]
     end
 

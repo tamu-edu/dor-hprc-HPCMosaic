@@ -105,16 +105,29 @@ function checkAction() {
         inputField.style.display = 'block';
     
 }
-// function checkDelete (){
-    
-//      var x = document.getElementById("delgroup");
-     
-//      if (x.checked == true) {
-//         $('#' +"confirmDeleteModal").modal('show'); 
-//         $('#'+"requestGroupModal").modal('hide')
-//      }
- 
-// }
+function checkDelete() {
+    var x = document.getElementById("delgroup");
+    var actionDropdown = document.getElementById('actionDropdown');
+    var current_val = actionDropdown.value;
+
+    if (x.checked == true) {
+        // Add an option with the value "deleteGroup"
+        var newOption = document.createElement('option');
+        newOption.value = "deleteGroup";
+        newOption.text = "Delete Group";
+        actionDropdown.add(newOption);
+
+        // Change the selected option to "deleteGroup"
+        actionDropdown.value = "deleteGroup";
+    } else {
+        // Remove the dynamically added option
+        actionDropdown.remove(actionDropdown.selectedIndex);
+
+        // Restore the original value
+        actionDropdown.value = current_val;
+    }
+}
+
 function approveDel (){
    
    document.getElementById("delete").value='yes';
