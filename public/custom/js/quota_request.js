@@ -7,6 +7,7 @@ function checkLength (value){
     var currentFields = document.getElementById("current-status-fields");
     var submitField = document.getElementById("submit-field");
     var justificationField = document.getElementById("justification-field");
+    var extensionField = document.getElementById("extension-option");
     if (value === "yes") {
         x.style.display = "block";
         bodyFields.style.display = "none";
@@ -16,6 +17,7 @@ function checkLength (value){
         extraFields.style.display = "none";
         currentFields.style.display = "block";
         submitField.style.display = "block";
+        extensionField.style.display="block";
         justificationField.required = true;
     }
 }
