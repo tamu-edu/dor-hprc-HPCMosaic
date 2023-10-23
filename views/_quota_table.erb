@@ -94,11 +94,11 @@
                 rows="1"></textarea>
             </div>
           </div>
-          <div class="md-form mb-2" style="color: maroon;">
+          <div class="md-form mb-2" >
           <div id="extension-option" style="display: none;">
               <p>Is the current request a new request  or extension of the previous quota increase? </p>
-              <input type="radio" name="Extension" id="yes" value="yes">Extension
-              <input type="radio" name="Extension" id="no" value="no">New Request
+              <input type="radio" name="has_previous" id="yes" value="yes">Extension
+              <input type="radio" name="has_previous" id="no" value="no">New Request
           </div>
         </div>
 
@@ -114,6 +114,9 @@
           <div style="display: none;">
             <input type="hidden" id="current_used_file" name="current_used_file">
             <input type="hidden" id="current_used_disk_quota" name="current_used_disk_quota">
+          </div>
+          <div class="md-form mb-2" style="display: none;">
+            <input type="hidden" id="disk_name" name='disk_name' class="form-control validate">
           </div>
 
           <div class="md-form mb-2">

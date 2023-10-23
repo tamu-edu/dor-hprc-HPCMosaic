@@ -11,11 +11,11 @@ class QuotaRequest
 
       current_used_quota = params[:current_used_disk_quota]
       current_used_file = params[:current_used_file]
-
+      disk_name=params[:disk_name]
       disk_space = params[:desired_disk]
       file_limit = params[:total_file_limit]
       buy_in = params[:confirmBuyin]
-      
+      extension=params[:has_previous]
       request_until = params[:request_until]
       email=params[:email]
       justification1 = params[:request_justification1]
@@ -33,6 +33,8 @@ class QuotaRequest
                 "User: #{user}\n" \
                 "Buy-In: #{buy_in}\n" \
                 "Request Until: #{request_until}\n" \
+                "DiskName :#{disk_name}\n" \
+                "extension :#{extension}\n" \
                 "--- CURRENT QUOTA ---\n" \
                 "Current disk space: #{current_quota}\n" \
                 "Current file limit: #{current_file_limit}\n" \
@@ -71,14 +73,17 @@ class QuotaRequest
 
       current_used_quota = params[:current_used_disk_quota]
       current_used_file = params[:current_used_file]
-
+      disk_name=params[:disk_name]
       disk_space = params[:desired_disk]
       file_limit = params[:total_file_limit]
       student_netid = params[:student_netid]
       request_until = params[:request_until]
+      extension=params[:has_previous]
 
       log =  "Cluster: #{cluster_name}    " \
                 "User: #{user}    " \
+                "Extension: #{extension}    " \
+                "DiskName: #{disk_name}    " \
                 "Current disk space: #{current_quota}    " \
                 "Current file limit: #{current_file_limit}    " \
                 "Used disk space: #{current_used_quota}    " \

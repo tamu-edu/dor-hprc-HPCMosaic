@@ -62,7 +62,7 @@ function generate_file_explorer_path_for_disk(disk_name) {
   disk_name=disk_name.split('/')[1]
 
   if (disk_name == "scratch" && disk_path.split('/')[2]=='group') {
-      disk_name=disk_path
+      disk_name=disk_path.split('/')[3]
   }
 
   return `<a target="_blank" style="color:#003C71;font-weight: bold;text-decoration:underline" href="${document.file_app_url + disk_path}">${disk_name}</a>`
@@ -90,6 +90,11 @@ function updateQuotaOnGroupClick(group) {
   usage=convertStorageToBytes(quotausage[group])
   $("#current_used_disk_quota").val(formatBytes(usage));
   $("#current_used_file").val(fileusage[group]);
+  if(group.split('/')[1]=="scratch" && group.split('/')[2]=='group'){
+  $("#disk_name").val(group.split('/')[3]);}
+  if(group.split('/')[1]=="scratch" && group.split('/')[2]=='user'){
+    $("#disk_name").val(group.split('/')[1]);}
+
 }
 // $(document).ready(function() {
 //   // Event delegation to capture clicks on dynamically added buttons
