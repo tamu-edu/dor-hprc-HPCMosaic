@@ -96,9 +96,9 @@
           </div>
           <div class="md-form mb-2" style="color: maroon;">
           <div id="extension-option" style="display: none;">
-              <p>Is the current request extension of the previous Buy-In? </p>
-              <input type="radio" name="Extension" id="yes" value="yes">Yes
-              <input type="radio" name="Extension" id="no" value="no">No
+              <p>Is the current request a new request  or extension of the previous quota increase? </p>
+              <input type="radio" name="Extension" id="yes" value="yes">Extension
+              <input type="radio" name="Extension" id="no" value="no">New Request
           </div>
         </div>
 
@@ -117,13 +117,14 @@
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="current_quota">Current Scratch Quota</label>
+            <label data-error="wrong" data-success="right" for="current_quota">Current Quota</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name="current_quota" readonly class="form-control" id="current_quota">
           </div>
+          
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="desired_disk">New Scratch Quota</label>
+            <label data-error="wrong" data-success="right" for="desired_disk">New  Quota</label>
             <i class="fas fa-user prefix grey-text"></i>
             <div class="input-group">
               <input type="number" step="any" name='desired_disk' class="form-control validate" id="desired_disk">

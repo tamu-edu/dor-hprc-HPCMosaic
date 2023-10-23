@@ -68,19 +68,37 @@ function generate_file_explorer_path_for_disk(disk_name) {
   return `<a target="_blank" style="color:#003C71;font-weight: bold;text-decoration:underline" href="${document.file_app_url + disk_path}">${disk_name}</a>`
 
 }
+var quotalimits={}
+var filelimits={}
+var fileusage={}
+var quotausage={}
 function check_button(disk_name) {
   
-  disk_path = disk_name.trim()
-  disk_name=disk_name.split('/')[1]
-
-  if (disk_name == "home" ) {
-      return ``
+  var disk=disk_name
+  
+  var disk_name = disk_name.split('/')[1]
+  if (disk_name == "home") {
+    return '';
   }
-
-  return `<button type="button" class="btn btn-primary maroon-button" class="nav-link active btn-rounded mb-4" data-toggle="modal"
-  data-target="#requestQuotaModal">Request Quota Increase</button>`
-
+  
+  return `<button type="button" class="btn btn-primary maroon-button" data-toggle="modal" data-target="#requestQuotaModal" onclick="updateQuotaOnGroupClick('${disk}')" >Request Quota Increase</button>`;
 }
+function updateQuotaOnGroupClick(group) {
+  
+  document.getElementById("current_quota").value = formatBytes(convertStorageToBytes(quotalimits[group]));
+  document.getElementById("current_file_limit").value = filelimits[group];
+  usage=convertStorageToBytes(quotausage[group])
+  $("#current_used_disk_quota").val(formatBytes(usage));
+  $("#current_used_file").val(fileusage[group]);
+}
+// $(document).ready(function() {
+//   // Event delegation to capture clicks on dynamically added buttons
+//   $('body').on('click', '.maroon-button', function() {
+//     $(this).css('background-color', 'white');
+//     $(this).css('color', 'maroon');
+//   });
+
+// });
 
 function populate_quota() {
   $('#quota_table').DataTable({
@@ -224,13 +242,19 @@ function setup_quota_request_form(quota_request_endpoint) {
     var quotas = data['data'];
     // quotas = quotas.filter(quota => quota["name"] === '/scratch');
     var scratch_quota = null;
-
+    quotalimits = {};
+    filelimits = {};
+    fileusage={}
+    quotausage={}
     quotas.forEach(quota => {
       disk_name = quota["name"].trim();
       disk=disk_name.split('/')[1]
-      
+      quotalimits[disk_name]=quota.disk_limit
+      filelimits[disk_name]=quota.file_limit
+      fileusage[disk_name]=quota.file_usage
+      quotausage[disk_name]=quota.disk_usage
       if (disk == "scratch" && disk_name.split('/')[2]=='user') {
-      
+   
         scratch_quota = quota;
       }
     });
@@ -247,7 +271,7 @@ function setup_quota_request_form(quota_request_endpoint) {
 
     limit=convertStorageToBytes(scratch_quota["disk_limit"])
     current_disk_quota.value = formatBytes(limit);
-     
+   
     var current_file_limit = document.getElementById("current_file_limit");
     current_file_limit.value = scratch_quota["file_limit"];
 
