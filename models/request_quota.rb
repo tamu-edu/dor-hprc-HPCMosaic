@@ -11,7 +11,7 @@ class QuotaRequest
 
       current_used_quota = params[:current_used_disk_quota]
       current_used_file = params[:current_used_file]
-      disk_name=params[:disk_name]
+      disk_name=params[:directory]
       disk_space = params[:desired_disk]
       file_limit = params[:total_file_limit]
       buy_in = params[:confirmBuyin]
@@ -73,7 +73,7 @@ class QuotaRequest
 
       current_used_quota = params[:current_used_disk_quota]
       current_used_file = params[:current_used_file]
-      disk_name=params[:disk_name]
+      disk_name=params[:directory]
       disk_space = params[:desired_disk]
       file_limit = params[:total_file_limit]
       student_netid = params[:student_netid]
