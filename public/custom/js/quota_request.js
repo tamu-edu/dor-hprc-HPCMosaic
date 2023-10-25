@@ -7,6 +7,10 @@ function checkLength (value){
     var currentFields = document.getElementById("current-status-fields");
     var submitField = document.getElementById("submit-field");
     var justificationField = document.getElementById("justification-field");
+    var justificationField1 = document.getElementById("justification-field1");
+    var justificationField2 = document.getElementById("justification-field2");
+    var justificationField3 = document.getElementById("justification-field3");
+    var justificationField4 = document.getElementById("justification-field4");
     var extensionField = document.getElementById("extension-option");
     if (value === "yes") {
         x.style.display = "block";
@@ -19,6 +23,11 @@ function checkLength (value){
         submitField.style.display = "block";
         extensionField.style.display="block";
         justificationField.required = true;
+        justificationField1.required = true;
+        justificationField2.required = true;
+        justificationField3.required = true;
+        justificationField4.required = true;
+
     }
 }
 function checkGroup (value){
@@ -168,15 +177,27 @@ function checkBuyin(value){
     var currentFields = document.getElementById("current-status-fields");
     var submitField = document.getElementById("submit-field");
     var justificationField = document.getElementById("justification-field");
+    var justificationField1 = document.getElementById("justification-field1");
+    var justificationField2 = document.getElementById("justification-field2");
+    var justificationField3 = document.getElementById("justification-field3");
+    var justificationField4 = document.getElementById("justification-field4");
     if (value === "yes") {
         bodyFields.style.display = "none";
         extraFields.style.display = "block";
         justificationField.required = false;
+        justificationField1.required = false;
+        justificationField2.required = false;
+        justificationField3.required = false;
+        justificationField4.required = false;
         
     } else {
         bodyFields.style.display = "block";
         extraFields.style.display = "block";
         justificationField.required = true;
+        justificationField1.required = true;
+        justificationField2.required = true;
+        justificationField3.required = true;
+        justificationField4.required = true;
     }
     submitField.style.display = "block";
     currentFields.style.display = "block";

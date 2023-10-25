@@ -171,10 +171,21 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
     function sendData() {
       const XHR = new XMLHttpRequest();
 
+      
+      document.getElementById('justification-field').value="\n"+"Is the PI aware of this request?"+"\n"+
+                                                              document.getElementById('justification-field').value+"\n"+
+                                                              "What data is stored with the requested quota?"+"\n"+
+                                                              document.getElementById('justification-field1').value+"\n"+
+                                                              "What job requires this quota increase?"+"\n"+
+                                                              document.getElementById('justification-field2').value+"\n"+
+                                                              "What is the input/output size of the job?"+"\n"+
+                                                              document.getElementById('justification-field3').value+"\n"+
+                                                              "What is your long-term storage plan for your data after the quota increase expires?"+"\n"+
+                                                              document.getElementById('justification-field4').value
+      // var response = "";
+      
       // Bind the FormData object and the form element
       const FD = new FormData(form);
-      // var response = "";
-
       // Define what happens on successful data submission
       XHR.addEventListener("load", function (event) {
         // response = event.target.responseText;

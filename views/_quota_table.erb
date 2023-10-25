@@ -97,8 +97,8 @@
           <div class="md-form mb-2" >
           <div id="extension-option" style="display: none;">
               <p>Is the current request a new request  or extension of the previous quota increase? </p>
-              <input type="radio" name="has_previous" id="yes" value="yes">Extension
-              <input type="radio" name="has_previous" id="no" value="no">New Request
+              <input type="radio" name="has_previous" id="yes" value="True">Extension
+              <input type="radio" name="has_previous" id="no" value="False">New Request
           </div>
         </div>
 
@@ -155,19 +155,19 @@
           <div class="md-form mb-2">
           
             <label data-error="wrong" data-success="right" for="request_justification1">Is the PI aware of this request?</label>
-            <textarea type="text" name="request_justification1" class="md-textarea form-control" id="justification-field"
+            <textarea type="text" name="request_justification" class="md-textarea form-control" id="justification-field"
             rows="4" required></textarea>
             <label data-error="wrong" data-success="right" for="request_justification2">What data is stored with the requested quota?</label>
-            <textarea type="text" name="request_justification2" class="md-textarea form-control" id="justification-field"
+            <textarea type="text"  class="md-textarea form-control" id="justification-field1"
             rows="4" required></textarea>
             <label data-error="wrong" data-success="right" for="request_justification3">What job requires this quota increase?</label>
-            <textarea type="text" name="request_justification3" class="md-textarea form-control" id="justification-field"
+            <textarea type="text"  class="md-textarea form-control" id="justification-field2"
             rows="4" required></textarea>
             <label data-error="wrong" data-success="right" for="request_justification4">What is the input/output size of the job?</label>
-            <textarea type="text" name="request_justification4" class="md-textarea form-control" id="justification-field"
+            <textarea type="text"  class="md-textarea form-control" id="justification-field3"
             rows="4" required></textarea>
             <label data-error="wrong" data-success="right" for="request_justification5">What is your long-term storage plan for your data after the quota increase expires?</label>
-            <textarea type="text" name="request_justification5" class="md-textarea form-control" id="justification-field"
+            <textarea type="text" class="md-textarea form-control" id="justification-field4"
             rows="4" required></textarea>
           </div>
 
