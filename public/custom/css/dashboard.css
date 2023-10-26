@@ -68,8 +68,7 @@ h6 {
 }
 
 .card {
-  border: 0;
-  border-color: rgba(80, 0, 0, 0.3);
+  border: 2px solid rgb(32 20 22 / 34%);
   border-radius: 15px 15px 15px 15px !important;
   padding: 0.5em;
 }
@@ -99,6 +98,7 @@ h6 {
   background-color: maroon;
   border-radius: 8px 8px 8px 8px !important;
   border-color: maroon;
+  width:70%;
 }
 
 .request-maroon-button:hover,

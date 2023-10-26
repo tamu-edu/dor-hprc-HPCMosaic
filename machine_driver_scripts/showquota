@@ -1,44 +1,71 @@
 #!/bin/bash
 
+# function parse_disk() {
+#     DATA_STRING=$1
+
+#     IFS=',' read -ra DISK_DATA <<< "$DATA_STRING";
+#     echo '{"name": "'${DISK_DATA[0]}'", "disk_usage": '${DISK_DATA[1]}', "disk_limit": '${DISK_DATA[2]}', "file_usage": '${DISK_DATA[3]}', "file_limit": '${DISK_DATA[4]}'}'
+
+# }
+
+# CLUSTER_NAME=$(/sw/local/bin/clustername);
+
+# if [ $CLUSTER_NAME == faster ]; then
+#     # For LUSTRE
+#     PROJ_ID=$(lfs project -d /home/$USER | awk '{ print $1 }');
+#     HOME_QUOTA=$(lfs quota -q -p $PROJ_ID /home/$USER | tr '\n' ' ' );
+#     #echo HOME_QUOTA=$HOME_QUOTA
+#     HOME_QUOTA=$(tr '\n' ' ' <<< $HOME_QUOTA);
+#     HOME_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/home", $2, $3, $6, $7}' <<< $HOME_QUOTA);
+#     #echo HOME_QUOTA=$HOME_QUOTA
+#     HOME_QUOTA=$(parse_disk "${HOME_QUOTA}");
+#     #echo
+#     #echo
+#     PROJ_ID=$(lfs project -d /scratch/user/$USER | awk '{ print $1 }');
+#     #PROJ_ID=$(lfs project -d /home/$USER | awk '{ print $1 }');
+#     SCRATCH_QUOTA=$(lfs quota -q -p $PROJ_ID /scratch/user/$USER | tr '\n' ' ' );
+#     #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
+#     SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/scratch", $2, $3, $6, $7}' <<< $SCRATCH_QUOTA);
+#     #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
+#     SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
+
+
+# else
+#     # For GPFS
+#     HOME_QUOTA=$(mount | grep -qw general && mmlsquota --block-size 1K -u $USER general:root | tail -n 1);
+#     HOME_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/home", $4, $6, $10, $12}' <<< $HOME_QUOTA);
+#     HOME_QUOTA=$(parse_disk "${HOME_QUOTA}");
+
+#     SCRATCH_QUOTA=$(mount | grep -qw scratch && mmlsquota --block-size 1K -u $USER scratch:root | tail -n 1);
+#     SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/scratch", $4, $6, $10, $12}' <<< $SCRATCH_QUOTA);
+#     SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
+# fi 
+
+ 
+# OUT='{ "data": ['${HOME_QUOTA}', '${SCRATCH_QUOTA}']}'
+# echo
+# echo
+# echo $OUT
+
+
+
 function parse_disk() {
+    #converting it into required json format
     DATA_STRING=$1
-    IFS=',' read -ra DISK_DATA <<< "$DATA_STRING";
-    echo '{"name": "'${DISK_DATA[0]}'", "disk_usage": '${DISK_DATA[1]}', "disk_limit": '${DISK_DATA[2]}', "file_usage": '${DISK_DATA[3]}', "file_limit": '${DISK_DATA[4]}'}'
+    IFS=',' read -ra DISK_DATA <<< "$DATA_STRING";    
+    echo "$DATA_STRING" | awk -F', ' ' {printf "%s{\"name\":\"%s\", \"disk_usage\":\"%s\", \"disk_limit\":\"%s\", \"file_usage\":\"%s\", \"file_limit\":%s}", (NR>1 ? ",\n" : ""), $1, $2, $3, $4, $5+0} ' 
 }
 
 CLUSTER_NAME=$(/sw/local/bin/clustername);
 
-if [ $CLUSTER_NAME == faster ]; then
-    # For LUSTRE
-    PROJ_ID=$(lfs project -d /home/$USER | awk '{ print $1 }');
-    HOME_QUOTA=$(lfs quota -q -p $PROJ_ID /home/$USER | tr '\n' ' ' );
-    #echo HOME_QUOTA=$HOME_QUOTA
-    HOME_QUOTA=$(tr '\n' ' ' <<< $HOME_QUOTA);
-    HOME_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/home", $2, $3, $6, $7}' <<< $HOME_QUOTA);
-    #echo HOME_QUOTA=$HOME_QUOTA
-    HOME_QUOTA=$(parse_disk "${HOME_QUOTA}");
-    #echo
-    #echo
-    PROJ_ID=$(lfs project -d /scratch/user/$USER | awk '{ print $1 }');
-    #PROJ_ID=$(lfs project -d /home/$USER | awk '{ print $1 }');
-    SCRATCH_QUOTA=$(lfs quota -q -p $PROJ_ID /scratch/user/$USER | tr '\n' ' ' );
-    #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
-    SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/scratch", $2, $3, $6, $7}' <<< $SCRATCH_QUOTA);
-    #echo SCRATCH_QUOTA=$SCRATCH_QUOTA
-    SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
+#retrieves the showquota data after excluding the headers
+SCRATCH_QUOTA=$(/sw/local/bin/showquota | grep -v "^\s*\*" | awk 'NR>=3 { print $1,$2,$3,$4,$5 }')
 
-else
-    # For GPFS
-    HOME_QUOTA=$(mount | grep -qw general && mmlsquota --block-size 1K -u $USER general:root | tail -n 1);
-    HOME_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/home", $4, $6, $10, $12}' <<< $HOME_QUOTA);
-    HOME_QUOTA=$(parse_disk "${HOME_QUOTA}");
+#echo SCRATCH_QUOTA=$SCRATCH_QUOTA
+#converts it with a comma separator
+SCRATCH_QUOTA=$(awk '{for (i=1; i<=NF; i++) {printf "%s%s", $i, (i<NF) ? ", " : "\n"}}' <<< "$SCRATCH_QUOTA")
+#parses it into json format
+SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
+OUT='{"data":['${SCRATCH_QUOTA}']}'
 
-    SCRATCH_QUOTA=$(mount | grep -qw scratch && mmlsquota --block-size 1K -u $USER scratch:root | tail -n 1);
-    SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/scratch", $4, $6, $10, $12}' <<< $SCRATCH_QUOTA);
-    SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
-fi 
-
-OUT='{ "data": ['${HOME_QUOTA}', '${SCRATCH_QUOTA}']}'
-echo
-echo
 echo $OUT

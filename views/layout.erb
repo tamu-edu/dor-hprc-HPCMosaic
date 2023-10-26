@@ -23,14 +23,14 @@
   </script>
 </head>
 
-<body>
+<body style=" background-color:#D6D3C4">
 
   <header>
     <!-- Image and text -->
-    <nav class="navbar navbar-dark" style="background-color: #500000; font-family: 'Open Sans'; font-weight: 700;">
+    <nav class="navbar navbar-dark" style=" background-color:#500000 ;font-family: 'Open Sans'; font-weight: 700;height: 7.5rem">
 
       <a class="navbar-brand" href="<%= settings.home_page %>">
-        <img src="<%= url("/images/HPRC-Identity-ExternalLeft-Dark.svg") %>" width="200"
+        <img src="<%= url("/images/HPRC-Identity-ExternalLeft-Dark.svg") %>" width="350"
           class="d-inline-block align-top" alt="">
       </a>
       <a class="navbar-brand mx-auto" href="<%= settings.dashboard_url %>">
@@ -44,9 +44,16 @@
         <button type="button" class="btn btn-dark ml-2 navbar-button" class="nav-link" data-toggle="modal"
           data-target="#requestSoftwareModal">Request Software</button>
       </div>
+      <%#
+      <div class="nav-item pull-right">
+      <button type="button" class="btn btn-dark ml-2 navbar-button" class="nav-link" data-toggle="modal"
+        data-target="#requestGuidedHelpModal">Guided Help Request </button>
+      </div>
+      %>
 
       <%== erb :"_software_request_form" %>
       <%== erb :"_help_request_form" %>
+      <%== erb :"_guided_help_request_form" %>
     </nav>
   </header>
   <%# here we load some constants that are read from our config file (this is a hack) %>
@@ -86,11 +93,13 @@
   <script type="text/javascript" src="<%= url("/chartjs-2.9.3/Chart.bundle.min.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/cluster_utility.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/quota.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/custom/js/group.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/job_management.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/allocations.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/requests.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/job_composer.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/quota_request.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/custom/js/guided_requests.js") %>"></script>
 </body>
 
 </html>

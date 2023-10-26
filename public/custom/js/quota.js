@@ -7,7 +7,37 @@ function colorize_percentage_value(percent) {
     return `${percent} %`.fontcolor('orange');
   }
 }
+function convertStorageToBytes(storage) {
+  const units = {
+    K: 1024,
+    M: 1024 * 1024,
+    G: 1024 * 1024 * 1024,
+    T: 1024 * 1024 * 1024 * 1024, // Add terabyte unit
+    // Add more units as needed (P, E, etc.)
+  };
+  const storageStr = storage.replace('*', '');
+  const match = storageStr.match(/^(\d+(\.\d+)?)\s*([KMGT]?)$/);
+  if (!match) {
+    throw new Error(`Invalid storage format: ${storageStr}`);
+  }
 
+  const value = parseFloat(match[1]);
+  const unit = match[3] || 'M'; // Default to MB if no unit is specified
+
+  if (!(unit in units)) {
+    throw new Error(`Invalid storage unit: ${unit}`);
+  }
+
+  return value * units[unit];
+}
+function formatStorageValue(usageStr, limitStr) {
+  const usageBytes = convertStorageToBytes(usageStr);
+  const limitBytes = convertStorageToBytes(limitStr);
+
+  const percent = (usageBytes / limitBytes) * 100;
+  return `${usageStr}<br/>(${colorize_percentage_value(percent.toFixed(2))})`;
+
+}
 
 // borrow from this answer: https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
 function formatBytes(bytes, decimals = 2) {
@@ -28,20 +58,54 @@ function formatKBytes(data) {
 }
 
 function generate_file_explorer_path_for_disk(disk_name) {
-  disk_name = disk_name.trim()
-  var disk_path = ""
-  if (disk_name === '/home') {
-    disk_path = document.file_app_url + `/home/${document.username}`;
-  } else if (disk_name == "/scratch") {
-    disk_path = document.file_app_url + `/scratch/user/${document.username}`; 
-  } else {
-    // default is scratch 
-    disk_path = document.file_app_url + `/scratch/user/${document.username}`
+  disk_path = disk_name.trim()
+  disk_name=disk_name.split('/')[1]
+
+  if (disk_name == "scratch" && disk_path.split('/')[2]=='group') {
+      
+      disk_name=disk_path.split('/').slice(2).join('/');
   }
 
-  return `<a target="_blank" href="${disk_path}">${disk_name}</a>`
+  return `<a target="_blank" style="color:#003C71;font-weight: bold;text-decoration:underline" href="${document.file_app_url + disk_path}">${disk_name}</a>`
 
 }
+var quotalimits={}
+var filelimits={}
+var fileusage={}
+var quotausage={}
+function check_button(disk_name) {
+  
+  var disk=disk_name
+  
+  var disk_name = disk_name.split('/')[1]
+  if (disk_name == "home") {
+    return '';
+  }
+  
+  return `<button type="button" class="btn btn-primary maroon-button" data-toggle="modal" data-target="#requestQuotaModal" onclick="updateQuotaOnGroupClick('${disk}')" >Request Quota Increase</button>`;
+}
+function updateQuotaOnGroupClick(group) {
+  
+  document.getElementById("current_quota").value = formatBytes(convertStorageToBytes(quotalimits[group]));
+  document.getElementById("current_file_limit").value = filelimits[group];
+  usage=convertStorageToBytes(quotausage[group])
+  $("#current_used_disk_quota").val(formatBytes(usage));
+  $("#current_used_file").val(fileusage[group]);
+  $("#disk_name").val(group);
+  // if(group.split('/')[1]=="scratch" && group.split('/')[2]=='group'){
+  // $("#disk_name").val(group.split('/')[3]);}
+  // if(group.split('/')[1]=="scratch" && group.split('/')[2]=='user'){
+  //   $("#disk_name").val(group.split('/')[1]);}
+
+}
+// $(document).ready(function() {
+//   // Event delegation to capture clicks on dynamically added buttons
+//   $('body').on('click', '.maroon-button', function() {
+//     $(this).css('background-color', 'white');
+//     $(this).css('color', 'maroon');
+//   });
+
+// });
 
 function populate_quota() {
   $('#quota_table').DataTable({
@@ -64,25 +128,39 @@ function populate_quota() {
       {
         "data": "disk_usage", "sClass":  "text-right",
         render: function (data, type, row) {
-          percent = (row.disk_usage / row.disk_limit) * 100
-          return `${formatKBytes(data)} (${colorize_percentage_value(percent.toFixed(2))})`;
+          return formatStorageValue(row.disk_usage, row.disk_limit)
         }
       },
       {
         "data": "disk_limit", "sClass":  "text-right",
-        render: formatKBytes
+        // render: formatKBytes
       },
 
       {
         "data": "file_usage", "sClass":  "text-right",
         render: function (data, type, row) {
-          percent = (row.file_usage / row.file_limit) * 100
-          return `${data} (${colorize_percentage_value(percent.toFixed(2))})`;
+          
+          percent = (parseInt(row.file_usage ,10)/ row.file_limit) * 100
+         
+          return `${Number(data).toLocaleString()}<br/>(${colorize_percentage_value(percent.toFixed(2))})`;
         }
       },
       {
         "data": "file_limit", "sClass":  "text-right",
+
+        render: function (data, type, row) {
+          
+         
+          return `${Number(data).toLocaleString()}`;
+        }
+  
       },
+      {
+        "data": "null",
+        "render": function (data, type, row,meta ) {
+          return check_button(row['name'])
+        },
+      }
     ]
   });
 }
@@ -93,10 +171,21 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
     function sendData() {
       const XHR = new XMLHttpRequest();
 
+      
+      document.getElementById('justification-field').value="\n"+"Is the PI aware of this request?"+"\n"+
+                                                              document.getElementById('justification-field').value+"\n"+
+                                                              "What data is stored with the requested quota?"+"\n"+
+                                                              document.getElementById('justification-field1').value+"\n"+
+                                                              "What job requires this quota increase?"+"\n"+
+                                                              document.getElementById('justification-field2').value+"\n"+
+                                                              "What is the input/output size of the job?"+"\n"+
+                                                              document.getElementById('justification-field3').value+"\n"+
+                                                              "What is your long-term storage plan for your data after the quota increase expires?"+"\n"+
+                                                              document.getElementById('justification-field4').value
+      // var response = "";
+      
       // Bind the FormData object and the form element
       const FD = new FormData(form);
-      // var response = "";
-
       // Define what happens on successful data submission
       XHR.addEventListener("load", function (event) {
         // response = event.target.responseText;
@@ -171,15 +260,22 @@ function setup_quota_request_form(quota_request_endpoint) {
     var quotas = data['data'];
     // quotas = quotas.filter(quota => quota["name"] === '/scratch');
     var scratch_quota = null;
-
+    quotalimits = {};
+    filelimits = {};
+    fileusage={}
+    quotausage={}
     quotas.forEach(quota => {
       disk_name = quota["name"].trim();
-      
-      if (disk_name === '/scratch') {
+      disk=disk_name.split('/')[1]
+      quotalimits[disk_name]=quota.disk_limit
+      filelimits[disk_name]=quota.file_limit
+      fileusage[disk_name]=quota.file_usage
+      quotausage[disk_name]=quota.disk_usage
+      if (disk == "scratch" && disk_name.split('/')[2]=='user') {
+   
         scratch_quota = quota;
       }
     });
-
     if (scratch_quota === null) {
       console.error("Cannot fetch scratch quota");
       return;
@@ -190,13 +286,17 @@ function setup_quota_request_form(quota_request_endpoint) {
     if (current_disk_quota === null) {
       return;
     }
-    current_disk_quota.value = formatKBytes(scratch_quota["disk_limit"]);
 
+    limit=convertStorageToBytes(scratch_quota["disk_limit"])
+    current_disk_quota.value = formatBytes(limit);
+   
     var current_file_limit = document.getElementById("current_file_limit");
     current_file_limit.value = scratch_quota["file_limit"];
 
     // invisible form components (needs this for RT email)
-    $("#current_used_disk_quota").val(formatKBytes(scratch_quota["disk_usage"]));
+
+    usage=convertStorageToBytes(scratch_quota["disk_usage"])
+    $("#current_used_disk_quota").val(formatBytes(usage));
     $("#current_used_file").val(scratch_quota["file_usage"]);
 
   });
