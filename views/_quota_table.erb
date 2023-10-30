@@ -118,7 +118,11 @@
           <div class="md-form mb-2" style="display: none;">
             <input type="hidden" id="disk_name" name='directory' class="form-control validate">
           </div>
-
+          <div class="md-form mb-2" >
+            <label>Email Id</label>
+            <input type="text" id="email" name='email' class="form-control validate">
+          </div>
+          
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="current_quota">Current Quota</label>
             <i class="fas fa-user prefix grey-text"></i>
@@ -225,7 +229,11 @@
           <i class="fas fa-user prefix grey-text"></i>
           <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>" readonly>
           </div>
-
+          <br/>
+          <div class="md-form mb-2" >
+            <label>Email Id</label>
+            <input type="text" id="email" name='email' class="form-control validate">
+          </div>
           <div class="md-form mb-2">
 	        <p> Type of Group(Required) </p>
               <input type="radio"  name="new_group" value="True" onclick=checkGroup(value) >New Group
