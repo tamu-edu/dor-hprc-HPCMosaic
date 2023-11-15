@@ -48,6 +48,6 @@ function setup_request_sender(request_endpoint, form_id, modal_id) {
     
     setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");
     
-    setup_request_sender(HELP_REQUEST_ENDPOINT, "modalHelpRequestForm", "#requestHelpModal");
+    // setup_request_sender(HELP_REQUEST_ENDPOINT, "modalHelpRequestForm", "#requestHelpModal");
 
 })()
