@@ -112,7 +112,7 @@ function checkAction() {
         
 
         // Set the placeholder text and display the input field
-        inputField.querySelector('input').setAttribute('placeholder', placeholderText);
+        inputField.querySelector('textarea').setAttribute('placeholder', placeholderText);
         inputField.style.display = 'block';
     
 }
