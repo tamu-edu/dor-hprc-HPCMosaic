@@ -94,7 +94,7 @@ def job_log(args):
     # since this is trusted code, should be fine
     cmd = 'scontrol show jobid ' + job_id + '| grep StdOut | cut -d"=" -f2'
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    log_file_path = ps.communicate()[0].strip()
+    log_file_path = ps.communicate()[0].strip().decode(‘utf-8’) 
 
     if os.path.exists(log_file_path):
         last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
@@ -111,7 +111,7 @@ def job_error(args):
     # since this is trusted code, should be fine
     cmd = 'scontrol show jobid ' + job_id + '| grep StdErr | cut -d"=" -f2'
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    log_file_path = ps.communicate()[0].strip()
+    log_file_path = ps.communicate()[0].strip().decode(‘utf-8’) 
 
     if os.path.exists(log_file_path):
         last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
