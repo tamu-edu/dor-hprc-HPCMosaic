@@ -64,7 +64,7 @@ def WriteLog(request_type, body)
 end
 
 def ExtractEmail()
-	if "#{settings.cluster_name}" == "Aces"
+	if "#{settings.cluster_name}" == "ACES"
 		email = `grep $USER /scratch/group/hprc/access/aces_users.csv | cut -d";" -f4`
 	elsif "#{settings.cluster_name}" == "Launch"
 		email = `grep $USER /scratch/group/hprc/access/launch_users.csv | cut -d";" -f4`
