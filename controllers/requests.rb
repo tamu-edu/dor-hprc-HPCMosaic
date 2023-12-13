@@ -63,9 +63,21 @@ def WriteLog(request_type, body)
     File.write("logs/#{log_file_name}", body, mode: "a")
 end
 
+def ExtractEmail()
+	if "#{settings.cluster_name}" == "Aces"
+		email = `grep $USER /scratch/group/hprc/access/aces_users.csv | cut -d";" -f4`
+	elsif "#{settings.cluster_name}" == "Launch"
+		email = `grep $USER /scratch/group/hprc/access/launch_users.csv | cut -d";" -f4`
+	else
+		email = ENV["USER"] + "@tamu.edu"	
+	end     
+	email = email.gsub("\n",'')
+end
+
 def HandleRequest(params)
 	begin
 		params["user"] = ENV["USER"]
+		params["email"] = ExtractEmail()
         request_type = params["request_type"]
         subject, body = GenerateEmailBody(params)
         WriteLog(params["request_type"], body)
