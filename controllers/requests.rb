@@ -9,6 +9,31 @@ require "sinatra/config_file"
 require 'net/http'
 require 'json'
 
+
+def WriteLog(request_type, body)
+    log_file_name = request_type.downcase() + "_log.txt"
+        log_file_name.gsub!(/\s/,"_")
+    File.write("logs/#{log_file_name}", body, mode: "a")
+    # add a new line
+    #File.write("logs/#{log_file_name}", "\n", mode: "a")
+end
+
+def WriteErrorLog(request_type, body)
+    error_file_name = request_type.downcase() + "_error.txt"
+        error_file_name.gsub!(/\s/,"_")
+    File.write("logs/#{error_file_name}", body, mode: "a")
+    # add a new line
+    #File.write("logs/#{log_file_name}", "\n", mode: "a")
+end
+
+def WriteDebugLog(request_type, body)
+    debug_file_name = request_type.downcase() + "_debug.txt"
+        debug_file_name.gsub!(/\s/,"_")
+    File.write("logs/#{debug_file_name}", body, mode: "a")
+    # add a new line
+    #File.write("logs/#{log_file_name}", "\n", mode: "a")
+end
+
 def GenerateEmailBody(params)
     if params["request_type"] == "Software"
         newRequest = SoftwareRequest.new
@@ -57,11 +82,6 @@ def SendtoHPRCBot(params)
     res
 end
 
-def WriteLog(request_type, body)
-    log_file_name = request_type.downcase() + "_log.txt"
-	log_file_name.gsub!(/\s/,"_")
-    File.write("logs/#{log_file_name}", body, mode: "a")
-end
 
 def ExtractEmail()
 	if "#{settings.cluster_name}" == "ACES"
@@ -72,25 +92,29 @@ def ExtractEmail()
 		email = ENV["USER"] + "@tamu.edu"	
 	end     
 	email = email.gsub("\n",'')
+	email = email.gsub('"','')
+	WriteDebugLog("requests", ENV["USER"] +" : " + email + "\n");
+	email
 end
 
 def HandleRequest(params)
-	begin
-		params["user"] = ENV["USER"]
-		params["email"] = ExtractEmail()
-        request_type = params["request_type"]
-        subject, body = GenerateEmailBody(params)
-        WriteLog(params["request_type"], body)
-		res = SendtoHPRCBot(params)
-	rescue => e
-        WriteLog(params["request_type"], e.message)
-        result_msg = SendRequestEmail(subject, body, params["request_type"])
-        result_msg = "An error has occurred. Please email us at #{settings.help_email}"
-	end
-    WriteLog(params["request_type"], "\n------------------------------------------------\n")
-    WriteLog(params["request_type"], params)
-    result_msg
+   params["user"] = ENV["USER"]
+   params["email"] = ExtractEmail()
+   request_type = params["request_type"]
+   begin
+      res  = SendtoHPRCBot(params)
+      WriteLog(params["request_type"],"\n")
+      WriteLog(params["request_type"], params )
+      WriteLog(params["request_type"], "\n" )
+      result_msg = "Request ticket has been Created and a copy sent through RT" 
+   rescue => e
+      WriteErrorLog(params["request_type"], e.message)
+      subject, body = GenerateEmailBody(params)
+      result_msg = SendRequestEmail(subject, body, params["request_type"])
+   end
+   result_msg
 end
+
 
 class RequestsController < Sinatra::Base
     register Sinatra::ConfigFile
