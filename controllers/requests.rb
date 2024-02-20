@@ -85,9 +85,9 @@ end
 
 def ExtractEmail()
 	if "#{settings.cluster_name}" == "ACES"
-		email = `grep $USER /scratch/group/hprc/access/aces_users.csv | cut -d";" -f4`
+		email = `grep $USER /usr/local/etc/email_mapping.access.login | cut -d":" -f2`
 	elsif "#{settings.cluster_name}" == "Launch"
-		email = `grep $USER /scratch/group/hprc/access/launch_users.csv | cut -d";" -f4`
+		email = `grep $USER /usr/local/etc/email_mapping.access.login | cut -d":" -f2`
 	else
 		email = ENV["USER"] + "@tamu.edu"	
 	end     
