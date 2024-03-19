@@ -176,7 +176,7 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
                                                               document.getElementById('justification-field').value+"\n"+
                                                               "What data is stored with the requested quota?"+"\n"+
                                                               document.getElementById('justification-field1').value+"\n"+
-                                                              "What job requires this quota increase?"+"\n"+
+                                                              "Briefly describe the research project that will be supported by the requested storage?"+"\n"+
                                                               document.getElementById('justification-field2').value+"\n"+
                                                               "What is the input/output size of the job?"+"\n"+
                                                               document.getElementById('justification-field3').value+"\n"+
