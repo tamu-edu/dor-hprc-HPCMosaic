@@ -136,7 +136,7 @@ function show_job_log(job_id) {
   req.onload = function () {
     hide_global_loading_indicator();
     show_log_modal(job_id, req.response);
-    
+
   };
 
   req.onerror = function () {
@@ -425,7 +425,7 @@ function insert_job_details_modal(job) {
                         <th># Cores</th>
                     </tr>
               </thead>
-    
+
               <tbody>
                 <tr>
                   <td>${job.id}</td>
@@ -488,15 +488,15 @@ function load_completed_job_table() {
   request.open('GET', allocation_url);
   request.responseType = 'json';
   request.send();
-  
+
   var completed_table = init_completed_table();
-  
+
   request.onload = function () {
     const data = request.response;
     populate_completed_job_table(data, completed_table);
     // toggle_refresh_job_table_loading_spinner(false);
   }
-  
+
   request.onerror = function () {
     alert("Failed to fetch your jobs details. Please try again later.");
   }
@@ -525,10 +525,75 @@ function toggle_refresh_job_table_loading_spinner(show) {
   }
 }
 
+function init_sinfo_table() {
+  var sinfo_table = $('#sinfo_table').DataTable({
+    "destroy": true,
+    "scrollY": "200px",
+    "scrollCollapse": false,
+    "paging": false,
+    "searching": false,
+    "info": false,
+    "processing": true,
+    "columns": [{
+      "data": "queue",
+      render: function(data, type, row) {
+        if (row.avail === "up") {
+          return '<span style="background-color: green; color: white; display: inline-block; width: 100%;">' + data.replace(/\*$/, '') + '</span>';
+        } else {
+          return '<span style="background-color: red; color: white">' + data.replace(/\*$/, '') + '</span>';
+        }
+      }
+    },
+    {
+      "data": "nodes_avail",
+      render: function(data, type, row) {
+        return data + " (total " + row.nodes_total + ")";
+      }
+
+    },
+    {
+      "data": "CPU_avail",
+      render: function(data, type, row) {
+        return data + " (total " + row.CPU_total + ")";
+      }
+    }
+    ],
+    "language": {
+      "emptyTable": "No data available"
+    }
+  });
+  return sinfo_table;
+}
+
+function populate_sinfo_table(json, table) {
+  table.clear();
+
+  table.rows.add(json).draw();
+}
+
+function load_sinfo_table() {
+  let allocation_url = document.dashboard_url + "/sinfo";
+  let request = new XMLHttpRequest();
+  request.open('GET', allocation_url);
+  request.responseType = 'json';
+  request.send();
+
+  var sinfo_table = init_sinfo_table();
+
+  request.onload = function () {
+    const data = request.response;
+    populate_sinfo_table(data, sinfo_table);
+  }
+
+  request.onerror = function () {
+    alert("Failed to fetch cluster details. Please try again later.");
+  }
+}
 
 
 
 (() => {
   load_job_table();
   load_completed_job_table();
+  load_sinfo_table();
 })()

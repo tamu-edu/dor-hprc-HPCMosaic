@@ -20,12 +20,17 @@ class JobsController < Sinatra::Base
         driver_path = "#{driver_scripts_location}/#{driver_name}"
     end
 
+    def command(driver_name)
+        driver_scripts_location = settings.driver_scripts_path
+        driver_path = "#{driver_name}"
+    end
+
     get '/jobs/list' do
         jobs_command =  driver_command('jobs')
         stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -l")
         if status.success?
             return stdout_str
-        else  
+        else
             return stderr_str
         end
     end
@@ -39,6 +44,26 @@ class JobsController < Sinatra::Base
             return stderr_str
         end
     end
+
+    get '/sinfo' do
+        stdout_str, stderr_str, status = Open3.capture3("/sw/local/bin/retrieve_sinfo")
+        if status.success?
+            return stdout_str
+        else
+            return stderr_str
+        end
+    end
+
+    get '/jobs/:start/:ending/completed' do |start, ending|
+        jobs_command =  command('/sw/local/bin/retrieve_completed_jobs.sh')
+        stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} #{start} #{ending}")
+        if status.success?
+            return stdout_str
+        else
+            return stderr_str
+        end
+    end
+
 
     get '/jobs/:job_id/utilization' do |job_id|
 
@@ -74,7 +99,7 @@ class JobsController < Sinatra::Base
         stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -o #{job_id} #{n_lines}")
         if status.success?
             return stdout_str
-        else  
+        else
             return stderr_str
         end
     end
@@ -89,7 +114,7 @@ class JobsController < Sinatra::Base
         stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -e #{job_id} #{n_lines}")
         if status.success?
             return stdout_str
-        else  
+        else
             return stderr_str
         end
     end
@@ -98,10 +123,10 @@ class JobsController < Sinatra::Base
         # No error checking (good luck)
         jobs_command = driver_command('jobs')
         stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -k #{job_id}")
-    
+
         if status.success?
             return stdout_str
-        else  
+        else
             return stderr_str
         end
     end
