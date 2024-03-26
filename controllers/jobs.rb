@@ -54,17 +54,6 @@ class JobsController < Sinatra::Base
         end
     end
 
-    get '/jobs/:start/:ending/completed' do |start, ending|
-        jobs_command =  command('/sw/local/bin/retrieve_completed_jobs.sh')
-        stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} #{start} #{ending}")
-        if status.success?
-            return stdout_str
-        else
-            return stderr_str
-        end
-    end
-
-
     get '/jobs/:job_id/utilization' do |job_id|
 
         jobs_command =  driver_command('jobs')
