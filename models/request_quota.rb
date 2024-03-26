@@ -50,7 +50,7 @@ class QuotaRequest
                 "#{justification1}\n"\
                 "What data is stored with the requested quota?\n"\
                 "#{justification2}\n"\
-                "What job requires this quota increase?\n"\
+                "Briefly describe the research project that will be supported by the requested storage?\n"\
                 "#{justification3}\n"\
                 "What is the input/output size of the job?\n"\
                 "#{justification4}\n"\
