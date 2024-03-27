@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <div class="row"> 
+    <div class="row">
       <div class="col" style="width: 50%; display:inline; float: left; position: relative">
         <canvas id="node_utilization_chart"></canvas>
       </div>
@@ -37,16 +37,17 @@
 
     <div class="row mt-3">
       <div class="col">
-        <table id="job_stats_table" class="table">
-          <thead class="maroon-header">
+        <div class="card-header maroon-header">
+        Queue Availability
+        </div>
+        <table id="sinfo_table" class="table">
+          <thead>
             <tr>
-              <td>Jobs</td>
-              <td></td>
+              <th>Queue</th>
+              <th>Nodes Avail</th>
+              <th>CPU Avail</th>
             </tr>
           </thead>
-          <tbody>
-
-          </tbody>
         </table>
       </div>
     </div>
