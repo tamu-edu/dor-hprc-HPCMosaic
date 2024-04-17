@@ -45,6 +45,8 @@ def GenerateEmailBody(params)
         newRequest = GroupRequest.new
     elsif params["request_type"] == "GuidedHelp"
         newRequest = GuidedHelpRequest.new
+    elsif params["request_type"] == "JobHelp"
+        newRequest = JobHelpRequest.new
     end
     newRequest.generate_email(params)
 end
@@ -88,6 +90,8 @@ def ExtractEmail()
 		email = `grep $USER /usr/local/etc/email_mapping.access.login | cut -d":" -f2`
 	elsif "#{settings.cluster_name}" == "Launch"
 		email = `grep $USER /usr/local/etc/email_mapping.access.login | cut -d":" -f2`
+	elsif "#{settings.cluster_name}" == "FASTER-ACCESS"
+	       email =  `grep $USER /usr/local/etc/email_mapping.xsede.login | cut -d":" -f2`	
 	else
 		email = ENV["USER"] + "@tamu.edu"	
 	end     
@@ -145,6 +149,12 @@ class RequestsController < Sinatra::Base
     post '/request/guidedhelp' do
 		params["request_type"] = "GuidedHelp"
         result_msg = HandleRequest(params)
+	end
+    post '/request/jobhelp' do
+        
+		params["request_type"] = "JobHelp"
+        result_msg = HandleRequest(params)
+        result_msg
 	end
     result_msg
 end
