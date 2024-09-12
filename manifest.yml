@@ -1,4 +1,5 @@
-name: [cluster-name] Dashboard
-description: [cluster-name] utilites
-icon: fa://columns
+---
+name: Interactive Dashboard
 category: Dashboard
+description: Dashboard - React & Flask
+icon: ''

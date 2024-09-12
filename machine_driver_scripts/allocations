@@ -1,4 +1,4 @@
-#!/bin/python2
+#!/bin/python
 import subprocess
 import json
 import os
@@ -19,7 +19,7 @@ def alloc_from_list(data):
     return Allocation(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
 
 def list_allocations(args):
-    output=subprocess.check_output(["/sw/local/bin/myproject", "list"])
+    output=subprocess.check_output(["/home/slurm/bin/pre_charge", "list"])
     output = output.split('\n')
     output = output[5:] # skip the headers
 
