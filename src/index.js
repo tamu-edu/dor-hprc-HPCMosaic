@@ -1,86 +1,12 @@
 import React, { useState, useRef } from "react";
 import ReactDOM from "react-dom";
-import AddRemoveLayout from "./grid/AddRemoveLayout";
-import { MdAddchart } from "react-icons/md";
-import { DndProvider, useDrag, useDragLayer } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import './style.css';
 import { METRIC_TYPES } from './utils/metricTypes';
-import DragFromOutsideLayout from "./DragFromOutsideLayout";
+import SandboxGrid from "./SandboxGrid";
 
-const DraggableComponent = ({ type, name }) => {
-
-  console.log("In draggable component, element type: ", type);
-  console.log("In draggable component, element name: ", name);
-
-  const [{ isDragging }, drag, preview] = useDrag(() => ({
-    type: type, // Type of component being dragged
-    item: { type }, // Pass the type of the item to the drop handler
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  }));
-
-  const transparentImage = new Image();
-  transparentImage.src =
-    "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-
-  React.useEffect(() => {
-    preview(transparentImage, { offsetX: 0, offsetY: 0 });
-  }, [preview]);
-
-  return (
-    <div
-      ref={drag}
-      className={`bg-gray-200 p-4 rounded-md cursor-pointer ${
-        isDragging ? "opacity-50" : ""
-      }`}
-      style={{ marginBottom: "10px" }}
-    >
-      {name}
-    </div>
-  );
-};
-
-
-// Popup for adding elements
-// Popup for adding elements
-const AddElementPopup = ({ isOpen, onClose }) => {
-
-  React.useEffect(() => {
-    if (isOpen) {
-      // Add margin to the body when the popup is open
-      document.body.style.paddingBottom = '300px'; // Adjust this value based on the popup height
-    } else {
-      // Remove the margin when the popup is closed
-      document.body.style.paddingBottom = '0px';
-    }
-
-    return () => {
-      // Clean up when component unmounts or popup closes
-      document.body.style.paddingBottom = '0px';
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-6 rounded-t-md">
-      <h3 className="text-xl font-bold mb-4">Add Elements</h3>
-      <DraggableComponent type={METRIC_TYPES.NODE_UTILIZATION} name="Node Utilization" />
-      <DraggableComponent type="chart" name="📊 Radial Bar Chart" />
-      <DraggableComponent type="text" name="📝 Text Block" />
-      <DraggableComponent type="image" name="🖼️ Image Block" />
-      <button onClick={onClose} className="mt-4 p-2 bg-red-500 text-white">
-        Close
-      </button>
-    </div>
-  );
-};
-
-
-
-function App() {
+const App = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const layoutRef = useRef();
 
@@ -97,81 +23,12 @@ function App() {
   };
 
   return (
-    <div>
-
-      <DragFromOutsideLayout/>
-    
     <DndProvider backend={HTML5Backend}>
       <div className="bg-gray-50 p-10 min-h-screen">
-        <nav className="flex rounded-xl justify-between items-center pl-7 pr-7 shadow-sm border-solid border-gray-300 bg-white">
-        <div className="flex items-center">
-        <svg className="w-32 h-32" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080">
-            <defs>
-              <style>{`
-                .cls-1 {
-                  fill: #b1b3b6;
-                }
-
-                .cls-1, .cls-2, .cls-3 {
-                  stroke-width: 0px;
-                }
-
-                .cls-2 {
-                  fill: #5d0025;
-                }
-
-                .cls-3 {
-                  fill: #fff;
-                }
-              `}
-              </style>
-            </defs>
-            <rect class="cls-2" x="201.28" y="222.57" width="629.79" height="634.79"/>
-            <polygon class="cls-3" points="747.44 475.22 700.67 475.22 697.97 475.22 696.75 477.67 662.84 548.27 628.8 477.63 627.61 475.22 624.92 475.22 579.71 475.22 575.44 475.22 575.44 479.52 575.44 503.59 575.44 507.9 579.71 507.9 587.44 507.9 587.44 609.01 579.08 609.01 574.78 609.01 574.78 613.32 574.78 637.39 574.78 641.69 579.08 641.69 629.85 641.69 634.15 641.69 634.15 637.39 634.15 613.32 634.15 609.01 629.85 609.01 621.07 609.01 621.07 537.25 658.99 615.45 662.84 623.43 666.76 615.45 705.07 537.08 705.07 609.01 696.71 609.01 692.37 609.01 692.37 613.32 692.37 637.39 692.37 641.69 696.71 641.69 747.44 641.69 751.75 641.69 751.75 637.39 751.75 613.32 751.75 609.01 747.44 609.01 738.7 609.01 738.7 507.9 747.44 507.9 751.75 507.9 751.75 503.59 751.75 479.52 751.75 475.22 747.44 475.22"/>
-            <path class="cls-3" d="M452.6,608.91h-13.51l-43.95-101.47h8.47v-32.82h-70.54v32.71h9.73l-43.91,101.47h-18.3v32.71h64.03v-32.71h-9.31l7.31-16.9h52.83l7.28,16.9h-9.83v32.71h64.06v-32.71l-4.37.11ZM381.29,559.33h-24.49l12.25-28.38,12.25,28.38Z"/>
-            <polygon class="cls-3" points="693.7 348.25 337.49 348.25 332.56 348.25 332.56 353.18 332.56 448.35 332.56 453.28 337.49 453.28 399 453.28 403.93 453.28 403.93 448.35 403.93 413.01 479.93 413.01 479.93 663.77 444.55 663.77 439.65 663.77 439.65 668.7 439.65 730.21 439.65 735.15 444.55 735.15 586.6 735.15 591.54 735.15 591.54 730.21 591.54 668.7 591.54 663.77 586.6 663.77 551.3 663.77 551.3 413.01 626.84 413.01 626.84 447.89 626.84 452.83 631.77 452.83 693.7 452.83 698.64 452.83 698.64 447.89 698.64 353.18 698.64 348.25 693.7 348.25"/>
-            <polygon class="cls-1" points="561.83 693.06 576.88 677.56 576.88 720.03 561.83 705.65 561.83 693.06"/>
-            <polygon class="cls-1" points="536.78 678.68 521.7 693.51 521.7 383.45 536.78 398.46 536.78 678.68"/>
-            <polygon class="cls-1" points="362.72 377.99 347.25 362.94 676.45 362.94 657 377.99 362.72 377.99"/>
-            <polygon class="cls-1" points="684.43 439.04 669.39 424.66 669.39 386.38 684.43 370.92 684.43 439.04"/>
-            <path class="cls-2" d="M853.46,844.8c0-6.98,5.65-12.63,12.63-12.63s12.63,5.65,12.63,12.63-5.65,12.63-12.63,12.63-12.63-5.65-12.63-12.63h0ZM875.64,844.8c-.35-5.26-4.9-9.25-10.16-8.9-5.26.35-9.25,4.9-8.9,10.16.33,5.01,4.49,8.91,9.51,8.92,5.35-.07,9.63-4.47,9.56-9.82,0-.12,0-.24-.01-.36ZM861.23,837.59h5.32c3.5,0,5.28,1.19,5.28,4.2.2,1.92-1.2,3.64-3.12,3.84-.21.02-.42.02-.62,0l3.85,6.26h-2.73l-3.74-6.23h-1.61v6.12h-2.66l.04-14.21ZM863.88,843.71h2.34c1.57,0,2.94-.21,2.94-2.13s-1.54-1.96-2.9-1.96h-2.38v4.09Z"/>
-          </svg>
-          <div className="text-2xl font-semibold">
-            Grace Dashboard
-          </div>
-        </div>
-        </nav>
-
-        <div className="pt-6">
-          <div className="flex justify-between items-center mb-4">
-            {/* Open popup on Add Element click */}
-            <button
-              onClick={openPopup}
-              className="flex items-center rounded-xl p-5 font-semibold text-lg shadow-sm border-solid border-gray-300 bg-white"
-            >
-              <MdAddchart className="text-4xl pr-3" />
-              Add Element
-            </button>
-            <button className="flex items-center rounded-xl p-5 font-semibold text-lg shadow-sm border-solid border-gray-300 bg-white">
-              Change Layout
-            </button>
-          </div>
-
-          {/* AddRemoveLayout */}
-          <div className="mt-5 p-10 rounded-xl border-solid border-2 border-slate-200">
-            <AddRemoveLayout
-              onLayoutChange={handleLayoutChange}
-              ref={layoutRef}
-            />
-          </div>
-          
-          {/* Add Element Popup */}
-          <AddElementPopup isOpen={isPopupOpen} onClose={closePopup} />
-        </div>
+        <SandboxGrid/>
       </div>
     </DndProvider>
-    </div>
   );
-}
+};
 
 ReactDOM.render(<App />, document.getElementById("root"));

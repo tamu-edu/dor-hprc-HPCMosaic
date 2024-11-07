@@ -18,6 +18,18 @@ module.exports = {
         include: [path.resolve(__dirname, "src")],
         use: ["babel-loader"],
       },
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'images/', // Optional: Specify a custom output directory
+            },
+          },
+        ],
+      }
     ],
   },
 };
