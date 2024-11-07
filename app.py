@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, jsonify
 from flask_cors import CORS
 from views.job_composer import job_composer
+from views.api import api
 import yaml
 import os
 import sqlite3
@@ -32,7 +33,7 @@ config = load_config()['development'] if env == 'development' else load_config()
 app.config.update(config)
 app.config['user'] = os.environ['USER']
 
-
+app.register_blueprint(api, url_prefix='/api')
 app.register_blueprint(job_composer, url_prefix="/jobs/composer")
 
 @app.route("/")
