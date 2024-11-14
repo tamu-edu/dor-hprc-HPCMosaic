@@ -3,12 +3,16 @@ import React from 'react';
 import BarCard from '../Cards/BarCard';
 import LineCard from '../Cards/LineCard';
 import PieCard from '../Cards/PieCard';
+import NodeUtilizationCard from '../Cards/NodeUtilizationCard';
+import PyVenvManagerCard from '../Cards/PyVenvManagerCard';
 
 const Sidebar = () => {
     const list = [
         { name: "Line", id: 1 },
         { name: "Bar", id: 2 },
-        { name: "Pie", id: 3 }
+        { name: "Pie", id: 3 },
+        { name: "Node Utilization", id: 4 },
+        { name: "PyVenvManager", id: 5 }
     ];
 
     return (
@@ -22,6 +26,10 @@ const Sidebar = () => {
                             return <BarCard key={ele.id} name={ele.name} _id={ele.id} />;
                         case "Pie":
                             return <PieCard key={ele.id} name={ele.name} _id={ele.id} />;
+                        case "Node Utilization":
+                            return <NodeUtilizationCard key={ele.id} name={ele.name} _id={ele.id} />;
+                        case "PyVenvManager":
+                            return <PyVenvManagerCard key={ele.id} name={ele.name} _id={ele.id} />;
                         default:
                             return null;
                     }

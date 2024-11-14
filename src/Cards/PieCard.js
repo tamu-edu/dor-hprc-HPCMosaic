@@ -2,6 +2,7 @@ import React from 'react'
 import { useDrag } from 'react-dnd';
 import {ItemTypes} from '../Components/ItemTypes'
 import Pie from '../Images/pie.jpg'
+
 const PieCard=(props)=>{
     const [{ isDragging }, drag] = useDrag({
         type: ItemTypes.CARD, // Ensure this is correctly defined

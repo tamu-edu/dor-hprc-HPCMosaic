@@ -14,8 +14,8 @@ const NodeUtilizationCard=(props)=>{
         }),
     });
     return(
-        <div  style={{color:"white",margin:10}}>
-            <p className="p-4 shadow-md" ref={drag} width={230} height={180}>Node Utilization</p>
+        <div  style={{color:"black",margin:10}}>
+            <p className="p-4 shadow-md" ref={drag} width={230} height={180}>Partition Information</p>
         </div>
     )
 }

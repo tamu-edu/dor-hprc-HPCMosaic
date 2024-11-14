@@ -4,7 +4,8 @@ import { useDrop } from 'react-dnd';
 import LineChart from '../Charts/LineChart';
 import BarChart from '../Charts/BarChart';
 import PieChart from '../Charts/PieChart';
-import NodeUtilization from '../Charts/NodeUtilization';
+import PyVenvManager from '../Charts/PyVenvManager';
+import ClusterInfo from '../Charts/ClusterInfo';
 import RGL, { WidthProvider } from "react-grid-layout";
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -27,21 +28,26 @@ const Content = (props) => {
     const [{ isOver }, drop] = useDrop({
         accept: ItemTypes.CARD,
         drop: (item) => {
+            // Dynamically set width and height based on item properties
+            const width = item.name === "Node Utilization" ? 2 : 1;  // Example: wider width for Node Utilization
+            const height = item.name === "Node Utilization" ? 3 : 1; // Example: taller height for Node Utilization
+            
             const newItem = { 
                 name: item.name, 
                 id: item.id, 
                 i: `${row.length}`, 
                 x: row.length % 4, 
                 y: Math.floor(row.length / 4), 
-                w: 1, 
-                h: 1 
+                w: width, 
+                h: height 
             };
+            
             setRow([...row, newItem]);
         },
         collect: (monitor) => ({
             isOver: !!monitor.isOver(),
         }),
-    });
+    });    
 
     // Debounce the props.change function to avoid updating state during render
     const debouncedChange = useCallback(debounce((newRow) => {
@@ -68,8 +74,10 @@ const Content = (props) => {
                 return <BarChart />;
             case "Pie":
                 return <PieChart />;
-            case "NodeUtilization":
-                return <NodeUtilization />;
+            case "Node Utilization":
+                return <ClusterInfo />;
+            case "PyVenvManager":
+                return <PyVenvManager/>;
             default:
                 return <div className="text-center text-red-500">Unknown Chart</div>;
         }
@@ -84,20 +92,23 @@ const Content = (props) => {
                 layout={layout}
                 onLayoutChange={onLayoutChange}
                 onResize={onResize}
-                width={1000}
+                width={"100%"}  // Ensures grid layout takes full container width
+                cols={4}        // Adjust columns to fit your layout needs
                 isBounded={false}
                 isDroppable={true}
                 isResizable={true}
                 isDraggable={true}
                 preventCollision={true}
                 compactType={null}
+                autoSize={true}
                 className="bg-white rounded-lg"
             >
+
                 {row.map((ele, index) => (
                     <div 
                         key={index} 
                         data-grid={ele} 
-                        className="bg-white shadow-lg rounded-md p-4 border border-gray-300 relative"
+                        className="bg-white shadow-lg rounded-md p-4 border border-gray-300 relative h-full w-full"
                     >
                         <button 
                             onClick={() => removeElement(index)} 
@@ -105,7 +116,9 @@ const Content = (props) => {
                         >
                             Remove
                         </button>
-                        {renderChart(ele, index)}
+                        <div className="h-full w-full">  {/* Ensures the child component expands to full height/width */}
+                            {renderChart(ele, index)}
+                        </div>
                     </div>
                 ))}
             </ReactGridLayout>
