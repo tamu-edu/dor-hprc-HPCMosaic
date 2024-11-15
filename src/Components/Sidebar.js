@@ -5,6 +5,7 @@ import LineCard from '../Cards/LineCard';
 import PieCard from '../Cards/PieCard';
 import NodeUtilizationCard from '../Cards/NodeUtilizationCard';
 import PyVenvManagerCard from '../Cards/PyVenvManagerCard';
+import ChatbotCard from '../Cards/ChatbotCard';
 
 const Sidebar = () => {
     const list = [
@@ -12,7 +13,8 @@ const Sidebar = () => {
         { name: "Bar", id: 2 },
         { name: "Pie", id: 3 },
         { name: "Node Utilization", id: 4 },
-        { name: "PyVenvManager", id: 5 }
+        { name: "PyVenvManager", id: 5 },
+        { name: "Chatbot", id: 6 }
     ];
 
     return (
@@ -30,6 +32,8 @@ const Sidebar = () => {
                             return <NodeUtilizationCard key={ele.id} name={ele.name} _id={ele.id} />;
                         case "PyVenvManager":
                             return <PyVenvManagerCard key={ele.id} name={ele.name} _id={ele.id} />;
+                        case "Chatbot":
+                            return <ChatbotCard key={ele.id} name={ele.name} _id={ele.id} />;
                         default:
                             return null;
                     }
