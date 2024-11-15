@@ -4,6 +4,16 @@ This is a [Flask](http://flask.pocoo.org/) app for [the Passenger application se
 
 The app stack consists of Flask, React, and Tailwind CSS.
 
+You will first need to source Node.js to start the app. Use:
+```
+source scl_source enable rh-nodejs14
+```
+
+Make sure you install any dependencies with 
+```
+npm i
+```
+
 To run the app:
 ```
 npm run build
