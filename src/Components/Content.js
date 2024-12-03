@@ -6,6 +6,7 @@ import BarChart from '../Charts/BarChart';
 import PieChart from '../Charts/PieChart';
 import PyVenvManager from '../Charts/PyVenvManager';
 import ClusterInfo from '../Charts/ClusterInfo';
+import Chatbot from '../Charts/Chatbot';
 import RGL, { WidthProvider } from "react-grid-layout";
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -78,6 +79,8 @@ const Content = (props) => {
                 return <ClusterInfo />;
             case "PyVenvManager":
                 return <PyVenvManager/>;
+            case "Chatbot":
+                return <Chatbot/>;
             default:
                 return <div className="text-center text-red-500">Unknown Chart</div>;
         }
