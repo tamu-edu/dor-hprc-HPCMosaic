@@ -23,18 +23,31 @@ def get_sinfo():
 
 @api.route('/get_env', methods=['GET'])
 def get_envs():
-	medataPath = os.path.expandvars("$SCRATCH/virtual_envs/metadata.json")
-	try:
-		with open(metadataPath,'r') as file:
-			metadata = json.load(file)	
-			return jsonify(metadata)
-    except FileNotFoundError as e:
-        error_msg = e.output.decode("utf-8")
-        return jsonify({"error": "There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {error_msg}"})
-    except json.JSONDecodeError as e:
-        error_msg = e.output.decode("utf-8")
-        return jsonify({"error": "The metadata file is corrupted or not in JSON format: {error_msg}"})
-    except Exception as e:
-        error_msg = e.output.decode("utf-8")
-		return jsonify({"error": "There was an unexpected error: {error_msg}"})
-		
+#    metadataPath = os.path.expandvars("$SCRATCH/virtual_envs/metadata.json")
+#    try:
+#        with open(metadataPath,'r') as file:
+#            metadata = json.load(file)  
+#            return jsonify(metadata)
+#    except FileNotFoundError as e:
+#        return jsonify({"error": f"There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"})
+#    except json.JSONDecodeError as e:
+#        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"})
+#    except Exception as e:
+#        return jsonify({"error": f"There was an unexpected error: {str(e)}"})
+    diction = {
+        "environments" : [
+            {
+            "name" : "test1",
+            "python_version": "Python/3.11.5",
+            "GCCcore_version": "GCCcore/13.2.0",
+            "description": ""
+            },
+            {
+            "name" : "two",
+            "python_version": "Python/3.11.5",
+            "GCCcore_version": "GCCcore/13.2.0",
+            "description": ""
+            }
+        ]
+    }      
+    return jsonify(diction)
