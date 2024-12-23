@@ -11,6 +11,7 @@ const PyVenvManager = () => {
   useEffect(() => {
   	const fetchEnvs = async () => {
 		try{
+			console.warn("testing if updates are working")
 			const envResponse = await fetch(`${devUrl}/api/get_env`);
 			if (!envResponse.ok) {
 				throw new Error(`envResponse had an HTTP error status: ${envResponse.status}`)
