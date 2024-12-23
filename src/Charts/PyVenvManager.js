@@ -24,7 +24,7 @@ const PyVenvManager = () => {
 			console.error(`Error fetching environment data: ${error}`);
 		}
 	};
-	console.log(baseUrl);
+	console.log(devUrl);
 	fetchEnvs();
   }, []);
 
