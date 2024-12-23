@@ -11,12 +11,12 @@ const PyVenvManager = () => {
   useEffect(() => {
   	const fetchEnvs = async () => {
 		try{
-			envResponse = await fetch(`${devUrl}/api/get_env`);
+			const envResponse = await fetch(`${devUrl}/api/get_env`);
 			if (!envResponse.ok) {
 				throw new Error(`envResponse had an HTTP error status: ${envResponse.status}`)
 			}
 			console.log(envResponse);
-			envJson = await envResponse.json();
+			const envJson = await envResponse.json();
 
 			setEnvData(envJson.environments);
 			setEnvKeys(Object.keys(envJson.environments[0]));
