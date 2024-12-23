@@ -6,6 +6,7 @@ import yaml
 import os
 import sqlite3
 import re
+import logging
 
 app = Flask(__name__)
 
@@ -32,6 +33,12 @@ def load_config(config_file='config.yml'):
 config = load_config()['development'] if env == 'development' else load_config()['production']
 app.config.update(config)
 app.config['user'] = os.environ['USER']
+
+#Gabriel Floreslovo - added this to check server-side logs bc idk why im getting a 500 error calling a simple api
+logging.basicConfig(filename="flasklog.log", level=logging.DEBUG)
+app.logger.addHandler(logging.StreamHandler())
+app.logger.setLevel(loggong.DEBUG)
+
 
 app.register_blueprint(api, url_prefix='/api')
 app.register_blueprint(job_composer, url_prefix="/jobs/composer")

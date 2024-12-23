@@ -11,13 +11,16 @@ const PyVenvManager = () => {
   	const fetchEnvs = async () => {
 		try{
 			envResponse = await fetch(`${baseUrl}/api/get_env`);
+			if (!envResponse.ok) {
+				throw new Error(`envResponse had an HTTP error status: ${envResponse.status}`)
+			}
 			console.log(envResponse);
 			envJson = await envResponse.json();
 
 			setEnvData(envJson.environments);
 			setEnvKeys(Object.keys(envJson.environments[0]));
 		} catch(error) {
-			console.error("Error fetching environment data: ", error);
+			console.error(`Error fetching environment data: ${error}`);
 		}
 	};
 	console.log(baseUrl);
