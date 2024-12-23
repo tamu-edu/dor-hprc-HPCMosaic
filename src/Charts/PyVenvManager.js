@@ -5,12 +5,13 @@ const PyVenvManager = () => {
   const [envData, setEnvData] = useState(null);
   const [envKeys, setEnvKeys] = useState(null);
 
-  const baseUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
+  const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
+  const devUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
   
   useEffect(() => {
   	const fetchEnvs = async () => {
 		try{
-			envResponse = await fetch(`${baseUrl}/api/get_env`);
+			envResponse = await fetch(`${devUrl}/api/get_env`);
 			if (!envResponse.ok) {
 				throw new Error(`envResponse had an HTTP error status: ${envResponse.status}`)
 			}
