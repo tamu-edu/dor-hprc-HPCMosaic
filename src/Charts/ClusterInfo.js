@@ -4,7 +4,7 @@ const ClusterInfo = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
 
-  const baseUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
+  const baseUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
   
   useEffect(() => {
     fetch(`${baseUrl}/api/sinfo`)
