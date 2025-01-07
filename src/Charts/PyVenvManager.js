@@ -11,55 +11,67 @@ const PyVenvManager = () => {
   useEffect(() => {
   	const fetchEnvs = async () => {
 		try{
-			console.warn("testing if updates are working")
 			const envResponse = await fetch(`${devUrl}/api/get_env`);
 			if (!envResponse.ok) {
 				throw new Error(`envResponse had an HTTP error status: ${envResponse.status}`)
 			}
-			console.log(envResponse);
 			const envJson = await envResponse.json();
+			console.log(envJson.environments[0].GCCcore_version);
 
-			setEnvData(envJson.environments);
-			setEnvKeys(Object.keys(envJson.environments[0]));
+			await setEnvData(envJson.environments);
+			let keysArr = await Object.keys(envJson.environments[0]);
+			let tmp = keysArr[0];
+			keysArr[0] = keysArr[2];
+			keysArr[2] = tmp; // Swap name to the front
+			tmp = keysArr[1];
+			keysArr[1] = keysArr[3];
+			keysArr[3] = tmp; // Swap the description to the back
+			await setEnvKeys(keysArr);
 		} catch(error) {
 			console.error(`Error fetching environment data: ${error}`);
 		}
-	};
+	}
 	console.log(devUrl);
 	fetchEnvs();
+	
   }, []);
 
   return (
-    <div>
-      {!envData && 
-	  <div>
-	  	<h3> Loading... </h3>
+    <div className="p-4 bg-white rounded-lg shadow-lg w-full h-full flex flex-col">
+      {(!envData || !envKeys) && 
+	  <div className="overflow-auto w-full h-full flex-grow">
+	  	<p> Loading... </p>
 	  </div>
 	  }
-	  {envData && 
-	  <div>
-		<table className="table-auto">
-			<thead>
-				<tr>
-					{envKeys.map((column, index) => (
-						<th key={index}> {column} </th>
-					))}
-				</tr>
-			</thead>
-			<tbody>
-				{envData.map((env) => (
-					<tr key={env.name}>
-						<td>{env.name}</td>
-						<td>{env.python_version}</td>
-						<td>{env.GCCcore_version}</td>
-						<td>{env.description}</td>
+	  {(envData && envKeys) && 
+	  <div className="overflow-auto w-full h-full flex-grow">
+	  	<h2 className="text-2xl font-semibold mb-4"> Virtual Env Management </h2>
+			<table className="table-auto w-full border-collapse border border-gray-300">
+				<thead>
+					<tr className="bg-gray-200">
+						{envKeys.map((field, index) => (
+							<th className="border border-gray-300 px-4 py-2"key={index}> {field} </th>
+						))}
 					</tr>
-				))}
-			</tbody>
-		</table>
-	  </div>
-	  }
-    </div>
+				</thead>
+				<tbody>
+					{envData.map((env) => (
+						<tr key={env.name}>
+							<td className="border border-gray-300 px-4 py-2">{env.name}</td>
+							<td className="border border-gray-300 px-4 py-2">{env.python_version}</td>
+							<td className="border border-gray-300 px-4 py-2">{env.GCCcore_version}</td>
+							<td className="border border-gray-300 px-4 py-2">{env.description}</td>
+							<td className="border border-gray-300 px-4 py-2"> 
+								<button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"> 
+									Delete 
+								</button> 
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+	  </div>}
+   </div> 
   )
 }
 

@@ -4,6 +4,7 @@ import sqlite3
 import re
 import os
 from machine_driver_scripts.engine import Engine
+from collections import OrderedDict
 import subprocess
 
 api = Blueprint('api', __name__)
@@ -23,31 +24,34 @@ def get_sinfo():
 
 @api.route('/get_env', methods=['GET'])
 def get_envs():
-#    metadataPath = os.path.expandvars("$SCRATCH/virtual_envs/metadata.json")
-#    try:
-#        with open(metadataPath,'r') as file:
-#            metadata = json.load(file)  
-#            return jsonify(metadata)
-#    except FileNotFoundError as e:
-#        return jsonify({"error": f"There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"})
-#    except json.JSONDecodeError as e:
-#        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"})
-#    except Exception as e:
-#        return jsonify({"error": f"There was an unexpected error: {str(e)}"})
-    diction = {
-        "environments" : [
-            {
-            "name" : "test1",
-            "python_version": "Python/3.11.5",
-            "GCCcore_version": "GCCcore/13.2.0",
-            "description": ""
-            },
-            {
-            "name" : "two",
-            "python_version": "Python/3.11.5",
-            "GCCcore_version": "GCCcore/13.2.0",
-            "description": ""
-            }
-        ]
-    }      
-    return jsonify(diction)
+    envs = str(os.environ)
+    scratch = os.path.expandvars("/scratch/user/$USER")
+    virtual_envs = "virtual_envs/metadata.json"
+    metadataPath = os.path.join(scratch, virtual_envs)
+    try:
+        with open(metadataPath,'r') as file:
+            metadata = json.load(file)  
+            return metadata
+    except FileNotFoundError as e:
+        return jsonify({"error": f"envs: {envs}; Path: {metadataPath}; There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"})
+    except json.JSONDecodeError as e:
+        return jsonify({"error": f"envs: {envs}; Path: {metadataPath}; The metadata file is corrupted or not in JSON format: {str(e)}"})
+    except Exception as e:
+        return jsonify({"error": f"envs: {envs}; Path: {metadataPath}; There was an unexpected error: {str(e)}"})
+#    diction = {
+#        "environments" : [
+#            {
+#           "name" : "test1",
+#            "python_version": "Python/3.11.5",
+#            "GCCcore_version": "GCCcore/13.2.0",
+#            "description": ""
+#            },
+#            {
+#            "name" : "two",
+#            "python_version": "Python/3.11.5",
+#            "GCCcore_version": "GCCcore/13.2.0",
+#            "description": ""
+#            }
+#        ]
+#    }      
+#    return jsonify(diction)
