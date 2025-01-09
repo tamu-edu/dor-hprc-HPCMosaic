@@ -31,27 +31,22 @@ def get_envs():
     try:
         with open(metadataPath,'r') as file:
             metadata = json.load(file)  
-            return metadata
+            return metadata, 200
     except FileNotFoundError as e:
-        return jsonify({"error": f"envs: {envs}; Path: {metadataPath}; There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"})
+        return jsonify({"error": f"There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
     except json.JSONDecodeError as e:
-        return jsonify({"error": f"envs: {envs}; Path: {metadataPath}; The metadata file is corrupted or not in JSON format: {str(e)}"})
+        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
     except Exception as e:
-        return jsonify({"error": f"envs: {envs}; Path: {metadataPath}; There was an unexpected error: {str(e)}"})
-#    diction = {
-#        "environments" : [
-#            {
-#           "name" : "test1",
-#            "python_version": "Python/3.11.5",
-#            "GCCcore_version": "GCCcore/13.2.0",
-#            "description": ""
-#            },
-#            {
-#            "name" : "two",
-#            "python_version": "Python/3.11.5",
-#            "GCCcore_version": "GCCcore/13.2.0",
-#            "description": ""
-#            }
-#        ]
-#    }      
-#    return jsonify(diction)
+        return jsonify({"error": f"There was an unexpected error: {str(e)}"}), 500
+
+@api.route('/delete_env/<envToDelete>', methods=['DELETE'])
+def delete_env(envToDelete):
+	try:
+		script = f"delete_venv"
+		result = subprocess.run([script, envToDelete], check=True, capture_output=True, text=True)
+
+		return jsonify({"message": result.stdout.strip()}), 200
+	except subprocess.CalledProcessError as e:
+		return jsonify({"error": f"Script failed with error: {e.stderr.strip()}"}), 500
+	except Exception as e:
+		return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
