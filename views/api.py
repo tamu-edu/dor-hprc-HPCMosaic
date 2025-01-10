@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, current_app as app
 import json
+from sys import version as python_formatted_version
 import sqlite3
 import re
 import os
@@ -41,12 +42,15 @@ def get_envs():
 
 @api.route('/delete_env/<envToDelete>', methods=['DELETE'])
 def delete_env(envToDelete):
-	try:
-		script = f"delete_venv"
-		result = subprocess.run([script, envToDelete], check=True, capture_output=True, text=True)
-
-		return jsonify({"message": result.stdout.strip()}), 200
-	except subprocess.CalledProcessError as e:
-		return jsonify({"error": f"Script failed with error: {e.stderr.strip()}"}), 500
-	except Exception as e:
-		return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
+    try:
+        if "SCRATCH" not in os.environ:
+            os.environ["SCRATCH"] = os.path.expandvars("/scratch/user/$USER")
+        script = f"/sw/local/bin/delete_venv"
+        result = subprocess.run([script, envToDelete], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+        if result.returncode != 0:
+            raise RuntimeError(f"Error deleting environment: {result.stdout.strip()}")
+        return jsonify({"message": result.stdout.strip()}), 200
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Script failed with error: {e.stdout.strip()}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500

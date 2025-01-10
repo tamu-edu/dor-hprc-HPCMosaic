@@ -7,11 +7,11 @@ const PyVenvManager = () => {
 
   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
   const devUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
-  
+  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
 
   const fetchEnvs = async () => {
 	try {
-		const envResponse = await fetch(`${devUrl}/api/get_env`);
+		const envResponse = await fetch(`${curUrl}/api/get_env`);
 		if (!envResponse.ok) {
 			throw new Error(`envResponse had an HTTP error status: ${envResponse.error}`)
 		}
@@ -34,12 +34,13 @@ const PyVenvManager = () => {
 
   useEffect(() => {
 	fetchEnvs();
+	console.log(process.env.NODE_ENV);
   }, []);
 
   const deleteHandler = async (envToDelete) => {
 	if (window.confirm(`Are you sure you want to delete ${envToDelete}?`)){	
 		try {
-			const deleteResponse = await fetch(`${devUrl}/api/delete_env/${envToDelete}`, {
+			const deleteResponse = await fetch(`${curUrl}/api/delete_env/${envToDelete}`, {
 				method: "DELETE"
 			});
 
@@ -56,7 +57,7 @@ const PyVenvManager = () => {
 		}
   	}
 	  else {
-		return;
+		console.log("Delete env action cancelled");
 	}
 }
 
