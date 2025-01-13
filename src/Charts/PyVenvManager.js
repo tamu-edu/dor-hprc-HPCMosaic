@@ -16,8 +16,13 @@ const PyVenvManager = () => {
 			throw new Error(`envResponse had an HTTP error status: ${envResponse.error}`)
 		}
 		const envJson = await envResponse.json();
+		console.log(envJson)
+		if (envJson.environments.length == 0) {
+			console.log("lfg")
+			await setEnvData("NO ENVIRONMENTS");
+			return;
+		}
 		console.log(envJson.environments[0].GCCcore_version);
-
 		await setEnvData(envJson.environments);
 		let keysArr = await Object.keys(envJson.environments[0]);
 		let tmp = keysArr[0];
@@ -34,7 +39,6 @@ const PyVenvManager = () => {
 
   useEffect(() => {
 	fetchEnvs();
-	console.log(process.env.NODE_ENV);
   }, []);
 
   const deleteHandler = async (envToDelete) => {
@@ -48,7 +52,7 @@ const PyVenvManager = () => {
 				throw new Error(`deleteResponse had an HTTP error status: ${deleteResponse.error}`);
 			}	
 			else {
-				result = await deleteResponse.json();
+				const result = await deleteResponse.json();
 				console.log(result.message);
 				await fetchEnvs();
 			}
@@ -63,7 +67,7 @@ const PyVenvManager = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg w-full h-full flex flex-col">
-      {(!envData || !envKeys) && 
+      {(!envData && !envKeys) && 
 	  <div className="overflow-auto w-full h-full flex-grow">
 	  	<p> Loading... </p>
 	  </div>
@@ -87,7 +91,7 @@ const PyVenvManager = () => {
 							<td className="border border-gray-300 px-4 py-2">{env.GCCcore_version}</td>
 							<td className="border border-gray-300 px-4 py-2">{env.description}</td>
 							<td className="border border-gray-300 px-4 py-2"> 
-								<button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+								<button className="bg-maroon text-white px-2 py-1 rounded hover:bg-red-700"
 								onClick={() => deleteHandler(env.name)}>
 									Delete 
 								</button> 
@@ -97,6 +101,11 @@ const PyVenvManager = () => {
 				</tbody>
 			</table>
 	  </div>}
+	  {(envData == "NO ENVIRONMENTS" && !envKeys) && 
+	  <div className="overflow-auto w-full h-full flex-grow">
+		<h2 className="text-xl font-semibold mb-4"> You have no virtual environments to manage </h2>
+	  </div>
+	  }
    </div> 
   )
 }
