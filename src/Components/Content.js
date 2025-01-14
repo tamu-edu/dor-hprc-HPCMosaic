@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ItemTypes } from './ItemTypes';
 import { useDrop } from 'react-dnd';
-import LineChart from '../Charts/LineChart';
-import BarChart from '../Charts/BarChart';
-import PieChart from '../Charts/PieChart';
-import PyVenvManager from '../Charts/PyVenvManager';
-import ClusterInfo from '../Charts/ClusterInfo';
-import Chatbot from '../Charts/Chatbot';
 import RGL, { WidthProvider } from "react-grid-layout";
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { debounce } from 'lodash';
+
+// Elements
+import PyVenvManager from '../Charts/PyVenvManager';
+import ClusterInfo from '../Charts/ClusterInfo';
+import Chatbot from '../Charts/Chatbot';
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -69,12 +68,6 @@ const Content = (props) => {
     // Helper function to render the correct chart component based on `ele.name`
     const renderChart = (ele, index) => {
         switch (ele.name) {
-            case "Line":
-                return <LineChart factor={index + 1} />;
-            case "Bar":
-                return <BarChart />;
-            case "Pie":
-                return <PieChart />;
             case "Node Utilization":
                 return <ClusterInfo />;
             case "PyVenvManager":

@@ -120,7 +120,7 @@ function Composer(props) {
         }
         operatorsStack.push(token);
       } else if (token === '!') {
-  	operatorsStack.push(token);
+  	    operatorsStack.push(token);
       } else if (token === '(') {
         operatorsStack.push(token);
       } else if (token === ')') {

@@ -8,8 +8,8 @@ const Sidebar = () => {
         <div className="w-full p-4 rounded-t-md flex flex-col items-start space-y-4">
             <div className="flex flex-row space-y-3 w-full">
                 {list.map((name, id) => {
-                    const CardComponent = CardConfig[name].cardComponent;
-                    return <CardComponent key={id} name={name} _id={id} />;
+                    const { cardComponent: CardComponent, image } = CardConfig[name];
+                    return <CardComponent key={id} name={name} _id={id} image={image} />;
                 })}
             </div>
         </div>
