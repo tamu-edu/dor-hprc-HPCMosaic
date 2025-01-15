@@ -16,7 +16,9 @@ module.exports = {
 		indigo: colors.indigo,
 		yellow: colors.yellow,
 		maroon: '#5c0025',
-		red: colors.red
+		red: colors.red,
+		green: colors.green,
+		pink: colors.pink
 	}
   },
   plugins: [],
