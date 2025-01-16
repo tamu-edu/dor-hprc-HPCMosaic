@@ -5,6 +5,7 @@
   "main": "webpack.config.js",
   "dependencies": {
     "@babel/preset-env": "^7.25.4",
+    "axios": "^1.7.9",
     "chart.js": "^4.4.6",
     "chartjs-plugin-datalabels": "^2.2.0",
     "flask": "^0.2.10",

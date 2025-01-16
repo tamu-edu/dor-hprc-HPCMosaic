@@ -83,38 +83,3 @@ def load_layout():
         return jsonify({"layout_name": layout_name, "layout_data": layout_data}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-@api.route('/get_env', methods=['GET'])
-def get_envs():
-    envs = str(os.environ)
-    scratch = os.path.expandvars("/scratch/user/$USER")
-    virtual_envs = "virtual_envs/metadata.json"
-    metadataPath = os.path.join(scratch, virtual_envs)
-    try:
-        with open(metadataPath,'r') as file:
-            metadata = json.load(file)  
-            return metadata, 200
-    except FileNotFoundError as e:
-        return jsonify({"error": f"There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
-    except json.JSONDecodeError as e:
-        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"There was an unexpected error: {str(e)}"}), 500
-
-@api.route('/delete_env/<envToDelete>', methods=['DELETE'])
-def delete_env(envToDelete):
-    try:
-        if "SCRATCH" not in os.environ:
-            os.environ["SCRATCH"] = os.path.expandvars("/scratch/user/$USER")
-        script = f"/sw/local/bin/delete_venv"
-        result = subprocess.run([script, envToDelete], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-        if result.returncode != 0:
-            raise RuntimeError(f"Error deleting environment: {result.stdout.strip()}")
-        return jsonify({"message": result.stdout.strip()}), 200
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Script failed with error: {e.stdout.strip()}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
-
-

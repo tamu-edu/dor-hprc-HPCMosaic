@@ -6,10 +6,9 @@ import Chatbot from '../Charts/Chatbot';
 
 const CardConfig = {
     "Node Utilization": {
-        cardComponent: React.memo((props) => <Card {...props} title="Node Utilization" image="/images/cluster-util.png" />),
+        cardComponent: React.memo((props) => <Card {...props} title="Node Utilization" image="/pun/sys/dor-hprc-web-tamudashboard-reu-branch/images/cluster-util.png" />),
         chartComponent: ClusterInfo,
         defaultProps: { w: 2, h: 4 },
-        image: "../images/cluster-util.png"
     },
     PyVenvManager: {
         cardComponent: React.memo((props) => <Card {...props} title="Python Venv Manager" image="/images/python-venv.png" />),
