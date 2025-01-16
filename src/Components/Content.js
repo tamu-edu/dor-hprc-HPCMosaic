@@ -13,9 +13,18 @@ import Chatbot from '../Charts/Chatbot';
 
 const ReactGridLayout = WidthProvider(RGL);
 
-const Content = ({ change, loadDefaultView }) => {
+const Content = ({ change, loadDefaultView, layoutData }) => {
     const [row, setRow] = useState([]);
     const [layout, setLayout] = useState([]);
+
+    // Effect to update the layout when `layoutData` changes
+    useEffect(() => {
+        if (layoutData) {
+            setRow(layoutData);
+            setLayout(layoutData.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
+            console.log("Layout data updated in Content:", layoutData);
+        }
+    }, [layoutData]);
 
     const onLayoutChange = (newLayout) => {
         setLayout(newLayout);
