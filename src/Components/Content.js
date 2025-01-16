@@ -13,7 +13,7 @@ import Chatbot from '../Charts/Chatbot';
 
 const ReactGridLayout = WidthProvider(RGL);
 
-const Content = (props) => {
+const Content = ({ change, loadDefaultView }) => {
     const [row, setRow] = useState([]);
     const [layout, setLayout] = useState([]);
 
@@ -28,36 +28,49 @@ const Content = (props) => {
     const [{ isOver }, drop] = useDrop({
         accept: ItemTypes.CARD,
         drop: (item) => {
-            // Dynamically set width and height based on item properties
-            const width = item.name === "Node Utilization" ? 2 : 1;  // Example: wider width for Node Utilization
-            const height = item.name === "Node Utilization" ? 3 : 1; // Example: taller height for Node Utilization
-            
-            const newItem = { 
-                name: item.name, 
-                id: item.id, 
-                i: `${row.length}`, 
-                x: row.length % 4, 
-                y: Math.floor(row.length / 4), 
-                w: width, 
-                h: height 
+            const width = item.name === "Node Utilization" ? 2 : 1;
+            const height = item.name === "Node Utilization" ? 3 : 1;
+
+            const newItem = {
+                name: item.name,
+                id: item.id,
+                i: `${row.length}`,
+                x: row.length % 4,
+                y: Math.floor(row.length / 4),
+                w: width,
+                h: height,
             };
-            
+
             setRow([...row, newItem]);
         },
         collect: (monitor) => ({
             isOver: !!monitor.isOver(),
         }),
-    });    
+    });
 
     // Debounce the props.change function to avoid updating state during render
-    const debouncedChange = useCallback(debounce((newRow) => {
-        props.change(newRow);
-    }, 100), [props]);
+    const debouncedChange = useCallback(
+        debounce((newRow) => {
+            change(newRow);
+        }, 100),
+        [change]
+    );
 
     // Call debouncedChange only after row has been updated
     useEffect(() => {
         debouncedChange(row);
     }, [row, debouncedChange]);
+
+    // Effect to load the default view on initial render
+    useEffect(() => {
+        if (loadDefaultView) {
+            const defaultView = loadDefaultView();
+            setRow(defaultView);
+            setLayout(defaultView.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
+            change(defaultView); // Notify the parent about the loaded default view
+        }
+
+    }, []);
 
     // Function to remove an element by index
     const removeElement = (index) => {
@@ -71,25 +84,25 @@ const Content = (props) => {
             case "Node Utilization":
                 return <ClusterInfo />;
             case "PyVenvManager":
-                return <PyVenvManager/>;
+                return <PyVenvManager />;
             case "Chatbot":
-                return <Chatbot/>;
+                return <Chatbot />;
             default:
                 return <div className="text-center text-red-500">Unknown Chart</div>;
         }
     };
 
     return (
-        <div 
-            ref={drop} 
+        <div
+            ref={drop}
             className={`max-w-full h-auto p-4 ${isOver ? 'bg-gray-100' : ''}`}
         >
             <ReactGridLayout
                 layout={layout}
                 onLayoutChange={onLayoutChange}
                 onResize={onResize}
-                width={"100%"}  // Ensures grid layout takes full container width
-                cols={4}        // Adjust columns to fit your layout needs
+                width={"100%"}
+                cols={4}
                 isBounded={false}
                 isDroppable={true}
                 isResizable={true}
@@ -99,22 +112,19 @@ const Content = (props) => {
                 autoSize={true}
                 className="bg-white rounded-lg"
             >
-
                 {row.map((ele, index) => (
-                    <div 
-                        key={index} 
-                        data-grid={ele} 
+                    <div
+                        key={index}
+                        data-grid={ele}
                         className="bg-white shadow-lg rounded-md p-4 border border-gray-300 relative h-full w-full"
                     >
-                        <button 
-                            onClick={() => removeElement(index)} 
+                        <button
+                            onClick={() => removeElement(index)}
                             className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full text-xs"
                         >
                             Remove
                         </button>
-                        <div className="h-full w-full">  {/* Ensures the child component expands to full height/width */}
-                            {renderChart(ele, index)}
-                        </div>
+                        <div className="h-full w-full">{renderChart(ele, index)}</div>
                     </div>
                 ))}
             </ReactGridLayout>
