@@ -1,0 +1,5 @@
+bugs:
+
+
+
+if you delte all of your environments using the frontend, the last delete breaks it. - fixed
