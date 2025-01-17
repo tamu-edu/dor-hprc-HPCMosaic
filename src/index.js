@@ -5,6 +5,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import './style.css';
 import { METRIC_TYPES } from './utils/metricTypes';
 import SandboxGrid from "./SandboxGrid";
+import { createRoot } from "react-dom/client";
 
 const App = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -31,4 +32,6 @@ const App = () => {
   );
 };
 
-ReactDOM.render(<App />, document.getElementById("root"));
+
+const root = createRoot(document.getElementById("root"));
+root.render(<App />);

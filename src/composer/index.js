@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, createContext } from "react";
 
-import ReactDOM from "react-dom";
 import Text from "./dashboard_elements/Text";
 import Select from "./dashboard_elements/Select";
 import Picker from "./dashboard_elements/Picker";
 import Composer from "./dashboard_elements/Composer";
 import MultiPaneTextArea from "./dashboard_elements/MultiPaneTextArea"
 export const GlobalFilesContext = createContext();
+import { createRoot } from "react-dom/client";
+
 
 function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
@@ -343,5 +344,5 @@ function App() {
   );
 }
 
-// Render the parent component into the root DOM node
-ReactDOM.render(<App />, document.getElementById("root"));
+const root = createRoot(document.getElementById("root"));
+root.render(<App />);

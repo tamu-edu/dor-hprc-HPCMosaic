@@ -6,6 +6,7 @@ import yaml
 import os
 import sqlite3
 import re
+import logging
 
 app = Flask(__name__)
 
