@@ -14,6 +14,10 @@ const PlaceHolder = () => {
     const [layoutData, setLayoutData] = useState(null);
     const [layouts, setLayouts] = useState([]);
 
+    useEffect(() => {
+        console.log("Current layout data in PlaceHolder:", layoutData);
+    }, [layoutData]);
+
     // Fetch all available layouts on mount
     useEffect(() => {
         const loadAvailableLayouts = async () => {

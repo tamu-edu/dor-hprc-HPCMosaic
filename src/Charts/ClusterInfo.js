@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
+import config from "../../config.yml";
 
 const ClusterInfo = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [view, setView] = useState("table"); // 'table' or 'chart'
-  const baseUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
+  const baseUrl = config.production.dashboard_url;
 
   useEffect(() => {
     fetch(`${baseUrl}/api/sinfo`)

@@ -7,6 +7,9 @@ module.exports = {
     filename: "bundle.js",
     path: path.resolve(__dirname, "static"),
   },
+  watchOptions: {
+    ignored: '**/node_modules',
+  },
   module: {
     rules: [
       { test: /\.css$/, 
@@ -17,6 +20,10 @@ module.exports = {
         test: /\.js$/,
         include: [path.resolve(__dirname, "src")],
         use: ["babel-loader"],
+      },
+      {
+        test: /\.ya?ml$/,
+        use: 'yaml-loader'
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,

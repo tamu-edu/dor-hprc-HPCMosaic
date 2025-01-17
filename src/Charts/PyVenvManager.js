@@ -6,7 +6,8 @@ const PyVenvManager = () => {
   const [envKeys, setEnvKeys] = useState(null);
 
   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
-  const devUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
+  const devUrl = `https://portal-grace.hprc.tamu.edu/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
+  
   const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
 
   const fetchEnvs = async () => {
