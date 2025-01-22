@@ -26,7 +26,7 @@ const PyVenvManager = () => {
 			await setEnvKeys(null);
 			return;
 		}
-		console.log("made it past length 0");
+		console.log("made it past length 0 statement");
 		console.log(envJson.environments[0].GCCcore_version);
 		await setEnvData(envJson.environments);
 		

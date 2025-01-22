@@ -34,11 +34,11 @@ def get_envs():
             metadata = json.load(file)  
             return metadata, 200
     except FileNotFoundError as e:
-        return jsonify({"error": f"There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
+        return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
     except json.JSONDecodeError as e:
         return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
     except Exception as e:
-        return jsonify({"error": f"There was an unexpected error: {str(e)}"}), 500
+        return jsonify({"error": f"There was an unexpected error while fetching user's venvs: {str(e)}"}), 500
 
 @api.route('/delete_env/<envToDelete>', methods=['DELETE'])
 def delete_env(envToDelete):
@@ -51,6 +51,41 @@ def delete_env(envToDelete):
             raise RuntimeError(f"Error deleting environment: {result.stdout.strip()}")
         return jsonify({"message": result.stdout.strip()}), 200
     except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Script failed with error: {e.stdout.strip()}"}), 500
+        return jsonify({"error": f"delete_venv script failed with error: {e.stdout.strip()}"}), 500
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
+
+@api.route('/get_py_versions', methods=['GET'])
+def get_py_versions():
+    try:
+        captureCommand = "/sw/local/bin/toolchains | grep Python > captured-output.txt"
+        removeCommand = "rm captured-output.txt"
+        subprocess.run(captureCommand, shell=True)
+        versions = {}
+        with open("captured-output.txt", "r") as file:
+            next(file)
+            for line in file:
+                words = line.split()
+                if words[6] in versions:
+                    break
+                else:
+                    versions[words[6]] = words[2]
+        subprocess.run(removeCommand, shell=True)
+        return jsonify(versions), 200
+    except FileNotFoundError as e:
+        return jsonify({"error": "There was a file error while getting the Python versions; 'captured-output.txt' file was not found"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error while fetching Python versions: {str(e)}"}), 500
+
+@api.route('create_venv', methods=['POST'])
+def create_venv():
+	try:
+		envName = request.body.envName
+		description = request.body.description
+		pyVersion = request.body.pyVersion
+		gccversion = request.body.gccversion
+		mlScript = ""
+
+		createVenvScript = "/sw/local/bin/create_venv"
+	except Exception as e:
+		return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
