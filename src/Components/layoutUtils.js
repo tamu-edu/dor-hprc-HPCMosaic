@@ -1,6 +1,7 @@
 import axios from 'axios';
+import config from "../../config.yml";
 
-const API_BASE_URL = '/pun/sys/dor-hprc-web-tamudashboard-reu-branch/api';
+const baseUrl = config.production.dashboard_url + '/api';
 
 export const saveLayout = async (layoutName, layoutData) => {
     try {

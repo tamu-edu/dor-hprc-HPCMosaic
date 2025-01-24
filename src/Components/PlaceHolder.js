@@ -102,13 +102,13 @@ const PlaceHolder = () => {
                             <span className="font-semibold text-gray-700">Add Element</span>
                         </button>
 
-                        {/* Layout Utility */}
-                        <LayoutUtility
+                        {/* Layout Utility - COMMENTED OUT FOR NOW */}
+                        {/* <LayoutUtility
                             layouts={layouts} // Pass available layouts
                             applyDefaultView={applyDefaultView} // Pass default view handler
                             applySavedLayout={applySavedLayout} // Pass saved layout handler
                             saveCurrentLayout={saveCurrentLayout} // Pass save layout handler
-                        />
+                        /> */}
 
                         {/* Help Form Utility */}
                         <button
