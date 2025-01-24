@@ -118,3 +118,54 @@ def delete_env(envToDelete):
         return jsonify({"error": f"Script failed with error: {e.stdout.strip()}"}), 500
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
+
+@api.route('/showquota', methods=['GET'])
+def get_quota():
+    try:
+        # Run the showquota command
+        result = subprocess.check_output("/sw/local/bin/showquota", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8").strip()
+
+        # Parse the output
+        lines = output.split("\n")
+        if len(lines) < 2:
+            return jsonify({"error": "Unexpected output format from showquota"}), 500
+
+        # Skip the header line and process the rest
+        quotas = []
+        for line in lines[2:]:
+            parts = line.split()
+            if len(parts) < 5:  # Ensure the line has enough parts to parse
+                continue
+            quotas.append({
+                "disk": parts[0],
+                "disk_usage": parts[1],
+                "disk_limit": parts[2],
+                "file_usage": parts[3],
+                "file_limit": parts[4],
+                "additional_info": " ".join(parts[5:]) if len(parts) > 5 else "",
+            })
+
+        return jsonify({"quotas": quotas}), 200
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/groups', methods=['GET'])
+def get_user_groups():
+    try:
+        # Run the `groups` command to fetch groups for the current user
+        result = subprocess.check_output("groups", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8").strip()
+
+        # Parse the groups into a list
+        groups = output.split()
+
+        return jsonify({"groups": groups}), 200
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
