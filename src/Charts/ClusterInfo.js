@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import "chart.js/auto";
 import config from "../../config.yml";
 
@@ -38,16 +38,12 @@ const ClusterInfo = () => {
       {
         label: "Used CPUs",
         data: data.map((queue) => parseInt(queue.CPU_total, 10) - parseInt(queue.CPU_avail, 10)),
-        borderColor: "#ff6384",
-        backgroundColor: "rgba(255, 99, 132, 0.2)",
-        fill: true,
+        backgroundColor: "rgba(255, 99, 132, 0.8)", // Red
       },
       {
-        label: "Total CPUs",
-        data: data.map((queue) => parseInt(queue.CPU_total, 10)),
-        borderColor: "#36a2eb",
-        backgroundColor: "rgba(54, 162, 235, 0.2)",
-        fill: true,
+        label: "Available CPUs",
+        data: data.map((queue) => parseInt(queue.CPU_avail, 10)),
+        backgroundColor: "rgba(54, 162, 235, 0.8)", // Blue
       },
     ],
   };
@@ -63,23 +59,29 @@ const ClusterInfo = () => {
           label: (tooltipItem) => {
             const value = tooltipItem.raw;
             const datasetLabel = tooltipItem.dataset.label;
-            return `${datasetLabel}: ${value}`;
+            const total = tooltipItem.chart.data.datasets
+              .map((ds) => ds.data[tooltipItem.dataIndex])
+              .reduce((acc, val) => acc + val, 0); // Calculate the total CPUs for the partition
+            const percentage = ((value / total) * 100).toFixed(2); // Calculate percentage
+            return `${datasetLabel}: ${value} (${percentage}%)`;
           },
         },
       },
     },
     scales: {
+      x: {
+        stacked: true, // Enable stacking on the x-axis
+        title: {
+          display: true,
+          text: "Partition",
+        },
+      },
       y: {
+        stacked: true, // Enable stacking on the y-axis
         beginAtZero: true,
         title: {
           display: true,
           text: "CPUs",
-        },
-      },
-      x: {
-        title: {
-          display: true,
-          text: "Partition",
         },
       },
     },
@@ -139,7 +141,7 @@ const ClusterInfo = () => {
         </div>
       ) : (
         <div className="w-full h-full flex-grow">
-          <Line data={chartData} options={chartOptions} />
+          <Bar data={chartData} options={chartOptions} />
         </div>
       )}
     </div>
