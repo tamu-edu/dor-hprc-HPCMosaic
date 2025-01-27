@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 
-const CreateVenvForm = () => {
+const CreateVenvForm = ({ fetchEnvs }) => {
 	const [pyVersions, setPyVersions] = useState(null);
 	const [selectedPyVersion, setSelectedPyVersion] = useState(null);
 	const [gccversion, setGccversion] = useState(null);
@@ -17,7 +17,7 @@ const CreateVenvForm = () => {
 			const versions = await versionsResult.json()
 			await setPyVersions(versions);
 			// Make the default Py and GCC versions the latest ones
-			setSelectedVersion(Object.keys(versions)[0]);
+			setSelectedPyVersion(Object.keys(versions)[0]);
 			setGccversion(versions[0]);
 		} catch (error) {
 			console.error(`There was an error fetching the available Python versions: ${error}`);
@@ -28,7 +28,7 @@ const CreateVenvForm = () => {
 		fetchPyVersions();
 	}, [])
 
-	const handleSubmission() = async (e) => {
+	const handleSubmission = async (e) => {
 		e.preventDefault();
 
 		// Validate that an env name was provided
@@ -52,14 +52,55 @@ const CreateVenvForm = () => {
 				},
 				body: JSON.stringify(formData)
 			});
+			
+			if (!createResponse.ok) {
+				throw new Error(`Venv creation form api response was not ok: ${createResponse.error} `);
+			}
 
+			const responseData = await createResponse.json();
+			console.log(`Successfully created new venv: {responseData.message}`);
+			await fetchEnvs();
 		} catch (error) {
 			console.error(`There has been an error while handling the venv creation form submission: ${error}`);
 		}	
 	}
 
 	return (
+		<form onSubmit={handleSubmission} className='space-y-4'>
+			<div>
+				<label htmlFor='pyVersion' className='block text-sm font-medium text-gray-700'>
+					Select Python Version
+				</label>
+				<select id="pyVersion" value={selectedPyVersion} onChange={(e) => {setSelectedPyVersion(e.target.value)}}
+				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'>
+					{pyVersions.map((version, index) => (
+						<option value={version} key={index}>
+							{version}
+						</option>
+					))}
+				</select>
+			</div>
 			
+			<div>
+				<label htmlFor='envName' className='block text-sm font-medium text-gray-700'>
+					Virtual environment&apos;s name
+				</label>
+				<input type='text' id='envName' value={envName} placeholder='What would you like to name your environment?'
+				onChange={(e) => {setEnvName(e.target.value)}} className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
+			</div>
+			
+			<div>
+				<label htmlFor='description' className='block text-sm font-medium text-gray-700'>
+					Description of virtual environment
+				</label>
+				<input type='text' id='description' value={description} placeholder='What will this virtual environment be used for? (optional)'
+				onChange={(e) => {setDescription(e.target.value)}} 
+				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
+			</div>
+			<button type='submit' className='w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none'>
+				Submit
+			</button>
+		</form>
 	)
 }
 

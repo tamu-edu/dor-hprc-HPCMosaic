@@ -1,10 +1,12 @@
 import React, {useState, useEffect} from 'react'
+import CreateVenvForm from "./CreateVenvForm.js"
 
 const PyVenvManager = () => {
   
   const [envData, setEnvData] = useState(null);
   const [envKeys, setEnvKeys] = useState(null);
   const [envsLoading, setEnvsLoading] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
   const devUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
@@ -77,7 +79,19 @@ const PyVenvManager = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg w-full h-full flex flex-col">
-      {(!envData && !envKeys) && 
+      {isFormOpen && 
+	  	<div className='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50'>
+			<div className='relative bg-white p-6 rounded-lg shadow-lg w-1/3'>
+				<button className='absolute top-2 right-2 text-gray-500 hover:text-red-500'
+				onClick={() => {setIsFormOpen(false)}}>
+					&#10006;
+				</button>
+				<CreateVenvForm onClose={() => setIsFormOpen(false)}
+				fetchEnvs={fetchEnvs}/>
+			</div>
+		</div>
+	  }
+	  {(!envData && !envKeys) && 
 	  <div className="overflow-auto w-full h-full flex-grow">
 	  	<p> Loading... </p>
 	  </div>
@@ -115,7 +129,8 @@ const PyVenvManager = () => {
 					))}
 				</tbody>
 			</table>
-			<button className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
+			<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
+			className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
 				<svg xmlns="http://www.ws.org/2000/svg"
 				className="h-6 w-6"
 				fill="none"
