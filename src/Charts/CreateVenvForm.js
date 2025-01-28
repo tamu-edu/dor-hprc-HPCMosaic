@@ -17,8 +17,10 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 			const versions = await versionsResult.json()
 			await setPyVersions(versions);
 			// Make the default Py and GCC versions the latest ones
-			setSelectedPyVersion(Object.keys(versions)[0]);
-			setGccversion(versions[0]);
+			await setSelectedPyVersion(Object.keys(versions)[0]);
+			await setGccversion(versions[selectedPyVersion]);
+
+			console.log("Testing types:", typeof pyVersions);
 		} catch (error) {
 			console.error(`There was an error fetching the available Python versions: ${error}`);
 		}
@@ -27,6 +29,11 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 	useEffect(() => {
 		fetchPyVersions();
 	}, [])
+
+	const handlePyVersionSelect = async (e) => {
+		await setSelectedPyVersion(e.target.value);
+		await setGccversion(pyVersions[selectedPyVersion]);
+	}
 
 	const handleSubmission = async (e) => {
 		e.preventDefault();
@@ -39,11 +46,11 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 
 		const formData = {
 			pyVersion: selectedPyVersion,
-			GCCversion: gccversion,
+			GCCversion: gccversion || pyVersions[selectedPyVersion],
 			envName: envName,
 			description: description
 		};
-
+		console.log(formData)
 		try {
 			const createResponse = fetch(`${curUrl}/api/create_venv`, {
 				method: 'POST',
@@ -65,22 +72,29 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 		}	
 	}
 
+
 	return (
 		<form onSubmit={handleSubmission} className='space-y-4'>
+			{!pyVersions && 
+				<div>
+					<p> Loading... </p>
+				</div>
+			}	
+			{pyVersions &&
 			<div>
 				<label htmlFor='pyVersion' className='block text-sm font-medium text-gray-700'>
 					Select Python Version
 				</label>
-				<select id="pyVersion" value={selectedPyVersion} onChange={(e) => {setSelectedPyVersion(e.target.value)}}
-				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'>
-					{pyVersions.map((version, index) => (
+				<select id="pyVersion" value={selectedPyVersion} onChange={handlePyVersionSelect}
+				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'>	
+					{Object.keys(pyVersions).map((version, index) => (
 						<option value={version} key={index}>
 							{version}
 						</option>
 					))}
 				</select>
 			</div>
-			
+			}
 			<div>
 				<label htmlFor='envName' className='block text-sm font-medium text-gray-700'>
 					Virtual environment&apos;s name
@@ -97,7 +111,8 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 				onChange={(e) => {setDescription(e.target.value)}} 
 				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
 			</div>
-			<button type='submit' className='w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none'>
+
+			<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
 				Submit
 			</button>
 		</form>

@@ -80,12 +80,20 @@ def get_py_versions():
 @api.route('create_venv', methods=['POST'])
 def create_venv():
 	try:
-		envName = request.body.envName
-		description = request.body.description
-		pyVersion = request.body.pyVersion
-		gccversion = request.body.gccversion
-		mlScript = ""
+		data = request.json
+		envName = data.get('envName')
+		description = data.get('description')
+		pyVersion = data.get('pyVersion')
+		gccversion = data.get('GCCversion')
 
-		createVenvScript = "/sw/local/bin/create_venv"
+		if not envName or not gccversion or not pyVersion:
+			return jsonify({"error": "Missing required parameters from the form submission"}), 400
+	
+		# When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
+		createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+		if result.returncode != 0:
+			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
+		return jsonify({"message": f"{envName} was successfully created!"}), 200
 	except Exception as e:
 		return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
