@@ -15,7 +15,7 @@ const QuotaInfo = () => {
   };
 
   const convertToMB = (valueWithUnit) => {
-    const match = valueWithUnit.match(/([\d.]+)([MGT])/i); // Match value and unit
+    const match = valueWithUnit.match(/([\d.]+)([MGT])/i);
     if (!match) return 0;
     const [, value, unit] = match;
     const multiplier = unitMultipliers[unit.toUpperCase()] || 1;
@@ -28,13 +28,16 @@ const QuotaInfo = () => {
     return totalMB > 0 ? ((usedMB / totalMB) * 100).toFixed(2) : 0;
   };
 
-  const getColor = (percentage) => {
-    if (percentage < 50) return "text-green-600"; // Low usage
-    if (percentage < 75) return "text-yellow-500"; // Medium usage
-    return "text-red-600"; // High usage
+  const getFileUsagePercentage = (used, total) => {
+    return total > 0 ? ((used / total) * 100).toFixed(2) : 0;
   };
 
-  // Fetch the quota data from the backend
+  const getColor = (percentage) => {
+    if (percentage < 50) return "text-green-600";
+    if (percentage < 75) return "text-yellow-500";
+    return "text-red-600";
+  };
+
   useEffect(() => {
     fetch(`${baseUrl}/api/showquota`)
       .then((response) => {
@@ -47,12 +50,11 @@ const QuotaInfo = () => {
       })
       .then((data) => {
         const quotas = data.quotas || [];
-        // Extract the row with disk = "*" and format additional info text
         const additional = quotas.find((quota) => quota.disk === "*");
         setQuotaData(quotas.filter((quota) => quota.disk !== "*"));
         if (additional) {
-          const relatedDisk = additional.file_limit; // "/scratch/group/hprc"
-          const additionalInfo = additional.additional_info; // "will expire on Dec 31, 2026"
+          const relatedDisk = additional.file_limit;
+          const additionalInfo = additional.additional_info;
           setAdditionalText(`Quota for ${relatedDisk} ${additionalInfo}`);
         }
       })
@@ -76,47 +78,52 @@ const QuotaInfo = () => {
         <thead>
           <tr className="bg-gray-200">
             <th className="border border-gray-300 px-4 py-2">Disk</th>
-            <th className="border border-gray-300 px-4 py-2">Disk Usage</th>
-            <th className="border border-gray-300 px-4 py-2">Disk Limit</th>
-            <th className="border border-gray-300 px-4 py-2">File Usage</th>
-            <th className="border border-gray-300 px-4 py-2">File Limit</th>
+            <th className="border border-gray-300 px-4 py-2">Disk Usage (%)</th>
+            <th className="border border-gray-300 px-4 py-2">File Usage (%)</th>
           </tr>
         </thead>
         <tbody>
           {quotaData.map((quota, index) => {
             const diskPercentage = getUsagePercentage(quota.disk_usage, quota.disk_limit);
-            const filePercentage = getUsagePercentage(quota.file_usage, quota.file_limit);
+            const filePercentage = getFileUsagePercentage(quota.file_usage, quota.file_limit);
 
             return (
               <tr
                 key={index}
-                className={`${
-                  quota.additional_info ? "bg-yellow-100" : ""
-                } group relative`}
+                className={`${quota.additional_info ? "bg-yellow-100" : ""} group relative`}
               >
                 <td
                   className="border border-gray-300 px-4 py-2"
-                  title={quota.additional_info || ""} // Tooltip for additional info
+                  title={quota.additional_info || ""}
                 >
                   {quota.disk}
                 </td>
-                <td className={`border border-gray-300 px-4 py-4 ${getColor(diskPercentage)}`}>
-                  {quota.disk_usage} ({diskPercentage}%)
+                <td className="border border-gray-300 px-4 py-4">
+                  <div className="gap-x-4 items-center">
+                  <p>
+                    {quota.disk_usage}/{quota.disk_limit}
+                  </p>
+                  <p className={`${getColor(filePercentage)}`}>
+                    {diskPercentage}%
+                  </p>
+                  </div>
                 </td>
-                <td className="border border-gray-300 px-4 py-4">{quota.disk_limit}</td>
-                <td className={`border border-gray-300 px-4 py-4 ${getColor(filePercentage)}`}>
-                  {quota.file_usage} ({filePercentage}%)
+                <td className="border border-gray-300 px-4 py-4">
+                  <div className="gap-x-4 items-center">
+                  <p>
+                    {quota.file_usage}/{quota.file_limit}
+                  </p>
+                  <p className={`${getColor(filePercentage)}`}>
+                    {filePercentage}%
+                  </p>
+                  </div>
                 </td>
-                <td className="border border-gray-300 px-4 py-4">{quota.file_limit}</td>
               </tr>
             );
           })}
         </tbody>
       </table>
-      {/* Display additional text */}
-      {additionalText && (
-        <p className="mt-4 text-gray-700 italic text-left">{additionalText}</p>
-      )}
+      {additionalText && <p className="mt-4 text-gray-700 italic text-left">{additionalText}</p>}
     </div>
   );
 };
