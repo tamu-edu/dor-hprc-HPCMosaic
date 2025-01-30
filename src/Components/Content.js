@@ -12,6 +12,7 @@ import ClusterInfo from "../Charts/ClusterInfo";
 import Chatbot from "../Charts/Chatbot";
 import QuotaInfo from "../Charts/QuotaInfo";
 import UserGroups from "../Charts/UserGroups";
+import Accounts from "../Charts/Accounts";
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -58,6 +59,14 @@ const Content = (props) => {
       i: "4",
       x: 2,
       y: 4,
+      w: 2,
+      h: 3,
+    },
+    {
+      name: "Accounts",
+      i: "5",
+      x: 2,
+      y: 5,
       w: 2,
       h: 3,
     },
@@ -128,6 +137,8 @@ const Content = (props) => {
         return <QuotaInfo />;
       case "User Groups":
         return <UserGroups />;
+      case "Accounts":
+        return <Accounts />;
       default:
         return <div className="text-center text-red-500">Unknown Chart</div>;
     }

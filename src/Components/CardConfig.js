@@ -5,6 +5,7 @@ import PyVenvManager from '../Charts/PyVenvManager';
 import Chatbot from '../Charts/Chatbot';
 import QuotaInfo from '../Charts/QuotaInfo';
 import UserGroups from '../Charts/UserGroups';
+import Accounts from '../Charts/Accounts';
 
 const CardConfig = {
     "Node Utilization": {
@@ -29,6 +30,10 @@ const CardConfig = {
     "User Groups": {
         cardComponent: React.memo((props) => <Card {...props} title="User Groups" image="/pun/sys/dor-hprc-web-tamudashboard-reu-branch/images/cluster-util.png" />),
         chartComponent: UserGroups,
+    },
+    Accounts: {
+        cardComponent: React.memo((props) => <Card {...props} title="Accounts" image="/pun/sys/dor-hprc-web-tamudashboard-reu-branch/images/cluster-util.png" />),
+        chartComponent: Accounts,
     },
 };
 
