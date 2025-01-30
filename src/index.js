@@ -6,6 +6,7 @@ import './style.css';
 import { METRIC_TYPES } from './utils/metricTypes';
 import SandboxGrid from "./SandboxGrid";
 import { createRoot } from "react-dom/client";
+import ChatbotComponent from "./Components/ChatbotComponent";
 
 const App = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -27,6 +28,7 @@ const App = () => {
     <DndProvider backend={HTML5Backend}>
       <div className="bg-gray-50 p-10 min-h-screen">
         <SandboxGrid/>
+        <ChatbotComponent />
       </div>
     </DndProvider>
   );
