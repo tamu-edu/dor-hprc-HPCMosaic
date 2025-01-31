@@ -4,8 +4,10 @@ from sys import version as python_formatted_version
 import os
 from collections import OrderedDict
 import subprocess
+import logging  # Add this line at the top
 
 api = Blueprint('api', __name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 @api.route('/sinfo', methods=['GET'])
 def get_sinfo():
@@ -164,6 +166,92 @@ def get_user_groups():
         groups = output.split()
 
         return jsonify({"groups": groups}), 200
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/cpuavail', methods=['GET'])
+def get_cpuavail():
+    try:
+        # Run the `cpuavail` command
+        result = subprocess.check_output("/sw/local/bin/cpuavail", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8").strip()
+
+        # Debug: Log raw output
+        print("Raw output from cpuavail:\n", output)
+
+        # Parse the output
+        lines = output.split("\n")
+        config_start = next((i for i, line in enumerate(lines) if "CONFIGURATION" in line), -1)
+        avail_start = next((i for i, line in enumerate(lines) if "AVAILABILITY" in line), -1)
+
+        if config_start == -1 or avail_start == -1:
+            return jsonify({"error": "Unexpected output format from cpuavail"}), 500
+
+        # Parse configuration section
+        config_data = []
+        for line in lines[config_start + 3 : avail_start - 1]:
+            parts = line.split()
+            if len(parts) == 2:
+                config_data.append({
+                    "node_type": parts[0],
+                    "node_count": int(parts[1]),
+                })
+
+        # Parse availability section
+        availability_data = []
+        for line in lines[avail_start + 3 :]:
+            parts = line.split()
+            if len(parts) == 3:
+                availability_data.append({
+                    "node_name": parts[0],
+                    "cpus_available": int(parts[1]),
+                    "memory_available": int(parts[2]),
+                })
+
+        return jsonify({
+            "configuration": config_data,
+            "availability": availability_data,
+        }), 200
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        print(f"Command failed with error: {error_message}")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/projectinfo', methods=['GET'])
+def get_projectinfo():
+    try:
+        result = subprocess.check_output("/sw/local/bin/myproject", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8").strip()
+        logging.info(f"Raw output from myproject:\n{output}")
+
+        lines = output.split("\n")
+        start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
+        if start_index == -1 or len(lines) <= start_index + 2:
+            return jsonify({"error": "Unexpected output format from myproject"}), 500
+        
+        project_data = []
+        for line in lines[start_index + 2:]:
+            if line.strip().startswith("|") and len(line.split("|")) >= 8:
+                fields = [field.strip() for field in line.split("|")[1:-1]]
+                if len(fields) == 7:  # Ensure correct number of fields
+                    project_data.append({
+                        "account": fields[0],
+                        "fy": fields[1],
+                        "default": fields[2],
+                        "allocation": float(fields[3]),
+                        "used_pending_sus": float(fields[4]),
+                        "balance": float(fields[5]),
+                        "pi": fields[6],
+                    })
+
+        return jsonify({"projects": project_data}), 200
+
     except subprocess.CalledProcessError as e:
         error_message = e.output.decode("utf-8")
         return jsonify({"error": f"Command failed: {error_message}"}), 500

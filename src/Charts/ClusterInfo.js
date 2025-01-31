@@ -73,7 +73,7 @@ const ClusterInfo = () => {
         stacked: true, // Enable stacking on the x-axis
         title: {
           display: true,
-          text: "Partition",
+          text: "Account",
         },
       },
       y: {
@@ -81,7 +81,7 @@ const ClusterInfo = () => {
         beginAtZero: true,
         title: {
           display: true,
-          text: "CPUs",
+          text: "Service Units (SU)",
         },
       },
     },
