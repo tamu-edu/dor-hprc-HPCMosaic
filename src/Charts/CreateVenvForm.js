@@ -126,11 +126,8 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				Submit
 			</button>}
 			{waitingForCreation &&
-			 //<div className="flex items-center justify-center h-full">
-			   // <div className="animate-spin rounded-full h-10 w-10 border-1 border-gray-200 border-t-maroon"></div>
-			 //</div>
 			 <div>
-			 	<p> Creating Environment...</p>
+			 	<p> Creating Environment (this may take a while)...</p>
 			 </div>
 			}
 		</form>
