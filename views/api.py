@@ -223,37 +223,142 @@ def get_cpuavail():
         print(f"Unexpected error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# WORKING BTW--
+# @api.route('/projectinfo', methods=['GET'])
+# def get_projectinfo():
+#     try:
+#         result = subprocess.check_output("/sw/local/bin/myproject", shell=True, stderr=subprocess.STDOUT)
+#         output = result.decode("utf-8").strip()
+#         logging.info(f"Raw output from myproject:\n{output}")
+
+#         lines = output.split("\n")
+#         start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
+#         if start_index == -1 or len(lines) <= start_index + 2:
+#             return jsonify({"error": "Unexpected output format from myproject"}), 500
+        
+#         project_data = []
+#         for line in lines[start_index + 2:]:
+#             if line.strip().startswith("|") and len(line.split("|")) >= 8:
+#                 fields = [field.strip() for field in line.split("|")[1:-1]]
+#                 if len(fields) == 7:  # Ensure correct number of fields
+#                     project_data.append({
+#                         "account": fields[0],
+#                         "fy": fields[1],
+#                         "default": fields[2],
+#                         "allocation": float(fields[3]),
+#                         "used_pending_sus": float(fields[4]),
+#                         "balance": float(fields[5]),
+#                         "pi": fields[6],
+#                     })
+
+#         return jsonify({"projects": project_data}), 200
+
+#     except subprocess.CalledProcessError as e:
+#         error_message = e.output.decode("utf-8")
+#         return jsonify({"error": f"Command failed: {error_message}"}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
 @api.route('/projectinfo', methods=['GET'])
 def get_projectinfo():
+    """Retrieve project information and allow querying for job history or pending jobs."""
     try:
-        result = subprocess.check_output("/sw/local/bin/myproject", shell=True, stderr=subprocess.STDOUT)
+        account = request.args.get("account")  # Account number for filtering
+        job_history = request.args.get("job_history")  # Boolean flag for job history
+        pending_jobs = request.args.get("pending_jobs")  # Boolean flag for pending jobs
+
+        if pending_jobs and account:
+            command = f"/sw/local/bin/myproject -p {account}"
+        elif job_history and account:
+            command = f"/sw/local/bin/myproject -j {account}"
+        else:
+            command = "/sw/local/bin/myproject"
+
+        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         output = result.decode("utf-8").strip()
-        logging.info(f"Raw output from myproject:\n{output}")
+        logging.info(f"Raw output from myproject ({command}):\n{output}")
 
-        lines = output.split("\n")
-        start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
-        if start_index == -1 or len(lines) <= start_index + 2:
-            return jsonify({"error": "Unexpected output format from myproject"}), 500
-        
-        project_data = []
-        for line in lines[start_index + 2:]:
-            if line.strip().startswith("|") and len(line.split("|")) >= 8:
-                fields = [field.strip() for field in line.split("|")[1:-1]]
-                if len(fields) == 7:  # Ensure correct number of fields
-                    project_data.append({
-                        "account": fields[0],
-                        "fy": fields[1],
-                        "default": fields[2],
-                        "allocation": float(fields[3]),
-                        "used_pending_sus": float(fields[4]),
-                        "balance": float(fields[5]),
-                        "pi": fields[6],
-                    })
+        # If querying pending jobs
+        if pending_jobs and account:
+            return jsonify(parse_pending_jobs(output)), 200
 
-        return jsonify({"projects": project_data}), 200
+        # If querying job history
+        if job_history and account:
+            return jsonify(parse_job_history(output)), 200
+
+        # Otherwise, parse project accounts (default behavior)
+        return jsonify(parse_project_accounts(output)), 200
 
     except subprocess.CalledProcessError as e:
         error_message = e.output.decode("utf-8")
+        logging.error(f"Command failed: {error_message}")
         return jsonify({"error": f"Command failed: {error_message}"}), 500
     except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+
+def parse_project_accounts(output):
+    """Parses output from `myproject` to extract project account details."""
+    lines = output.split("\n")
+    start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
+    
+    if start_index == -1 or len(lines) <= start_index + 2:
+        return {"error": "Unexpected output format from myproject"}
+
+    project_data = []
+    for line in lines[start_index + 2:]:
+        if line.strip().startswith("|"):
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 7:  # Ensure correct number of fields
+                project_data.append({
+                    "account": fields[0],
+                    "fy": fields[1],
+                    "default": fields[2],
+                    "allocation": float(fields[3]) if fields[3].replace('.', '', 1).isdigit() else 0.0,
+                    "used_pending_sus": float(fields[4]) if fields[4].replace('.', '', 1).isdigit() else 0.0,
+                    "balance": float(fields[5]) if fields[5].replace('.', '', 1).isdigit() else 0.0,
+                    "pi": fields[6],
+                })
+
+    return {"projects": project_data}
+
+
+def parse_pending_jobs(output):
+    """Parses output from `myproject -p <account>` to extract pending jobs."""
+    lines = output.split("\n")
+    job_data = []
+
+    for line in lines[2:]:  # Skip header lines
+        if line.strip().startswith("|") and len(line.split("|")) >= 6:
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 5:  # Ensure correct number of fields
+                job_data.append({
+                    "job_id": fields[0],
+                    "state": fields[1],
+                    "cores": fields[2],
+                    "effective_cores": fields[3],
+                    "walltime_hours": fields[4],
+                })
+
+    return {"pending_jobs": job_data}
+
+
+def parse_job_history(output):
+    """Parses output from `myproject -j <account>` to extract job history."""
+    lines = output.split("\n")
+    history_data = []
+
+    for line in lines[2:]:  # Skip header lines
+        if line.strip().startswith("|") and len(line.split("|")) >= 6:
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 5:  # Ensure correct number of fields
+                history_data.append({
+                    "job_id": fields[0],
+                    "state": fields[1],
+                    "cores": fields[2],
+                    "effective_cores": fields[3],
+                    "walltime_hours": fields[4],
+                })
+
+    return {"job_history": history_data}
