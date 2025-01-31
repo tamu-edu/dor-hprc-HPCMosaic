@@ -1,11 +1,12 @@
 import React, {useState, useEffect} from "react";
 
-const CreateVenvForm = ({ fetchEnvs }) => {
+const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [pyVersions, setPyVersions] = useState(null);
 	const [selectedPyVersion, setSelectedPyVersion] = useState(null);
 	const [gccversion, setGccversion] = useState(null);
 	const [description, setDescription] = useState('');
 	const [envName, setEnvName] = useState(null);
+	const [waitingForCreation, setWaitingForCreation] = useState(false);
 
 	const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
 	const devUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
@@ -17,22 +18,24 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 			const versions = await versionsResult.json()
 			await setPyVersions(versions);
 			// Make the default Py and GCC versions the latest ones
-			await setSelectedPyVersion(Object.keys(versions)[0]);
-			await setGccversion(versions[selectedPyVersion]);
-
-			console.log("Testing types:", typeof pyVersions);
+			setSelectedPyVersion(Object.keys(versions)[0]);
+			setGccversion(versions[Object.keys(versions)[0]]);
 		} catch (error) {
 			console.error(`There was an error fetching the available Python versions: ${error}`);
 		}
 	}
 
 	useEffect(() => {
-		fetchPyVersions();
+		fetchPyVersions(); 
 	}, [])
+	
+	useEffect(() => { //debugging
+		console.log(`Current selections: ${gccversion} ${selectedPyVersion}`)
+	}, [selectedPyVersion, gccversion])
 
-	const handlePyVersionSelect = async (e) => {
-		await setSelectedPyVersion(e.target.value);
-		await setGccversion(pyVersions[selectedPyVersion]);
+	const handlePyVersionSelect = (e) => {
+		setSelectedPyVersion(e.target.value);
+		setGccversion(pyVersions[e.target.value]);
 	}
 
 	const handleSubmission = async (e) => {
@@ -46,13 +49,14 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 
 		const formData = {
 			pyVersion: selectedPyVersion,
-			GCCversion: gccversion || pyVersions[selectedPyVersion],
+			GCCversion: gccversion,
 			envName: envName,
 			description: description
 		};
 		console.log(formData)
 		try {
-			const createResponse = fetch(`${curUrl}/api/create_venv`, {
+			setWaitingForCreation(true);
+			const createResponse = await fetch(`${curUrl}/api/create_venv`, {
 				method: 'POST',
 				headers: {
 					'Content-type': 'application/json'
@@ -62,11 +66,16 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 			
 			if (!createResponse.ok) {
 				throw new Error(`Venv creation form api response was not ok: ${createResponse.error} `);
+				alert("There was an error attempting to create your environment.");
+				setIsFormOpen(false);
+				return;
 			}
 
 			const responseData = await createResponse.json();
 			console.log(`Successfully created new venv: {responseData.message}`);
 			await fetchEnvs();
+			setWaitingForCreation(false);
+			setIsFormOpen(false);
 		} catch (error) {
 			console.error(`There has been an error while handling the venv creation form submission: ${error}`);
 		}	
@@ -112,9 +121,18 @@ const CreateVenvForm = ({ fetchEnvs }) => {
 				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
 			</div>
 
+			{!waitingForCreation && 
 			<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
 				Submit
-			</button>
+			</button>}
+			{waitingForCreation &&
+			 //<div className="flex items-center justify-center h-full">
+			   // <div className="animate-spin rounded-full h-10 w-10 border-1 border-gray-200 border-t-maroon"></div>
+			 //</div>
+			 <div>
+			 	<p> Creating Environment...</p>
+			 </div>
+			}
 		</form>
 	)
 }

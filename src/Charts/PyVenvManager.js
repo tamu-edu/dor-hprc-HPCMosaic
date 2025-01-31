@@ -86,8 +86,7 @@ const PyVenvManager = () => {
 				onClick={() => {setIsFormOpen(false)}}>
 					&#10006;
 				</button>
-				<CreateVenvForm onClose={() => setIsFormOpen(false)}
-				fetchEnvs={fetchEnvs}/>
+				<CreateVenvForm fetchEnvs={fetchEnvs} setIsFormOpen={setIsFormOpen}/>
 			</div>
 		</div>
 	  }
@@ -146,6 +145,17 @@ const PyVenvManager = () => {
 	  <div className="overflow-auto w-full h-full flex-grow">
 		<h2 className="text-xl font-semibold mb-4"> You have no virtual environments to manage </h2>
 	  </div>
+	  <button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
+		className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
+			<svg xmlns="http://www.ws.org/2000/svg"
+			className="h-6 w-6"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			>
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+	  	</svg>
+	  </button>
 	  }
    </div> 
   )
