@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import CreateVenvForm from "./CreateVenvForm.js"
+import Spinner from "../Components/Spinner.js"
 
 const PyVenvManager = () => {
   
@@ -142,20 +143,21 @@ const PyVenvManager = () => {
 	  </div>
 	  }
 	  {(envData == "NO ENVIRONMENTS" && !envKeys) && 
-	  <div className="overflow-auto w-full h-full flex-grow">
-		<h2 className="text-xl font-semibold mb-4"> You have no virtual environments to manage </h2>
+	  <div className="overflow-auto w-full h-full flex flex-grow flex-col justify-center items-center">	
+	{/*	<h2 className="text-xl font-semibold mb-4"> You have no virtual environments to manage </h2>
+	//	<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
+	//		className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
+	//			<svg xmlns="http://www.ws.org/2000/svg"
+	//			className="h-6 w-6"
+	//			fill="none"
+	//			viewBox="0 0 24 24"
+	//			stroke="currentColor"
+	//			>
+	//			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+	//		</svg>
+		</button>*/}	
+	  	<Spinner/>
 	  </div>
-	  <button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
-		className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
-			<svg xmlns="http://www.ws.org/2000/svg"
-			className="h-6 w-6"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-			>
-			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-	  	</svg>
-	  </button>
 	  }
    </div> 
   )
