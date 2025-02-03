@@ -93,7 +93,7 @@ def create_venv():
 		createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
 		result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
 		if result.returncode != 0:
-			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
+			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stdout}"}), 500
 		return jsonify({"message": f"{envName} was successfully created!"}), 200
 	except Exception as e:
 		return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500

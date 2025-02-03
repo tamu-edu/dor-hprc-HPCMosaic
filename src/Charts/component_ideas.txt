@@ -1,3 +1,6 @@
+need form validation at point of submission for the env name
+make the chart column titles look better
+
 bugs:
 
 

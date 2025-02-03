@@ -108,7 +108,9 @@ const PyVenvManager = () => {
 				<thead>
 					<tr className="bg-gray-200">
 						{envKeys.map((field, index) => (
-							<th className="border border-gray-300 px-4 py-2"key={index}> {field} </th>
+							<th className="border border-gray-300 px-4 py-2"key={index}>
+								{field.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())} 
+							</th>
 						))}
 					</tr>
 				</thead>
