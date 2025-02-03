@@ -1,6 +1,7 @@
 development: &common_settings
   cluster_name: "Grace"
   dashboard_url: "/pun/dev/dor-hprc-web-tamudashboard-reu-branch"
+  dashboard_url: "/pun/dev/gabriel-react-dashboard"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"
   home_page: "https://hprc.tamu.edu"
@@ -12,6 +13,7 @@ development: &common_settings
   default_matlab_module: "Matlab/R2020b"
   default_python_venv: "/sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/"
   send_result_path: "/var/www/ood/apps/dev/victoria.c6140/gateway/dor-hprc-web-tamudashboard-reu-branch/machine_driver_scripts/send_result.sh"
+  send_result_path: "/var/www/ood/apps/dev/gabr13lenstation/gateway/gabriel-react-dashboard/machine_driver_scripts/send_result.sh"
 
 production:
   <<: *common_settings

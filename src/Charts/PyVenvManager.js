@@ -1,16 +1,20 @@
 import React, {useState, useEffect} from 'react'
 import config from '../../config.yml';
+import CreateVenvForm from "./CreateVenvForm.js"
+import Spinner from "../Components/Spinner.js"
 
 const PyVenvManager = () => {
   
-  const [envData, setEnvData] = useState(null);
-  const [envKeys, setEnvKeys] = useState(null);
-  const [envsLoading, setEnvsLoading] = useState(false);
+	const [envData, setEnvData] = useState(null);
+	const [envKeys, setEnvKeys] = useState(null);
+	const [envsLoading, setEnvsLoading] = useState(false);
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [deletingEnv, setDeletingEnv] = useState(null);
 
-  const devUrl = config.production.dashboard_url;
-//   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
-  const prodUrl = config.production.dashboard_url;
-  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
+	const devUrl = config.production.dashboard_url;
+	//   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
+	const prodUrl = config.production.dashboard_url;
+	const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
 
   const fetchEnvs = async () => {
 	try {
@@ -28,7 +32,7 @@ const PyVenvManager = () => {
 			await setEnvKeys(null);
 			return;
 		}
-		console.log("made it past length 0");
+		console.log("made it past length 0 statement");
 		console.log(envJson.environments[0].GCCcore_version);
 		await setEnvData(envJson.environments);
 		
@@ -56,21 +60,24 @@ const PyVenvManager = () => {
   const deleteHandler = async (envToDelete) => {
 	if (window.confirm(`Are you sure you want to delete ${envToDelete}?`)){	
 		try {
+			setDeletingEnv(envToDelete);
 			const deleteResponse = await fetch(`${curUrl}/api/delete_env/${envToDelete}`, {
 				method: "DELETE"
 			});
 
-			if (!deleteResponse.ok) {
+			if (!deleteResponse.ok) {	
+				setDeletingEnv(null);
 				throw new Error(`deleteResponse had an HTTP error status: ${deleteResponse.error}`);
 			}	
 			else {
 				const result = await deleteResponse.json();
 				console.log(result.message);
+				setDeletingEnv(null);
 				await fetchEnvs();
 			}
 		} catch(error) {
 			console.error(`Error deleting environment: ${error}`);
-		}
+		} 
   	}
 	  else {
 		console.log("Delete env action cancelled");
@@ -79,15 +86,22 @@ const PyVenvManager = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg w-full h-full flex flex-col">
-      {(!envData && !envKeys) && 
-	  <div className="overflow-auto w-full h-full flex-grow">
-	  	<p> Loading... </p>
-	  </div>
+      {isFormOpen && 
+	  	<div className='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50'>
+			<div className='relative bg-white p-6 rounded-lg shadow-lg w-2/3'>
+				<button className='absolute top-2 right-2 text-gray-500 hover:text-red-500'
+				onClick={() => {setIsFormOpen(false)}}>
+					&#10006;
+				</button>
+				<CreateVenvForm fetchEnvs={fetchEnvs} setIsFormOpen={setIsFormOpen}/>
+			</div>
+		</div>
+	  }
+	  {(!envData && !envKeys) && 
+	  <Spinner/>
 	  }
 	  {envsLoading && 
-	  <div className="flex items-center justify-center h-full">
-	  	<div className="animate-spin rounded-full h-10 w-10 border-1 border-gray-200 border-t-maroon"></div>
-	  </div>
+	  <Spinner/>
 	  }
 	  {((envData && envData != "NO ENVIRONMENTS") && envKeys) && 
 	  <div className="overflow-auto w-full h-full flex-grow flex-col">
@@ -109,15 +123,20 @@ const PyVenvManager = () => {
 							<td className="border border-gray-300 px-4 py-2">{env.description}</td>
 							<td className="border border-gray-300 px-4 py-2"> 
 								<button className="bg-maroon text-white px-2 py-1 rounded hover:bg-red-700"
-								onClick={() => deleteHandler(env.name)}>
-									Delete 
-								</button> 
+								onClick={() => deleteHandler(env.name)} disabled={deletingEnv === env.name}>
+									{deletingEnv === env.name ? (
+										<Spinner/>
+									) : (
+										"Delete"
+									)} 
+								</button>
 							</td>
 						</tr>
 					))}
 				</tbody>
 			</table>
-			<button className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
+			<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
+			className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
 				<svg xmlns="http://www.ws.org/2000/svg"
 				className="h-6 w-6"
 				fill="none"
@@ -130,8 +149,19 @@ const PyVenvManager = () => {
 	  </div>
 	  }
 	  {(envData == "NO ENVIRONMENTS" && !envKeys) && 
-	  <div className="overflow-auto w-full h-full flex-grow">
+	  <div className="overflow-auto w-full h-full flex flex-grow flex-col justify-center items-center">	
 		<h2 className="text-xl font-semibold mb-4"> You have no virtual environments to manage </h2>
+		<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
+			className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
+				<svg xmlns="http://www.ws.org/2000/svg"
+				className="h-6 w-6"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+				>
+				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+			</svg>
+		</button>
 	  </div>
 	  }
    </div> 

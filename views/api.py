@@ -1,7 +1,10 @@
 from flask import Blueprint, request, jsonify
 import json
 from sys import version as python_formatted_version
+import sqlite3
+import re
 import os
+from machine_driver_scripts.engine import Engine
 from collections import OrderedDict
 import subprocess
 import logging  # Add this line at the top
@@ -87,39 +90,6 @@ def load_layout():
         return jsonify({"layout_name": layout_name, "layout_data": layout_data}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-@api.route('/get_env', methods=['GET'])
-def get_envs():
-    envs = str(os.environ)
-    scratch = os.path.expandvars("/scratch/user/$USER")
-    virtual_envs = "virtual_envs/metadata.json"
-    metadataPath = os.path.join(scratch, virtual_envs)
-    try:
-        with open(metadataPath,'r') as file:
-            metadata = json.load(file)  
-            return metadata, 200
-    except FileNotFoundError as e:
-        return jsonify({"error": f"There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
-    except json.JSONDecodeError as e:
-        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"There was an unexpected error: {str(e)}"}), 500
-
-@api.route('/delete_env/<envToDelete>', methods=['DELETE'])
-def delete_env(envToDelete):
-    try:
-        if "SCRATCH" not in os.environ:
-            os.environ["SCRATCH"] = os.path.expandvars("/scratch/user/$USER")
-        script = f"/sw/local/bin/delete_venv"
-        result = subprocess.run([script, envToDelete], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-        if result.returncode != 0:
-            raise RuntimeError(f"Error deleting environment: {result.stdout.strip()}")
-        return jsonify({"message": result.stdout.strip()}), 200
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Script failed with error: {e.stdout.strip()}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
 
 @api.route('/showquota', methods=['GET'])
 def get_quota():
@@ -223,41 +193,80 @@ def get_cpuavail():
         print(f"Unexpected error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# WORKING BTW--
-# @api.route('/projectinfo', methods=['GET'])
-# def get_projectinfo():
-#     try:
-#         result = subprocess.check_output("/sw/local/bin/myproject", shell=True, stderr=subprocess.STDOUT)
-#         output = result.decode("utf-8").strip()
-#         logging.info(f"Raw output from myproject:\n{output}")
+@api.route('/get_env', methods=['GET'])
+def get_envs():
+    envs = str(os.environ)
+    scratch = os.path.expandvars("/scratch/user/$USER")
+    virtual_envs = "virtual_envs/metadata.json"
+    metadataPath = os.path.join(scratch, virtual_envs)
+    try:
+        with open(metadataPath,'r') as file:
+            metadata = json.load(file)  
+            return metadata, 200
+    except FileNotFoundError as e:
+        return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
+    except json.JSONDecodeError as e:
+        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error while fetching user's venvs: {str(e)}"}), 500
 
-#         lines = output.split("\n")
-#         start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
-#         if start_index == -1 or len(lines) <= start_index + 2:
-#             return jsonify({"error": "Unexpected output format from myproject"}), 500
-        
-#         project_data = []
-#         for line in lines[start_index + 2:]:
-#             if line.strip().startswith("|") and len(line.split("|")) >= 8:
-#                 fields = [field.strip() for field in line.split("|")[1:-1]]
-#                 if len(fields) == 7:  # Ensure correct number of fields
-#                     project_data.append({
-#                         "account": fields[0],
-#                         "fy": fields[1],
-#                         "default": fields[2],
-#                         "allocation": float(fields[3]),
-#                         "used_pending_sus": float(fields[4]),
-#                         "balance": float(fields[5]),
-#                         "pi": fields[6],
-#                     })
+@api.route('/delete_env/<envToDelete>', methods=['DELETE'])
+def delete_env(envToDelete):
+    try:
+        if "SCRATCH" not in os.environ:
+            os.environ["SCRATCH"] = os.path.expandvars("/scratch/user/$USER")
+        script = f"/sw/local/bin/delete_venv"
+        result = subprocess.run([script, envToDelete], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+        if result.returncode != 0:
+            raise RuntimeError(f"Error deleting environment: {result.stdout.strip()}")
+        return jsonify({"message": result.stdout.strip()}), 200
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"delete_venv script failed with error: {e.stdout.strip()}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
 
-#         return jsonify({"projects": project_data}), 200
+@api.route('/get_py_versions', methods=['GET'])
+def get_py_versions():
+    try:
+        captureCommand = "/sw/local/bin/toolchains | grep Python > captured-output.txt"
+        removeCommand = "rm captured-output.txt"
+        subprocess.run(captureCommand, shell=True)
+        versions = {}
+        with open("captured-output.txt", "r") as file:
+            next(file)
+            for line in file:
+                words = line.split()
+                if words[6] in versions:
+                    break
+                else:
+                    versions[words[6]] = words[2]
+        subprocess.run(removeCommand, shell=True)
+        return jsonify(versions), 200
+    except FileNotFoundError as e:
+        return jsonify({"error": "There was a file error while getting the Python versions; 'captured-output.txt' file was not found"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error while fetching Python versions: {str(e)}"}), 500
 
-#     except subprocess.CalledProcessError as e:
-#         error_message = e.output.decode("utf-8")
-#         return jsonify({"error": f"Command failed: {error_message}"}), 500
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+@api.route('/create_venv', methods=['POST'])
+def create_venv():
+	try:
+		data = request.json
+		envName = data.get('envName')
+		description = data.get('description')
+		pyVersion = data.get('pyVersion')
+		gccversion = data.get('GCCversion')
+
+		if not envName or not gccversion or not pyVersion:
+			return jsonify({"error": "Missing required parameters from the form submission"}), 400
+	
+		# When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
+		createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+		if result.returncode != 0:
+			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
+		return jsonify({"message": f"{envName} was successfully created!"}), 200
+	except Exception as e:
+		return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
 
 @api.route('/projectinfo', methods=['GET'])
 def get_projectinfo():
