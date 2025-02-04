@@ -64,6 +64,7 @@ def get_py_versions():
         versions = {}
         with open("captured-output.txt", "r") as file:
             next(file)
+			# Grabbing the Python version and mapping it to corresponding GCC version
             for line in file:
                 words = line.split()
                 if words[6] in versions:
