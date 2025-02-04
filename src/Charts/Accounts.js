@@ -20,15 +20,23 @@ const ProjectInfo = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Project Data:", data);
-        setProjects(data.projects || []);
+        console.log("API Response:", data); // Debugging log
+    
+        // Ensure projects exist and is an array
+        const projectsArray = data.projects?.projects;
+        if (Array.isArray(projectsArray)) {
+          setProjects(projectsArray);
+        } else {
+          console.error("Invalid projects format:", data);
+          setProjects([]); // Ensure projects is always an array
+        }
       })
       .catch((err) => {
         console.error("Error fetching projects:", err);
         setError(err.message);
       });
-  }, []);
-
+  }, []);  
+  
   const fetchAdditionalInfo = (account) => {
     setSelectedAccount(account);
     setJobHistory([]);
@@ -39,7 +47,7 @@ const ProjectInfo = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log("Job History for", account, ":", data);
-        setJobHistory(data.job_history || []);
+        setJobHistory(data.raw_output.job_history || []);
       })
       .catch((err) => console.error("Error fetching job history:", err));
 
@@ -48,7 +56,7 @@ const ProjectInfo = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log("Pending Jobs for", account, ":", data);
-        setPendingJobs(data.pending_jobs || []);
+        setPendingJobs(data.raw_output.pending_jobs || []);
       })
       .catch((err) => console.error("Error fetching pending jobs:", err));
   };
