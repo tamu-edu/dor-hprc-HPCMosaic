@@ -1,11 +1,16 @@
 from flask import Blueprint, request, jsonify
 import json
 from sys import version as python_formatted_version
+import sqlite3
+import re
 import os
+from machine_driver_scripts.engine import Engine
 from collections import OrderedDict
 import subprocess
+import logging  # Add this line at the top
 
 api = Blueprint('api', __name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 @api.route('/sinfo', methods=['GET'])
 def get_sinfo():
@@ -86,39 +91,6 @@ def load_layout():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-@api.route('/get_env', methods=['GET'])
-def get_envs():
-    envs = str(os.environ)
-    scratch = os.path.expandvars("/scratch/user/$USER")
-    virtual_envs = "virtual_envs/metadata.json"
-    metadataPath = os.path.join(scratch, virtual_envs)
-    try:
-        with open(metadataPath,'r') as file:
-            metadata = json.load(file)  
-            return metadata, 200
-    except FileNotFoundError as e:
-        return jsonify({"error": f"There was no metadata file found; you likely have not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
-    except json.JSONDecodeError as e:
-        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"There was an unexpected error: {str(e)}"}), 500
-
-@api.route('/delete_env/<envToDelete>', methods=['DELETE'])
-def delete_env(envToDelete):
-    try:
-        if "SCRATCH" not in os.environ:
-            os.environ["SCRATCH"] = os.path.expandvars("/scratch/user/$USER")
-        script = f"/sw/local/bin/delete_venv"
-        result = subprocess.run([script, envToDelete], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-        if result.returncode != 0:
-            raise RuntimeError(f"Error deleting environment: {result.stdout.strip()}")
-        return jsonify({"message": result.stdout.strip()}), 200
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Script failed with error: {e.stdout.strip()}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
-
 @api.route('/showquota', methods=['GET'])
 def get_quota():
     try:
@@ -169,3 +141,233 @@ def get_user_groups():
         return jsonify({"error": f"Command failed: {error_message}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@api.route('/cpuavail', methods=['GET'])
+def get_cpuavail():
+    try:
+        # Run the `cpuavail` command
+        result = subprocess.check_output("/sw/local/bin/cpuavail", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8").strip()
+
+        # Debug: Log raw output
+        print("Raw output from cpuavail:\n", output)
+
+        # Parse the output
+        lines = output.split("\n")
+        config_start = next((i for i, line in enumerate(lines) if "CONFIGURATION" in line), -1)
+        avail_start = next((i for i, line in enumerate(lines) if "AVAILABILITY" in line), -1)
+
+        if config_start == -1 or avail_start == -1:
+            return jsonify({"error": "Unexpected output format from cpuavail"}), 500
+
+        # Parse configuration section
+        config_data = []
+        for line in lines[config_start + 3 : avail_start - 1]:
+            parts = line.split()
+            if len(parts) == 2:
+                config_data.append({
+                    "node_type": parts[0],
+                    "node_count": int(parts[1]),
+                })
+
+        # Parse availability section
+        availability_data = []
+        for line in lines[avail_start + 3 :]:
+            parts = line.split()
+            if len(parts) == 3:
+                availability_data.append({
+                    "node_name": parts[0],
+                    "cpus_available": int(parts[1]),
+                    "memory_available": int(parts[2]),
+                })
+
+        return jsonify({
+            "configuration": config_data,
+            "availability": availability_data,
+        }), 200
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        print(f"Command failed with error: {error_message}")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/get_env', methods=['GET'])
+def get_envs():
+    envs = str(os.environ)
+    scratch = os.path.expandvars("/scratch/user/$USER")
+    virtual_envs = "virtual_envs/metadata.json"
+    metadataPath = os.path.join(scratch, virtual_envs)
+    try:
+        with open(metadataPath,'r') as file:
+            metadata = json.load(file)  
+            return metadata, 200
+    except FileNotFoundError as e:
+        return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
+    except json.JSONDecodeError as e:
+        return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error while fetching user's venvs: {str(e)}"}), 500
+
+@api.route('/delete_env/<envToDelete>', methods=['DELETE'])
+def delete_env(envToDelete):
+    try:
+        if "SCRATCH" not in os.environ:
+            os.environ["SCRATCH"] = os.path.expandvars("/scratch/user/$USER")
+        script = f"/sw/local/bin/delete_venv"
+        result = subprocess.run([script, envToDelete], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+        if result.returncode != 0:
+            raise RuntimeError(f"Error deleting environment: {result.stdout.strip()}")
+        return jsonify({"message": result.stdout.strip()}), 200
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"delete_venv script failed with error: {e.stdout.strip()}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error deleting the environment: {str(e)}"}), 500
+
+@api.route('/get_py_versions', methods=['GET'])
+def get_py_versions():
+    try:
+        captureCommand = "/sw/local/bin/toolchains | grep Python > captured-output.txt"
+        removeCommand = "rm captured-output.txt"
+        subprocess.run(captureCommand, shell=True)
+        versions = {}
+        with open("captured-output.txt", "r") as file:
+            next(file)
+            for line in file:
+                words = line.split()
+                if words[6] in versions:
+                    break
+                else:
+                    versions[words[6]] = words[2]
+        subprocess.run(removeCommand, shell=True)
+        return jsonify(versions), 200
+    except FileNotFoundError as e:
+        return jsonify({"error": "There was a file error while getting the Python versions; 'captured-output.txt' file was not found"}), 500
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error while fetching Python versions: {str(e)}"}), 500
+
+@api.route('/create_venv', methods=['POST'])
+def create_venv():
+	try:
+		data = request.json
+		envName = data.get('envName')
+		description = data.get('description')
+		pyVersion = data.get('pyVersion')
+		gccversion = data.get('GCCversion')
+
+		if not envName or not gccversion or not pyVersion:
+			return jsonify({"error": "Missing required parameters from the form submission"}), 400
+	
+		# When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
+		createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+		if result.returncode != 0:
+			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
+		return jsonify({"message": f"{envName} was successfully created!"}), 200
+	except Exception as e:
+		return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
+
+@api.route('/projectinfo', methods=['GET'])
+def get_projectinfo():
+    """Retrieve project information and allow querying for job history or pending jobs."""
+    try:
+        account = request.args.get("account")  # Account number for filtering
+        job_history = request.args.get("job_history")  # Boolean flag for job history
+        pending_jobs = request.args.get("pending_jobs")  # Boolean flag for pending jobs
+
+        if pending_jobs and account:
+            command = f"/sw/local/bin/myproject -p {account}"
+        elif job_history and account:
+            command = f"/sw/local/bin/myproject -j {account}"
+        else:
+            command = "/sw/local/bin/myproject"
+
+        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8").strip()
+        logging.info(f"Raw output from myproject ({command}):\n{output}")
+
+        # If querying pending jobs
+        if pending_jobs and account:
+            return jsonify(parse_pending_jobs(output)), 200
+
+        # If querying job history
+        if job_history and account:
+            return jsonify(parse_job_history(output)), 200
+
+        # Otherwise, parse project accounts (default behavior)
+        return jsonify(parse_project_accounts(output)), 200
+
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        logging.error(f"Command failed: {error_message}")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+def parse_project_accounts(output):
+    """Parses output from `myproject` to extract project account details."""
+    lines = output.split("\n")
+    start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
+    
+    if start_index == -1 or len(lines) <= start_index + 2:
+        return {"error": "Unexpected output format from myproject"}
+
+    project_data = []
+    for line in lines[start_index + 2:]:
+        if line.strip().startswith("|"):
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 7:  # Ensure correct number of fields
+                project_data.append({
+                    "account": fields[0],
+                    "fy": fields[1],
+                    "default": fields[2],
+                    "allocation": float(fields[3]) if fields[3].replace('.', '', 1).isdigit() else 0.0,
+                    "used_pending_sus": float(fields[4]) if fields[4].replace('.', '', 1).isdigit() else 0.0,
+                    "balance": float(fields[5]) if fields[5].replace('.', '', 1).isdigit() else 0.0,
+                    "pi": fields[6],
+                })
+
+    return {"projects": project_data}
+
+
+def parse_pending_jobs(output):
+    """Parses output from `myproject -p <account>` to extract pending jobs."""
+    lines = output.split("\n")
+    job_data = []
+
+    for line in lines[2:]:  # Skip header lines
+        if line.strip().startswith("|") and len(line.split("|")) >= 6:
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 5:  # Ensure correct number of fields
+                job_data.append({
+                    "job_id": fields[0],
+                    "state": fields[1],
+                    "cores": fields[2],
+                    "effective_cores": fields[3],
+                    "walltime_hours": fields[4],
+                })
+
+    return {"pending_jobs": job_data}
+
+
+def parse_job_history(output):
+    """Parses output from `myproject -j <account>` to extract job history."""
+    lines = output.split("\n")
+    history_data = []
+
+    for line in lines[2:]:  # Skip header lines
+        if line.strip().startswith("|") and len(line.split("|")) >= 6:
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 5:  # Ensure correct number of fields
+                history_data.append({
+                    "job_id": fields[0],
+                    "state": fields[1],
+                    "cores": fields[2],
+                    "effective_cores": fields[3],
+                    "walltime_hours": fields[4],
+                })
+
+    return {"job_history": history_data}
