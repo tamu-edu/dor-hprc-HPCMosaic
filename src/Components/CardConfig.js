@@ -3,6 +3,7 @@ import Card from './Card';
 import ClusterInfo from '../Charts/ClusterInfo';
 import PyVenvManager from '../Charts/PyVenvManager';
 import Chatbot from '../Charts/Chatbot';
+import Composer from '../Charts/Composer';
 import QuotaInfo from '../Charts/QuotaInfo';
 import UserGroups from '../Charts/UserGroups';
 import Accounts from '../Charts/Accounts';
@@ -21,6 +22,11 @@ const CardConfig = {
     Chatbot: {
         cardComponent: React.memo((props) => <Card {...props} title="Chatbot" image="/images/chatbot.png" />),
         chartComponent: Chatbot,
+        // defaultProps: { w: 1, h: 2 },
+    },
+    Composer: {
+        cardComponent: React.memo((props) => <Card {...props} title="Composer" image="/images/chatbot.png" />),
+        chartComponent: Composer,
         // defaultProps: { w: 1, h: 2 },
     },
     "Quota Info": {
