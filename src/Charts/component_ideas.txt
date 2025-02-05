@@ -1,4 +1,8 @@
-need form validation at point of submission for the env name
+fetaures:
+Add optional checkbox to have the user specify if the env is for a Jupyter notebook. In this case, install jupyter package into the env during creation.
+
+
+need form validation at point of submission for the env name - (done)no we don't, just send forward the backend script's input validation
 make the chart column titles look better - done
 
 bugs:

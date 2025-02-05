@@ -7,6 +7,7 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [description, setDescription] = useState('');
 	const [envName, setEnvName] = useState(null);
 	const [waitingForCreation, setWaitingForCreation] = useState(false);
+	const [isJupyterEnv, setIsJupyterEnv] = useState(false);
 
 	const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
 	const devUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
@@ -122,10 +123,17 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
 			</div>
 
-			{!waitingForCreation && 
-			<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
-				Submit
-			</button>}
+			{!waitingForCreation &&
+			<div className="flex flex-col">
+				<div>	
+					<input type="checkbox" id="jupyter_toggle" name="options" onClick={() => {setIsJupyterEnv(true)}}/>
+					<label for="jupyter_toggle"> Will you use this venv for Jupyter Notebook/Lab?  </label>
+				</div>
+				<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
+					Submit
+				</button>
+			</div>
+			}
 			{waitingForCreation &&
 			 <div>
 			 	<p> Creating Environment (this may take a while)...</p>
