@@ -1,5 +1,6 @@
 import React, { useState, useRef, useContext, createContext, useMemo } from "react";
 import Composer from "./schemaRendering/Composer";
+import "./ComposerStyles.css";
 
 export const GlobalFilesContext = createContext();
 
@@ -55,35 +56,48 @@ const ComposerWrapper = ({
 
   return (
     <GlobalFilesContext.Provider value={{ globalFiles, setGlobalFiles }}>
-      <div className={className}>
-        <h2>{title}</h2>
-        {error && (
-          <div style={{ color: 'red', marginBottom: '1rem' }}>
-            {error}
-            <button onClick={() => setError(null)} style={{ float: 'right' }}>✕</button>
-          </div>
-        )}
-        <form
-          ref={formRef}
-          onSubmit={handleSubmit}
-          encType="multipart/form-data"
-          action={apiEndpoint}
-        >
-          <Composer
-            ref={composerRef}
-            fields={memoizedSchema}
-            setError={setError}
-            onFileChange={handleUploadedFiles}
-          />
-          <div style={{ marginTop: '1rem' }}>
-            <button type="submit">Submit</button>
-            {onPreview && (
-              <button type="button" onClick={handlePreview} style={{ marginLeft: '0.5rem' }}>
-                Preview
-              </button>
+      <div className={`composer-wrapper ${className}`}>
+        <div className="form-card">
+          <div className="form-header">
+            <h2>{title}</h2>
+            {error && (
+              <div className="error-message">
+                <span>{error}</span>
+                <button onClick={() => setError(null)}>✕</button>
+              </div>
             )}
           </div>
-        </form>
+          <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            encType="multipart/form-data"
+            action={apiEndpoint}
+            className="form-content"
+          >
+            <Composer
+              ref={composerRef}
+              fields={memoizedSchema}
+              setError={setError}
+              onFileChange={handleUploadedFiles}
+            />
+          </form>
+          <div className="form-footer">
+            <div className="button-group">
+              <button type="submit" className="btn btn-primary">
+                Submit
+              </button>
+              {onPreview && (
+                <button 
+                  type="button" 
+                  onClick={handlePreview} 
+                  className="btn btn-secondary"
+                >
+                  Preview
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </GlobalFilesContext.Provider>
   );
