@@ -9,19 +9,31 @@ const ProjectInfo = () => {
   const [pendingJobs, setPendingJobs] = useState([]);
   const baseUrl = config.production.dashboard_url;
 
+  const [showPending, setShowPending] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const sortData = (field) => {
+    setSortField(field);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  const filteredData = [...(showPending ? pendingJobs : jobHistory)]
+    .filter((job) => String(job.job_id).includes(searchQuery))
+    .sort((a, b) => {
+      if (!sortField) return 0;
+      return sortOrder === "asc"
+        ? String(a[sortField]).localeCompare(String(b[sortField]))
+        : String(b[sortField]).localeCompare(String(a[sortField]));
+    });
+
   useEffect(() => {
     fetch(`${baseUrl}/api/projectinfo`)
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((data) => {
-            throw new Error(data.error || "Failed to fetch project data");
-          });
-        }
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
-        console.log("Project Data:", data);
-        setProjects(data.projects || []);
+        console.log("API Response:", data);
+        setProjects(data.projects?.projects || []);
       })
       .catch((err) => {
         console.error("Error fetching projects:", err);
@@ -34,21 +46,41 @@ const ProjectInfo = () => {
     setJobHistory([]);
     setPendingJobs([]);
 
-    // Fetch job history
     fetch(`${baseUrl}/api/projectinfo?account=${account}&job_history=true`)
       .then((response) => response.json())
       .then((data) => {
         console.log("Job History for", account, ":", data);
-        setJobHistory(data.job_history || []);
+        setJobHistory(
+          data.job_history?.job_history?.map((job) => ({
+            job_id: job.job_id || "N/A",
+            state: job.state?.trim() || "Completed",
+            cores: job.total_slots || "N/A",
+            walltime_hours: job.walltime ? (parseFloat(job.walltime) / 60).toFixed(2) : "N/A",
+          })) || []
+        );
       })
       .catch((err) => console.error("Error fetching job history:", err));
 
-    // Fetch pending jobs
     fetch(`${baseUrl}/api/projectinfo?account=${account}&pending_jobs=true`)
       .then((response) => response.json())
       .then((data) => {
-        console.log("Pending Jobs for", account, ":", data);
-        setPendingJobs(data.pending_jobs || []);
+        console.log("Raw API Response for Pending Jobs:", data);
+
+        if (data.pending_jobs && Array.isArray(data.pending_jobs.pending_jobs)) {
+          const formattedPending = data.pending_jobs.pending_jobs.map((job) => ({
+            job_id: job["Job Id"]?.trim() || "N/A",
+            state: job["State"]?.trim() || "N/A",
+            cores: job["#Cores"]?.trim() || "N/A",
+            walltime_hours: job["Walltime(H)"]?.trim() || "N/A",
+            pending_sus: job["Pending SUs"]?.trim() || "N/A",
+          }));
+
+          console.log("Formatted Pending Jobs:", formattedPending);
+          setPendingJobs(formattedPending);
+        } else {
+          console.warn("No pending jobs found.");
+          setPendingJobs([]);
+        }
       })
       .catch((err) => console.error("Error fetching pending jobs:", err));
   };
@@ -99,31 +131,39 @@ const ProjectInfo = () => {
       {selectedAccount && (
         <div className="mt-6">
           <h3 className="text-xl font-semibold">Details for Account {selectedAccount}</h3>
-          <div className="mt-4">
-            <h4 className="text-lg font-semibold">Job History</h4>
-            {jobHistory.length ? (
-              <ul className="list-disc pl-6">
-                {jobHistory.map((job, index) => (
-                  <li key={index}>{JSON.stringify(job)}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No job history available.</p>
-            )}
+          <div className="flex space-x-4 mb-4">
+            <button className={`px-4 py-2 rounded ${showPending ? "bg-blue-600 text-white" : "bg-gray-300"}`} onClick={() => setShowPending(true)}>
+              View Pending Jobs
+            </button>
+            <button className={`px-4 py-2 rounded ${!showPending ? "bg-blue-600 text-white" : "bg-gray-300"}`} onClick={() => setShowPending(false)}>
+              View Job History
+            </button>
           </div>
 
-          <div className="mt-4">
-            <h4 className="text-lg font-semibold">Pending Jobs</h4>
-            {pendingJobs.length ? (
-              <ul className="list-disc pl-6">
-                {pendingJobs.map((job, index) => (
-                  <li key={index}>{JSON.stringify(job)}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No pending jobs available.</p>
-            )}
-          </div>
+          <input type="text" placeholder="Search by Job ID..." className="border px-2 py-1 mb-4 w-full" onChange={(e) => setSearchQuery(e.target.value)} />
+
+          <table className="table-auto w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-200">
+                <th onClick={() => sortData("job_id")}>Job ID ⬍</th>
+                <th onClick={() => sortData("state")}>State ⬍</th>
+                <th onClick={() => sortData("cores")}>Cores ⬍</th>
+                <th onClick={() => sortData("walltime_hours")}>Walltime (hrs) ⬍</th>
+                {showPending && <th onClick={() => sortData("pending_sus")}>Pending SUs ⬍</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((job, index) => (
+                <tr key={index}>
+                  <td>{job.job_id}</td>
+                  <td>{job.state}</td>
+                  <td>{job.cores}</td>
+                  <td>{job.walltime_hours}</td>
+                  {showPending && <td>{job.pending_sus}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

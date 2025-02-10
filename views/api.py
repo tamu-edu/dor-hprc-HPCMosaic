@@ -283,20 +283,37 @@ def get_projectinfo():
         else:
             command = "/sw/local/bin/myproject"
 
+        # Log and print the executed command
+        logging.info(f"Executing command: {command}")
+        print(f"Executing command: {command}")
+
+        # Run the command and capture output
         result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         output = result.decode("utf-8").strip()
-        logging.info(f"Raw output from myproject ({command}):\n{output}")
+
+        # Log and print the raw output
+        logging.info(f"Raw output from myproject:\n{output}")
+        print(f"Raw output from myproject:\n{output}")
+
+        # Include the executed command and raw output in the response
+        response_data = {
+            "executed_command": command,
+            "raw_output": output
+        }
 
         # If querying pending jobs
         if pending_jobs and account:
-            return jsonify(parse_pending_jobs(output)), 200
+            response_data["pending_jobs"] = parse_pending_jobs(output)
+            return jsonify(response_data), 200
 
         # If querying job history
         if job_history and account:
-            return jsonify(parse_job_history(output)), 200
+            response_data["job_history"] = parse_job_history(output)
+            return jsonify(response_data), 200
 
         # Otherwise, parse project accounts (default behavior)
-        return jsonify(parse_project_accounts(output)), 200
+        response_data["projects"] = parse_project_accounts(output)
+        return jsonify(response_data), 200
 
     except subprocess.CalledProcessError as e:
         error_message = e.output.decode("utf-8")
@@ -305,7 +322,6 @@ def get_projectinfo():
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
 
 def parse_project_accounts(output):
     """Parses output from `myproject` to extract project account details."""
@@ -356,18 +372,31 @@ def parse_pending_jobs(output):
 def parse_job_history(output):
     """Parses output from `myproject -j <account>` to extract job history."""
     lines = output.split("\n")
+
+    # Log raw lines for debugging
+    logging.info(f"Parsing job history, raw lines: {lines[:10]}")  # Only show the first 10 lines
+    print(f"Parsing job history, raw lines: {lines[:10]}")
+
     history_data = []
 
-    for line in lines[2:]:  # Skip header lines
-        if line.strip().startswith("|") and len(line.split("|")) >= 6:
-            fields = [field.strip() for field in line.split("|")[1:-1]]
-            if len(fields) == 5:  # Ensure correct number of fields
-                history_data.append({
-                    "job_id": fields[0],
-                    "state": fields[1],
-                    "cores": fields[2],
-                    "effective_cores": fields[3],
-                    "walltime_hours": fields[4],
-                })
+    # Find the start of the data table
+    start_index = next((i for i, line in enumerate(lines) if "JobID" in line and "SubmitTime" in line), -1)
+    
+    if start_index == -1 or len(lines) <= start_index + 1:
+        return {"error": "Unexpected output format from myproject"}
+
+    # Parse jobs from the output
+    for line in lines[start_index + 1:]:
+        fields = [field.strip() for field in line.split("|") if field.strip()]
+        if len(fields) >= 8:  # Ensure correct number of fields
+            history_data.append({
+                "job_id": fields[1],  # Job ID is the second column
+                "submit_time": fields[3],
+                "start_time": fields[4],
+                "end_time": fields[5],
+                "walltime": fields[6],
+                "total_slots": fields[7],
+                "used_sus": fields[8],
+            })
 
     return {"job_history": history_data}

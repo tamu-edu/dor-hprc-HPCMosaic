@@ -129,7 +129,6 @@ const PlaceHolder = () => {
                         change={(data) => changeHandler(0, data)}
                         loadDefaultView={() => [
                             { name: "Node Utilization", id: "0", i: "0", x: 0, y: 0, w: 2, h: 3 },
-                            { name: "Chatbot", id: "1", i: "1", x: 1, y: 0, w: 1, h: 1 },
                             { name: "PyVenvManager", id: "2", i: "2", x: 2, y: 0, w: 1, h: 1 },
                         ]}
                         layoutData={layoutData}

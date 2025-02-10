@@ -2,7 +2,6 @@ import React from 'react';
 import Card from './Card';
 import ClusterInfo from '../Charts/ClusterInfo';
 import PyVenvManager from '../Charts/PyVenvManager';
-import Chatbot from '../Charts/Chatbot';
 import QuotaInfo from '../Charts/QuotaInfo';
 import UserGroups from '../Charts/UserGroups';
 import Accounts from '../Charts/Accounts';
@@ -17,11 +16,6 @@ const CardConfig = {
         cardComponent: React.memo((props) => <Card {...props} title="Python Venv Manager" image="/images/python-venv.png" />),
         chartComponent: PyVenvManager,
         // defaultProps: { w: 2, h: 2 },
-    },
-    Chatbot: {
-        cardComponent: React.memo((props) => <Card {...props} title="Chatbot" image="/images/chatbot.png" />),
-        chartComponent: Chatbot,
-        // defaultProps: { w: 1, h: 2 },
     },
     "Quota Info": {
         cardComponent: React.memo((props) => <Card {...props} title="Quota Information" image="/pun/sys/dor-hprc-web-tamudashboard-reu-branch/images/cluster-util.png" />),
