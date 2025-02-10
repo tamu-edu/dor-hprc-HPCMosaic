@@ -62,8 +62,8 @@ const ComposerWrapper = ({
             <h2>{title}</h2>
             {error && (
               <div className="error-message">
-                <span>{error}</span>
-                <button onClick={() => setError(null)}>✕</button>
+        <span>{typeof error === 'string' ? error : error.message || 'An error occurred'}</span>
+        <button onClick={() => setError(null)}>✕</button>
               </div>
             )}
           </div>

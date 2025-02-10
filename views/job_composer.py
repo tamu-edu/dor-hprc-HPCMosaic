@@ -1,12 +1,20 @@
-from flask import Blueprint, render_template, request, jsonify, current_app as app
+from flask import Blueprint, send_file, render_template, request, jsonify, current_app as app
 import json
 import sqlite3
 import re
 import os
 from machine_driver_scripts.engine import Engine
 import subprocess
+import yaml
+from functools import wraps
+from .logger import Logger
+from .error_handler import APIError, handle_api_error
+from .history_manager import JobHistoryManager
+from .env_repo_manager import EnvironmentRepoManager
 
 job_composer = Blueprint("job_composer", __name__)
+logger = Logger()
+
 
 @job_composer.route("/")
 def composer():
@@ -15,6 +23,37 @@ def composer():
 
 def get_directories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
+@job_composer.route('/download_file', methods=['POST'])
+def download_file():
+    # Todo make it use api errors
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON'}), 400
+    try:
+        data = request.get_json()
+    except Exception as json_error:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    filepath = data.get('filepath')
+    if not filepath:
+        return jsonify({'error': 'No filepath provided'}), 400
+
+    if not os.path.exists(filepath):
+        return jsonify({'error': f'File not found: {filepath}'}), 404
+
+    if not os.access(filepath, os.R_OK):
+        return jsonify({'error': f'No read permissions for file: {filepath}'}), 403
+
+    try:
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=os.path.basename(filepath)
+        )
+    except PermissionError as pe:
+        return jsonify({'error': f'Permission denied: {pe}'}), 403
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @job_composer.route('/modules', methods=['GET'])
 def get_modules():
@@ -46,7 +85,54 @@ def get_environment(environment):
     
     return template_data
 
+@job_composer.route('/evaluate_dynamic_select', methods=['GET'])
+@handle_api_error
+def evaluate_dynamic_select():
+    retriever_path = request.args.get("retriever_path")
+    
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    bash_command = f"bash {retriever_script}"
+    
+    try:
+        result = subprocess.run(
+                bash_command,
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                cwd=retriever_dir
+        )
+        if result.returncode == 0:
+            #TODO: We assume the result is the correct JSON format for a dynamic select
+            #options = json.loads(result.stdout)
+            options = result.stdout
+        else:
+            raise APIError(
+                "The dynamic select script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+                )
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process dynamic select",
+            status_code=500,
+            details={'error': str(e)}
+    )
+    return options
+
+def iterate_schema(schema_dict):
+    """Generator that yields all elements in the schema including nested ones"""
+    for key, value in schema_dict.items():
+        yield key, value
+
+        if value.get("type") == "rowContainer" and "elements" in value:
+            yield from iterate_schema(value["elements"])
+
+
 @job_composer.route('/schema/<environment>', methods=['GET'])
+@handle_api_error
 def get_schema(environment):
     env_dir = request.args.get("src")
     if env_dir is None:
@@ -57,27 +143,19 @@ def get_schema(environment):
     if os.path.exists(schema_path):
         schema_data = open(schema_path, 'r').read()
     else:
-        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'schema.json')} not found")
+        raise APIError(f"Schema file not found: {schema_path}", status_code=404)
    
-    schema_dict = json.loads(schema_data)
-    
-    for key in schema_dict:
-        if schema_dict[key]["type"] == "dynamic_select":
-            
-            retriever_path = os.path.join(env_dir, environment, schema_dict[key]["retriever"])
-            bash_command = f"bash {retriever_path}"
+    try:
+        schema_dict = json.loads(schema_data)
+    except json.JSONDecodeError as e:
+        raise APIError("Invalid schema JSON", status_code=400, details={'error': str(e)})
 
-            try:
-                result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-                if result.returncode == 0:
-                    options = json.loads(result.stdout)
-                else:
-                    return result.stderr
-            except subprocess.CalledProcessError as e:
-                return e.stderr
-            
-            schema_dict[key]["type"] = "select" 
-            schema_dict[key]["options"] = options
+    for key, element in iterate_schema(schema_dict):
+        if element["type"] == "dynamicSelect":
+            retriever_path = os.path.join(env_dir, environment, element["retriever"])
+            element["retrieverPath"] = retriever_path
+            element["isEvaluated"] = False
+            element["isShown"] = False
 
     return json.dumps(schema_dict)
 
@@ -120,8 +198,38 @@ def save_file(file, location):
 
     return file_path
     
+@job_composer.route('/history', methods=['GET'])
+def get_history():
+    history_manager = JobHistoryManager()
+    return jsonify(history_manager.get_user_history())
+
+
+@job_composer.route('/history/<int:job_id>', methods=['GET'])
+def get_job_from_history(job_id):
+    history_manager = JobHistoryManager()
+    
+    job_data = history_manager.get_job(job_id)
+
+    if not job_data:
+        return "Job not found", 404
+
+    return jsonify(job_data)  
+
+def extract_job_id(submit_response):
+    match = re.search(r'Submitted batch job (\d+)', submit_response)
+    return match.group(1) if match else None
+
 
 @job_composer.route('/submit', methods=['POST'])
+@logger.log_route(
+    extract_fields={
+        'user': lambda: os.getenv('USER'), 
+        'env_dir': lambda: request.form.get('env_dir', 'unknown'),
+        'job_name': lambda: request.form.get('name','unknown'), 
+        'env': lambda: request.form.get('runtime', 'unknown')
+    },
+    format_string="{timestamp} {user} {env_dir}/{env} {job_name}"
+)
 def submit_job():
     params = request.form
     files = request.files
@@ -139,25 +247,30 @@ def submit_job():
 
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
+
     bash_command = f"bash {driver_script_path}"
-    
+
+    history_manager = JobHistoryManager()
+
     try:
         result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if result.returncode == 0:
+                history_manager.save_job(
+                    extract_job_id(result.stdout),
+                    params,
+                    files,
+                    {
+                        'bash_script': bash_script_path,
+                        'driver_script': driver_script_path
+                     }
+                )
                 return result.stdout
+                
         else:
             return result.stderr
     except subprocess.CalledProcessError as e:
         return e.stderr
     
-@job_composer.route('/test_submit', methods=['POST'])
-def test_submit():
-    params = request.form
-    files = request.files
-    print(params)
-    print(files)
-    return "Success"
-
 
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
@@ -200,24 +313,55 @@ def get_environments():
     environments = _get_environments()
     return jsonify(environments)
 
+@job_composer.route('/add_environment', methods=['POST'])
+def add_environment():
+    env = request.form.get("env")
+    src = request.form.get("src")
+    cluster_name = app.config['cluster_name']
+    
+    repo_manager = EnvironmentRepoManager(
+            repo_url=app.config['env_repo_github'],
+            repo_dir="./environments-repo"
+    )
+        
+    user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+    success = repo_manager.copy_environment_to_user(cluster_name, env, user_envs_path)
+        
+    if success:
+        return jsonify({"status": "Success"})
+    else:
+        return jsonify({"status": "Failed to copy environment"}), 500
+
+@job_composer.route('/get_more_envs_info', methods=['GET'])
+def get_more_envs_info():
+    cluster_name = app.config['cluster_name']
+    repo_manager = EnvironmentRepoManager(
+        repo_url=app.config["env_repo_github"],
+        repo_dir="./environments-repo"
+    )
+    
+    environments_info = repo_manager.get_environments_info(cluster_name)
+    return jsonify(environments_info)
 
 def _get_environments():
     system_environments = get_directories("./environments")
-    system_environments = [{"env": env, "src": "./environments"} for env in system_environments]
-    
+    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
+
     user_envs_path = request.args.get("user_envs_path")
 
     if user_envs_path is None:
-        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments" 
+        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+        create_folder_if_not_exist(user_envs_path)
 
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env, "src": user_envs_path} for env in user_environments]
+        user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
     except OSError as e:
         print(e)
-        
+
     environments = system_environments + user_environments
 
     return environments
+
 

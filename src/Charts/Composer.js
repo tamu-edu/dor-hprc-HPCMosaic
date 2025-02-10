@@ -43,7 +43,7 @@ const Composer = () => {
           help: "Only set this field if you requested multiple tasks above and you want to distribute these tasks over multiple nodes. This is most common for MPI codes. If you are not sure, or if you don't want to explicitly distribute tasks over multiple nodes, leave this value at 0.",
           name: "nodes",
           value: "",
-          condition: "AdvancedCheckbox.Yes"
+          condition: "advancedbox.Yes"
         },
         cpus: {
           type: "number",
@@ -52,7 +52,7 @@ const Composer = () => {
           name: "cpus",
           value: "1",
           max: "48",
-          condition: "AdvancedCheckbox.Yes"
+          condition: "advancedbox.Yes"
         }
       }
     },
@@ -64,7 +64,7 @@ const Composer = () => {
           type: "select",
           label: "Use Accelerator",
           help: "Only select an accelerator if your job will utilize them. You might need to setup the environment for the accelerator you selected in the job script.",
-          name: "gpu",
+          name: "gpuDropdown",
           options: [
             { value: "", label: "NONE" },
             { value: "a100", label: "A100" },
@@ -113,7 +113,7 @@ const Composer = () => {
           label: "Project Account",
           help: "OPTIONAL: if you want to use a different project account than your default account, you can provide the account number here.",
           name: "account",
-          retriever: "list_accounts"
+          retriever: "/scratch/user/a11155/list_accounts"
         },
         extraText: {
           type: "text",
