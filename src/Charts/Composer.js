@@ -130,42 +130,24 @@ const Composer = () => {
   const defaultValues = {
     gpuDropdown: {label:"A100", value:"a100"},
     numgpu: "2",
-    memory: "64G",
+    memory: "",
     walltime: "50:30:00",
   };
 
   const handleSubmit = async (formData) => {
-    try {
-      const response = await fetch('/api/submit', {
-        method: 'POST',
-        body: formData
-      });
-      if (!response.ok) {
-        throw new Error('Submission failed');
-      }
-      const data = await response.json();
-      console.log('Success:', data);
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
+	console.log("hello", formData);
+  console.log('Preview Form Data Contents:');
+  for (let pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
   };
+}
 
   const handlePreview = async (formData) => {
-    try {
-      const response = await fetch('/api/preview', {
-        method: 'POST',
-        body: formData
-      });
-      if (!response.ok) {
-        throw new Error('Preview failed');
-      }
-      const preview = await response.json();
-      console.log('Preview:', preview);
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
+	console.log("hello", formData);
+  console.log('Preview Form Data Contents:');
+  for (let pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
+  }
   };
 
   const handleFileChange = (files) => {
@@ -185,9 +167,8 @@ const Composer = () => {
           schema={schema}
           onSubmit={handleSubmit}
           defaultValues={defaultValues}
-          onPreview={handlePreview}
+          onClose={handlePreview}
           onFileChange={handleFileChange}
-          apiEndpoint="/api/submit"
           title="Form Title"
           className="job-composer"
         />
