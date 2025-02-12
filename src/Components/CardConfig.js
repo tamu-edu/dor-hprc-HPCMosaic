@@ -5,6 +5,7 @@ import PyVenvManager from '../Charts/PyVenvManager';
 import Chatbot from '../Charts/Chatbot';
 import Composer from '../Charts/Composer';
 import QuotaInfo from '../Charts/QuotaInfo';
+import QuotaButton from '../Charts/QuotaButton';
 import UserGroups from '../Charts/UserGroups';
 import Accounts from '../Charts/Accounts';
 
@@ -27,6 +28,11 @@ const CardConfig = {
     Composer: {
         cardComponent: React.memo((props) => <Card {...props} title="Composer" image="/images/chatbot.png" />),
         chartComponent: Composer,
+        // defaultProps: { w: 1, h: 2 },
+    },
+    "Quota Button": {
+        cardComponent: React.memo((props) => <Card {...props} title="Quota Button" image="/images/chatbot.png" />),
+        chartComponent: QuotaButton,
         // defaultProps: { w: 1, h: 2 },
     },
     "Quota Info": {

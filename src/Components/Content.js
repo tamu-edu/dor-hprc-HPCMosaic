@@ -12,6 +12,7 @@ import ClusterInfo from "../Charts/ClusterInfo";
 import Chatbot from "../Charts/Chatbot";
 import Composer from "../Charts/Composer";
 import QuotaInfo from "../Charts/QuotaInfo";
+import QuotaButton from "../Charts/QuotaButton";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
 
@@ -74,6 +75,14 @@ const Content = (props) => {
     {
       name: "Composer",
       i: "6",
+      x: 0,
+      y: 3,
+      w: 2,
+      h: 3,
+    },
+    {
+      name: "Quota Button",
+      i: "7",
       x: 0,
       y: 3,
       w: 2,
@@ -144,6 +153,8 @@ const Content = (props) => {
         return <Chatbot />;
       case "Composer":
         return <Composer />;
+      case "Quota Button":
+        return <QuotaButton />;
       case "Quota Info":
         return <QuotaInfo />;
       case "User Groups":
