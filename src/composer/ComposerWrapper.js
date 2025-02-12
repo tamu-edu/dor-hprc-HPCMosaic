@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, createContext, useMemo } from "react";
+import React, { useState, useRef, useContext, createContext, useMemo, useEffect } from "react";
 import Composer from "./schemaRendering/Composer";
 import "./ComposerStyles.css";
 
@@ -11,14 +11,22 @@ const ComposerWrapper = ({
   title = "Form Builder",
   apiEndpoint,
   onFileChange,
-  className = ""
+  className = "",
+  defaultValues = {}
 }) => {
   const [error, setError] = useState(null);
   const [globalFiles, setGlobalFiles] = useState([]);
   const formRef = useRef(null);
   const composerRef = useRef(null);
-
   const memoizedSchema = useMemo(() => schema, []);
+  const defaultsAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (composerRef.current && Object.keys(defaultValues).length > 0 && !defaultsAppliedRef.current) {
+      composerRef.current.setValues(defaultValues);
+      defaultsAppliedRef.current = true;
+    }
+  }, []);
 
   const handleUploadedFiles = (files) => {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -62,8 +70,8 @@ const ComposerWrapper = ({
             <h2>{title}</h2>
             {error && (
               <div className="error-message">
-        <span>{typeof error === 'string' ? error : error.message || 'An error occurred'}</span>
-        <button onClick={() => setError(null)}>✕</button>
+                <span>{typeof error === 'string' ? error : error.message || 'An error occurred'}</span>
+                <button onClick={() => setError(null)}>✕</button>
               </div>
             )}
           </div>
@@ -83,15 +91,9 @@ const ComposerWrapper = ({
           </form>
           <div className="form-footer">
             <div className="button-group">
-              <button type="submit" className="btn btn-primary">
-                Submit
-              </button>
+              <button type="submit" className="btn btn-primary">Submit</button>
               {onPreview && (
-                <button 
-                  type="button" 
-                  onClick={handlePreview} 
-                  className="btn btn-secondary"
-                >
+                <button type="button" onClick={handlePreview} className="btn btn-secondary">
                   Preview
                 </button>
               )}

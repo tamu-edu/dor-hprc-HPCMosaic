@@ -42,7 +42,7 @@ const Composer = () => {
           label: "Number of nodes",
           help: "Only set this field if you requested multiple tasks above and you want to distribute these tasks over multiple nodes. This is most common for MPI codes. If you are not sure, or if you don't want to explicitly distribute tasks over multiple nodes, leave this value at 0.",
           name: "nodes",
-          value: "",
+          value: "3",
           condition: "advancedbox.Yes"
         },
         cpus: {
@@ -126,6 +126,14 @@ const Composer = () => {
     }
   };
 
+
+  const defaultValues = {
+    gpuDropdown: {label:"A100", value:"a100"},
+    numgpu: "2",
+    memory: "64G",
+    walltime: "50:30:00",
+  };
+
   const handleSubmit = async (formData) => {
     try {
       const response = await fetch('/api/submit', {
@@ -176,6 +184,7 @@ const Composer = () => {
         <ComposerWrapper
           schema={schema}
           onSubmit={handleSubmit}
+          defaultValues={defaultValues}
           onPreview={handlePreview}
           onFileChange={handleFileChange}
           apiEndpoint="/api/submit"
