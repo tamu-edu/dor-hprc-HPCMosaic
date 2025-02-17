@@ -34,7 +34,8 @@ def get_envs():
             metadata = json.load(file)  
             return metadata, 200
     except FileNotFoundError as e:
-        return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
+        return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment: {str(e)}", 
+		"code": "NO_METADATA"}), 500
     except json.JSONDecodeError as e:
         return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
     except Exception as e:
@@ -86,12 +87,17 @@ def create_venv():
 		description = data.get('description')
 		pyVersion = data.get('pyVersion')
 		gccversion = data.get('GCCversion')
+		isJupyter = data.get('jupyter')
 
 		if not envName or not gccversion or not pyVersion:
 			return jsonify({"error": "Missing required parameters from the form submission"}), 400
 	
 		# When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
-		createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		if isJupyer:
+			createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv --jupyter {envName} -d '{description}'"
+		else:
+			createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		
 		result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
 		if result.returncode != 0:
 			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stdout}"}), 500

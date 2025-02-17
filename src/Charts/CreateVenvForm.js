@@ -52,7 +52,8 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			pyVersion: selectedPyVersion,
 			GCCversion: gccversion,
 			envName: envName,
-			description: description
+			description: description,
+			jupyter: isJupyterEnv
 		};
 		console.log(formData)
 		try {
@@ -125,10 +126,6 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 
 			{!waitingForCreation &&
 			<div className="flex flex-col">
-				<div>	
-					<input type="checkbox" id="jupyter_toggle" name="options" onClick={() => {setIsJupyterEnv(true)}}/>
-					<label for="jupyter_toggle"> Will you use this venv for Jupyter Notebook/Lab?  </label>
-				</div>
 				<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
 					Submit
 				</button>
