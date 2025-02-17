@@ -167,7 +167,6 @@ const Composer = () => {
           schema={schema}
           onSubmit={handleSubmit}
           defaultValues={defaultValues}
-          onClose={handlePreview}
           onFileChange={handleFileChange}
           title="Form Title"
           className="job-composer"

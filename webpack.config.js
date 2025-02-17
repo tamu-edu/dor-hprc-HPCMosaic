@@ -10,6 +10,12 @@ module.exports = {
   watchOptions: {
     ignored: '**/node_modules',
   },
+  resolve: {
+    alias: {
+      '@config': path.resolve(__dirname, 'config.yml'),
+      '@composer_index': path.resolve(__dirname, 'src/composer', 'ComposerWrapper.js')
+    }
+  },
   module: {
     rules: [
       { test: /\.css$/, 
@@ -18,7 +24,8 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        include: [path.resolve(__dirname, "src")],
+        include: [path.resolve(__dirname, "src"),
+		  path.resolve(__dirname, "external/drona_composer/src")],
         use: ["babel-loader"],
       },
       {
