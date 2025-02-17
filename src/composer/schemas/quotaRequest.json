@@ -1,0 +1,206 @@
+{
+  "initialCheck": {
+    "type": "rowContainer",
+    "elements": {
+      "sectionTitle": {
+        "type": "staticText",
+        "value": "Initial Verification",
+        "isHeading": true
+      },
+      "sectionDescription": {
+        "type": "staticText",
+        "value": "Please verify if this is a standard request or requires special approval.",
+        "isHeading": false
+      },
+      "isLongRequest": {
+        "type": "radioGroup",
+        "label": "Is this request more than 10TB or for longer than 6 months?*",
+        "name": "isLongRequest",
+        "options": [
+          { "value": "No", "label": "No" },
+          { "value": "Yes", "label": "Yes" }
+        ]
+      }
+    }
+  },
+  "requestDetails": {
+    "type": "rowContainer",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "sectionTitle": {
+        "type": "staticText",
+        "value": "Request Details",
+        "isHeading": true
+      },
+      "sectionDescription": {
+        "type": "staticText",
+        "value": "Basic information about your request",
+        "isHeading": false
+      },
+      "requestContainer": {
+        "type": "rowContainer",
+        "elements": {
+          "requestType": {
+            "type": "radioGroup",
+            "label": "Request Type*",
+            "name": "requestType",
+            "options": [
+              { "value": "New Request", "label": "New Request" },
+              { "value": "Extension", "label": "Extension" }
+            ]
+          },
+          "emailId": {
+            "type": "text",
+            "label": "Email ID*",
+            "name": "emailId"
+          }
+        }
+      }
+    }
+  },
+  "quotaDetails": {
+    "type": "rowContainer",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "sectionTitle": {
+        "type": "staticText",
+        "value": "Storage Requirements",
+        "isHeading": true
+      },
+      "sectionDescription": {
+        "type": "staticText",
+        "value": "Specify your storage needs and file limits",
+        "isHeading": false
+      },
+      "quotaContainer": {
+        "type": "rowContainer",
+        "elements": {
+          "currentQuota": {
+            "type": "unit",
+            "label": "Current Quota*",
+            "name": "currentQuota",
+            "value": "1",
+            "units": [{ "label": "TB", "value": "TB" }]
+          },
+          "newQuota": {
+            "type": "unit",
+            "label": "New Quota*",
+            "name": "newQuota",
+            "units": [{ "label": "TB", "value": "TB" }]
+          }
+        }
+      },
+      "fileContainer": {
+        "type": "rowContainer",
+        "elements": {
+          "fileNote": {
+            "type": "staticText",
+            "value": "File limits help maintain system performance",
+            "isHeading": false
+          },
+          "currentFileLimit": {
+            "type": "text",
+            "label": "Current File Limit*",
+            "name": "currentFileLimit",
+            "value": "250000"
+          },
+          "newFileLimit": {
+            "type": "text",
+            "label": "New File Limit*",
+            "name": "newFileLimit"
+          }
+        }
+      }
+    }
+  },
+  "justification": {
+    "type": "rowContainer",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "sectionTitle": {
+        "type": "staticText",
+        "value": "Project Justification",
+        "isHeading": true
+      },
+      "sectionDescription": {
+        "type": "staticText",
+        "value": "Please provide detailed information to help us evaluate your request",
+        "isHeading": false
+      },
+      "piAwareness": {
+        "type": "textarea",
+        "label": "PI Approval*",
+        "name": "piAwareness",
+        "help": "Please provide details of PI's awareness and approval"
+      },
+      "storedData": {
+        "type": "textarea",
+        "label": "Data Description*",
+        "name": "storedData",
+        "help": "Describe the type and nature of data to be stored"
+      },
+      "researchDescription": {
+        "type": "textarea",
+        "label": "Research Project Description*",
+        "name": "researchDescription",
+        "help": "Briefly describe the research project that will be supported by the requested storage"
+      }
+    }
+  },
+  "technical": {
+    "type": "rowContainer",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "sectionTitle": {
+        "type": "staticText",
+        "value": "Technical Information",
+        "isHeading": true
+      },
+      "sectionDescription": {
+        "type": "staticText",
+        "value": "Technical details about your storage requirements",
+        "isHeading": false
+      },
+      "jobSize": {
+        "type": "textarea",
+        "label": "Input/Output Size*",
+        "name": "jobSize",
+        "help": "What is the input/output size of the job?"
+      },
+      "storagePlan": {
+        "type": "textarea",
+        "label": "Long-term Storage Plan*",
+        "name": "storagePlan",
+        "help": "What is your long-term storage plan for your data after the quota increase expires?"
+      },
+      "comment": {
+        "type": "textarea",
+        "label": "Additional Comments",
+        "name": "comment",
+        "help": "Any additional information you would like to provide (Optional)"
+      }
+    }
+  },
+  "verification": {
+    "type": "rowContainer",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "sectionTitle": {
+        "type": "staticText",
+        "value": "Final Verification",
+        "isHeading": true
+      },
+      "sectionDescription": {
+        "type": "staticText",
+        "value": "Please verify that you understand and agree to the following",
+        "isHeading": false
+      },
+      "verifyCompress": {
+        "type": "checkbox",
+        "label": "I verify that I will remove any unnecessary data and compress files/folders to save shared resources.*",
+        "name": "verifyCompress",
+        "value": "Yes"
+      }
+    }
+  }
+}
