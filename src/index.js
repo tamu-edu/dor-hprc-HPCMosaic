@@ -25,12 +25,15 @@ const App = () => {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="bg-gray-50 h-screen w-screen flex flex-col">
-        <SandboxGrid/>
-        <ChatbotComponent />
-      </div>
-    </DndProvider>
+    <div className="min-h-screen w-full">
+      <DndProvider backend={HTML5Backend}>
+          <div className="bg-gray-50 p-10 min-h-screen">
+            <SandboxGrid/>
+            <ChatbotComponent />
+          </div>
+      </DndProvider>
+    </div>
+
   );
 };
 
