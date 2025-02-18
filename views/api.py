@@ -31,7 +31,7 @@ def get_envs():
     metadataPath = os.path.join(scratch, virtual_envs)
     try:
         # Check if the metadata file exists first, rather than catching in an exception. It is a common case; exceptions should be used for unexpected edge cases, hence the name
-        if !os.path.exists(metadataPath):
+        if not os.path.exists(metadataPath):
             return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment", "code": f"NO_METADATA"}), 500
         with open(metadataPath,'r') as file:
             metadata = json.load(file)  
