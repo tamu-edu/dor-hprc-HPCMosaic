@@ -15,7 +15,7 @@ const ChatbotComponent = () => {
   const closeCloud = () => setShowCloud(false);
 
   return (
-    <div className="fixed bottom-4 right-5 z-50">
+    <div className="fixed bottom-8 right-8 z-50">
       {/* Speech Bubble */}
       {showCloud && (
         <div className="absolute bottom-20 right-1 w-80">
