@@ -5,6 +5,7 @@ const baseUrl = config.production.dashboard_url + '/api';
 
 export const saveLayout = async (layoutName, layoutData) => {
     try {
+        console.log(layout_data);
         const response = await axios.post(`${API_BASE_URL}/save_layout`, {
             layout_name: layoutName,
             layout_data: layoutData,

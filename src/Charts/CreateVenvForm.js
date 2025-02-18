@@ -8,6 +8,7 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [description, setDescription] = useState('');
 	const [envName, setEnvName] = useState(null);
 	const [waitingForCreation, setWaitingForCreation] = useState(false);
+	const [isJupyterEnv, setIsJupyterEnv] = useState(false);
 
 	const devUrl = config.production.dashboard_url;
 	//   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
@@ -53,7 +54,8 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			pyVersion: selectedPyVersion,
 			GCCversion: gccversion,
 			envName: envName,
-			description: description
+			description: description,
+			jupyter: isJupyterEnv
 		};
 		console.log(formData)
 		try {
@@ -66,20 +68,21 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				body: JSON.stringify(formData)
 			});
 			
-			if (!createResponse.ok) {
-				throw new Error(`Venv creation form api response was not ok: ${createResponse.error} `);
-				alert("There was an error attempting to create your environment.");
-				setIsFormOpen(false);
-				return;
+			const response = await createResponse.json();
+
+			if (createResponse.status != 200) {
+				throw new Error(`Venv creation form api response was not ok: ${response.error} `);
 			}
 
 			const responseData = await createResponse.json();
-			console.log(`Successfully created new venv: {responseData.message}`);
+			console.log(`Successfully created new venv: {response.message}`);
 			await fetchEnvs();
 			setWaitingForCreation(false);
 			setIsFormOpen(false);
 		} catch (error) {
-			console.error(`There has been an error while handling the venv creation form submission: ${error}`);
+			console.error(`${error}`);
+			alert(`${error}`);	
+			setIsFormOpen(false);
 		}	
 	}
 
@@ -123,10 +126,13 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
 			</div>
 
-			{!waitingForCreation && 
-			<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
-				Submit
-			</button>}
+			{!waitingForCreation &&
+			<div className="flex flex-col">
+				<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
+					Submit
+				</button>
+			</div>
+			}
 			{waitingForCreation &&
 			 <div>
 			 	<p> Creating Environment (this may take a while)...</p>
