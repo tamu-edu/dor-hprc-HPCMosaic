@@ -65,14 +65,16 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			});
 
 			if (createResponse.status != 200) {
-				throw new Error(`Venv creation form api response was not ok: ${response.error} `);
+				const responseData = await createResponse.json();
+				throw new Error(`Venv creation form api response was not ok: ${responseData.error} `);
 			}
 
 			const responseData = await createResponse.json();
-			console.log(`Successfully created new venv: ${response.message}`);
+			console.log(`Successfully created new venv: ${responseData.message}`);
 			await fetchEnvs();
 			setWaitingForCreation(false);
 			setIsFormOpen(false);
+			alert(`If you want to use jupyter notebook/lab with this env, run:\n$ pip install jupyter\n when you are in your environment`);
 		} catch (error) {
 			console.error(`${error}`);
 			alert(`bruh ${error}`);	
