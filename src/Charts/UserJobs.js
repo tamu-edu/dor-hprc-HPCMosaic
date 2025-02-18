@@ -38,7 +38,7 @@ const UserJobs = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md overflow-auto">
+    <div className="p-4 bg-white rounded-lg overflow-auto">
       <h2 className="text-2xl font-semibold mb-4">Your Jobs</h2>
       {jobs.length === 0 ? (
         <p className="text-gray-500">No active jobs.</p>
@@ -49,7 +49,7 @@ const UserJobs = () => {
               <th className="border border-gray-300 px-4 py-2">Job ID</th>
               <th className="border border-gray-300 px-4 py-2">State</th>
               <th className="border border-gray-300 px-4 py-2">Nodes</th>
-              <th className="border border-gray-300 px-4 py-2">Actions</th>
+              {/* <th className="border border-gray-300 px-4 py-2">Actions</th> */}
             </tr>
           </thead>
           <tbody className="text-gray-800 text-sm">
@@ -60,8 +60,8 @@ const UserJobs = () => {
                   {job.state === "R" ? "Running" : "Pending"}
                 </td>
                 <td className="py-3 px-4">{job.nodes}</td>
-                <td className="py-3 px-4">
-                  <button
+                {/* <td className="py-3 px-4"> */}
+                  {/* <button
                     onClick={() => cancelJob(job.job_id)}
                     className={`px-3 py-1 rounded ${
                       isCanceling === job.job_id
@@ -71,8 +71,8 @@ const UserJobs = () => {
                     disabled={isCanceling === job.job_id}
                   >
                     {isCanceling === job.job_id ? "Canceling..." : "Cancel Job"}
-                  </button>
-                </td>
+                  </button> */}
+                {/* </td> */}
               </tr>
             ))}
           </tbody>
