@@ -21,13 +21,19 @@ const PyVenvManager = () => {
 		await setEnvsLoading(true); // Start showing loading spinner
 		const envResponse = await fetch(`${curUrl}/api/get_env`);
 		if (!envResponse.ok) {
-			throw new Error(`envResponse had an HTTP error status: ${envResponse.error}`)
+		const errorString = `envResponse had an HTTP error status: ${envResponse.error}`;
+		const envJson = await envResponse.json();
+			if (envJson.code === "NO_METADATA") {
+				await setEnvsLoading(false);
+				await setEnvData("NO ENVIRONMENTS");
+				await setEnvKeys(null);
+			}
+			throw new Error(errorString);
 		}
 		const envJson = await envResponse.json();
 		console.log("envJson:", envJson)
 		if (envJson.environments.length == 0) {
 			await setEnvsLoading(false);
-			console.log("lfg")
 			await setEnvData("NO ENVIRONMENTS");
 			await setEnvKeys(null);
 			return;
