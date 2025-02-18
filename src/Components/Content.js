@@ -27,7 +27,7 @@ const Content = (props) => {
   const defaultLayout = [
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 }, // Full width at top
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 }, 
-    // { name: "PyVenvManager", i: uuidv4(), x: 5, y: 6, w: 5, h: 10 },
+    { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 10 },
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 15 },
   ];
