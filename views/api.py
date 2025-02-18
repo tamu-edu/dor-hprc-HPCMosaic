@@ -30,12 +30,12 @@ def get_envs():
     virtual_envs = "virtual_envs/metadata.json"
     metadataPath = os.path.join(scratch, virtual_envs)
     try:
+		# Check if the metadata file exists first, rather than catching in an exception. It is a common case; exceptions should be used for unexpected edge cases, hence the name
+		if !os.path.exists(metadataPath):
+			return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment", "code": f"NO_METADATA"}), 500
         with open(metadataPath,'r') as file:
             metadata = json.load(file)  
             return metadata, 200
-    except FileNotFoundError as e:
-        return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment: {str(e)}", 
-		"code": "NO_METADATA"}), 500
     except json.JSONDecodeError as e:
         return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
     except Exception as e:
@@ -87,16 +87,12 @@ def create_venv():
 		description = data.get('description')
 		pyVersion = data.get('pyVersion')
 		gccversion = data.get('GCCversion')
-		isJupyter = data.get('jupyter')
-
+		
 		if not envName or not gccversion or not pyVersion:
 			return jsonify({"error": "Missing required parameters from the form submission"}), 400
 	
 		# When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
-		if isJupyer:
-			createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv --jupyter {envName} -d '{description}'"
-		else:
-			createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
 		
 		result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
 		if result.returncode != 0:

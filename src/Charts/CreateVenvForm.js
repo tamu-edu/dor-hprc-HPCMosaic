@@ -7,7 +7,6 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [description, setDescription] = useState('');
 	const [envName, setEnvName] = useState(null);
 	const [waitingForCreation, setWaitingForCreation] = useState(false);
-	const [isJupyterEnv, setIsJupyterEnv] = useState(false);
 
 	const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
 	const devUrl = `https://portal-grace.hprc.tamu.edu/pun/dev/gabriel-react-dashboard`;
@@ -52,8 +51,7 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			pyVersion: selectedPyVersion,
 			GCCversion: gccversion,
 			envName: envName,
-			description: description,
-			jupyter: isJupyterEnv
+			description: description
 		};
 		console.log(formData)
 		try {
