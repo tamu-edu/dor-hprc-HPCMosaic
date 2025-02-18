@@ -34,6 +34,12 @@ const ClusterInfo = () => {
   const calculatePercentage = (used, total) =>
     total > 0 ? ((used / total) * 100).toFixed(2) : 0;
 
+  const getColor = (percentage) => {
+    if (percentage < 50) return "text-green-600";
+    if (percentage < 75) return "text-yellow-500";
+    return "text-red-600";
+  };
+
   return (
     <div className="p-4 bg-white w-full h-full flex flex-col">
       <h2 className="text-2xl font-semibold mb-4">Queue Availability</h2>
@@ -190,6 +196,7 @@ const ClusterInfo = () => {
                     <td className="border border-gray-300 px-4 py-2">
                       CPU: {cpuUsed}/{cpuTotal} ({cpuPercentage}%)<br />
                       Nodes: {nodesUsed}/{nodesTotal} ({nodesPercentage}%)
+                      <p className={`${getColor(diskPercentage)}`}>{diskPercentage}%</p>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {queue.job_size}
