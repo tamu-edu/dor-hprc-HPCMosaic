@@ -63,21 +63,19 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				},
 				body: JSON.stringify(formData)
 			});
-			
-			const response = await createResponse.json();
 
 			if (createResponse.status != 200) {
 				throw new Error(`Venv creation form api response was not ok: ${response.error} `);
 			}
 
 			const responseData = await createResponse.json();
-			console.log(`Successfully created new venv: {response.message}`);
+			console.log(`Successfully created new venv: ${response.message}`);
 			await fetchEnvs();
 			setWaitingForCreation(false);
 			setIsFormOpen(false);
 		} catch (error) {
 			console.error(`${error}`);
-			alert(`${error}`);	
+			alert(`bruh ${error}`);	
 			setIsFormOpen(false);
 		}	
 	}
