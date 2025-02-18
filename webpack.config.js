@@ -7,6 +7,13 @@ module.exports = {
     filename: "bundle.js",
     path: path.resolve(__dirname, "static"),
   },
+  resolve: {
+    extensions: [".js", ".jsx", ".ts", ".tsx"], // Add TypeScript extensions
+    alias: {
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+    },
+  },
   watchOptions: {
     ignored: '**/node_modules',
   },
@@ -17,9 +24,17 @@ module.exports = {
         use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       {
-        test: /\.js$/,
-        include: [path.resolve(__dirname, "src")],
-        use: ["babel-loader"],
+        test: /\.(js|ts|tsx)$/, // Process JS, TS, and TSX files
+        include: [
+          path.resolve(__dirname, "src"),
+          path.resolve(__dirname, "src/Components/Chatbot/frontend/hprc-chatbot-gui")
+        ],
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-react", "@babel/preset-env", "@babel/preset-typescript"],
+          },
+        },
       },
       {
         test: /\.ya?ml$/,
@@ -36,7 +51,7 @@ module.exports = {
             },
           },
         ],
-      }
+      },
     ],
   },
 };
