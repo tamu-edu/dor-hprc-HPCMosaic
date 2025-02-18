@@ -123,7 +123,7 @@ const PlaceHolder = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className={`flex-1 flex flex-col p-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
+            <div className={`flex-1 flex flex-col mt-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                     <Content
                         change={(data) => changeHandler(0, data)}

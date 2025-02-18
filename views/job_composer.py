@@ -161,7 +161,7 @@ def test_submit():
 
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
-    params = request.form
+    params = reccquest.form
     engine = Engine()
     
     engine.set_environment(params.get('runtime'), params.get('env_dir'))

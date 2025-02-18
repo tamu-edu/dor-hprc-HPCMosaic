@@ -401,3 +401,142 @@ def parse_job_history(output):
             })
 
     return {"job_history": history_data}
+
+@api.route('/set_default_account', methods=['POST'])
+def set_default_account():
+    """
+    Set a new default account using 'myproject -d <accountNo>'.
+    """
+    try:
+        data = request.json
+        account_no = data.get("account_no")
+
+        if not account_no:
+            return jsonify({"error": "Missing account number"}), 400
+
+        command = f"/sw/local/bin/myproject -d {account_no}"
+        
+        # Log command execution
+        logging.info(f"Setting default account with command: {command}")
+        print(f"Executing command: {command}")
+
+        # Execute the command
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() or result.stdout.strip()
+            logging.error(f"Error setting default account: {error_msg}")
+            return jsonify({"error": f"Failed to set default account: {error_msg}"}), 500
+
+        # Return success response
+        return jsonify({"message": f"Default account set to {account_no} successfully"}), 200
+
+    except Exception as e:
+        logging.error(f"Unexpected error setting default account: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+def run_command(command):
+    """
+    Execute a shell command using subprocess and return the output.
+    """
+    try:
+        logging.info(f"Executing command: {command}")
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() or result.stdout.strip()
+            logging.error(f"Command failed: {error_msg}")
+            raise RuntimeError(error_msg)
+
+        return result.stdout.strip()
+    except Exception as e:
+        logging.error(f"Unexpected error executing command: {str(e)}")
+        raise RuntimeError(str(e))
+
+
+# API to fetch jobs for the current user ($USER)
+@api.route("/jobs", methods=["GET"])
+def get_user_jobs():
+    try:
+        result = subprocess.run(
+            ["squeue", "-u", os.getenv("USER"), "--format=%i %t %D"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8"
+        )
+
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip())
+
+        jobs = []
+        lines = result.stdout.strip().split("\n")[1:]  # Skip header
+        for line in lines:
+            parts = line.split()
+            if len(parts) == 3:
+                jobs.append({
+                    "job_id": parts[0],
+                    "state": parts[1],
+                    "nodes": parts[2],
+                })
+
+        return jsonify({"jobs": jobs}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API to cancel a job
+@api.route("/cancel_job/<job_id>", methods=["DELETE"])
+def cancel_job(job_id):
+    try:
+        result = subprocess.run(
+            ["scancel", job_id],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8"
+        )
+
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip())
+
+        return jsonify({"message": f"Job {job_id} canceled successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route("/utilization", methods=["GET"])
+def get_utilization():
+    try:
+        # Fetch Node Data
+        allocated_nodes = int(subprocess.check_output("/sw/local/bin/pestat -s alloc | tail -n+4 | wc -l", shell=True).decode("utf-8").strip())
+        mixed_nodes = int(subprocess.check_output("/sw/local/bin/pestat -s mix | tail -n+4 | wc -l", shell=True).decode("utf-8").strip())
+        idle_nodes = int(subprocess.check_output("/sw/local/bin/pestat -s idle | tail -n+4 | wc -l", shell=True).decode("utf-8").strip())
+
+        # Fetch Core Data
+        allocated_cpus = int(subprocess.check_output("/sw/local/bin/pestat -s alloc,mix,idle | tail -n+4 | awk '{print $4}' | awk 'NR>3' | awk '{s+=$1} END {printf \"%.0f\", s}'", shell=True).decode("utf-8").strip())
+        total_cpus = int(subprocess.check_output("/sw/local/bin/pestat -s alloc,mix,idle | tail -n+4 | awk '{print $5}' | awk 'NR>3' | awk '{s+=$1} END {printf \"%.0f\", s}'", shell=True).decode("utf-8").strip())
+        idle_cpus = total_cpus - allocated_cpus
+
+        # Fetch Job Data
+        running_jobs = int(subprocess.check_output("/usr/bin/squeue --noheader --states=RUNNING | wc -l", shell=True).decode("utf-8").strip())
+        pending_jobs = int(subprocess.check_output("/usr/bin/squeue --noheader --states=PENDING | wc -l", shell=True).decode("utf-8").strip())
+
+        utilization_data = {
+            "nodes": {
+                "allocated": allocated_nodes,
+                "mixed": mixed_nodes,
+                "idle": idle_nodes
+            },
+            "cores": {
+                "allocated": allocated_cpus,
+                "idle": idle_cpus
+            },
+            "jobs": {
+                "running": running_jobs,
+                "pending": pending_jobs
+            }
+        }
+
+        return jsonify(utilization_data), 200
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Command failed: {e.output.decode('utf-8')}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import "chart.js/auto";
 import config from "../../config.yml";
+import Spinner from "../Components/Spinner";
 
 const ClusterInfo = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
-  const [view, setView] = useState("table"); // 'table' or 'chart'
+  const [view, setView] = useState("chart");
+  const [loading, setLoading] = useState(true);
   const baseUrl = config.production.dashboard_url;
 
   useEffect(() => {
@@ -19,77 +21,22 @@ const ClusterInfo = () => {
         }
         return response.json();
       })
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setData(data);
-        }
-      })
-      .catch((error) => setError(`Error fetching cluster data: ${error.message}`));
+      .then((data) => setData(data))
+      .catch((error) =>
+        setError(`Error fetching cluster data: ${error.message}`)
+      )
+      .finally(() => setLoading(false));
   }, []);
 
   if (error) return <p className="text-red-500">{error}</p>;
-  if (!data.length) return <p>Loading...</p>;
+  if (loading) return <Spinner />;
 
-  const chartData = {
-    labels: data.map((queue) => queue.queue), // Partition names
-    datasets: [
-      {
-        label: "Used CPUs",
-        data: data.map((queue) => parseInt(queue.CPU_total, 10) - parseInt(queue.CPU_avail, 10)),
-        backgroundColor: "rgba(255, 99, 132, 0.8)", // Red
-      },
-      {
-        label: "Available CPUs",
-        data: data.map((queue) => parseInt(queue.CPU_avail, 10)),
-        backgroundColor: "rgba(54, 162, 235, 0.8)", // Blue
-      },
-    ],
-  };
-
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      tooltip: {
-        callbacks: {
-          label: (tooltipItem) => {
-            const value = tooltipItem.raw;
-            const datasetLabel = tooltipItem.dataset.label;
-            const total = tooltipItem.chart.data.datasets
-              .map((ds) => ds.data[tooltipItem.dataIndex])
-              .reduce((acc, val) => acc + val, 0); // Calculate the total CPUs for the partition
-            const percentage = ((value / total) * 100).toFixed(2); // Calculate percentage
-            return `${datasetLabel}: ${value} (${percentage}%)`;
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        stacked: true, // Enable stacking on the x-axis
-        title: {
-          display: true,
-          text: "Account",
-        },
-      },
-      y: {
-        stacked: true, // Enable stacking on the y-axis
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: "Service Units (SU)",
-        },
-      },
-    },
-  };
+  const calculatePercentage = (used, total) =>
+    total > 0 ? ((used / total) * 100).toFixed(2) : 0;
 
   return (
     <div className="p-4 bg-white w-full h-full flex flex-col">
-      <h2 className="text-2xl font-semibold mb-4">Cluster Queue Information</h2>
+      <h2 className="text-2xl font-semibold mb-4">Queue Availability</h2>
 
       <div className="mb-4">
         <button
@@ -110,38 +57,151 @@ const ClusterInfo = () => {
         </button>
       </div>
 
-      {view === "table" ? (
+      {view === "chart" ? (
+        <div className="w-full h-full flex-grow">
+          <h3 className="text-xl font-semibold mb-4">Core & Node Utilization</h3>
+          <Bar
+            data={{
+              labels: data.map((queue) => queue.queue), // Queue names on Y-axis
+              datasets: [
+                {
+                  label: "Used Cores (%)",
+                  data: data.map((queue) =>
+                    calculatePercentage(
+                      parseInt(queue.CPU_total, 10) - parseInt(queue.CPU_avail, 10),
+                      parseInt(queue.CPU_total, 10)
+                    )
+                  ),
+                  backgroundColor: "#EF4444",
+                  stack: "cores",
+                },
+                {
+                  label: "Available Cores (%)",
+                  data: data.map((queue) =>
+                    calculatePercentage(
+                      parseInt(queue.CPU_avail, 10),
+                      parseInt(queue.CPU_total, 10)
+                    )
+                  ),
+                  backgroundColor: "#FCA5A5",
+                  stack: "cores",
+                },
+                {
+                  label: "Used Nodes (%)",
+                  data: data.map((queue) =>
+                    calculatePercentage(
+                      parseInt(queue.nodes_total, 10) - parseInt(queue.nodes_avail, 10),
+                      parseInt(queue.nodes_total, 10)
+                    )
+                  ),
+                  backgroundColor: "#4F46E5",
+                  stack: "nodes",
+                },
+                {
+                  label: "Available Nodes (%)",
+                  data: data.map((queue) =>
+                    calculatePercentage(
+                      parseInt(queue.nodes_avail, 10),
+                      parseInt(queue.nodes_total, 10)
+                    )
+                  ),
+                  backgroundColor: "#E0E7FF",
+                  stack: "nodes",
+                },
+              ],
+            }}
+            options={{
+              indexAxis: "y", // Vertical stacking with queue names on the left
+              responsive: true,
+              plugins: {
+                legend: { display: true, position: "top" },
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      let label = context.dataset.label || "";
+                      if (label) {
+                        label += ": ";
+                      }
+                      label += `${context.raw}%`;
+                      const queue = data[context.dataIndex];
+                      if (context.dataset.label.includes("Cores")) {
+                        const totalCores = parseInt(queue.CPU_total, 10);
+                        const usedCores =
+                          parseInt(queue.CPU_total, 10) -
+                          parseInt(queue.CPU_avail, 10);
+                        label += ` (${usedCores}/${totalCores})`;
+                      } else {
+                        const totalNodes = parseInt(queue.nodes_total, 10);
+                        const usedNodes =
+                          parseInt(queue.nodes_total, 10) -
+                          parseInt(queue.nodes_avail, 10);
+                        label += ` (${usedNodes}/${totalNodes})`;
+                      }
+                      return label;
+                    },
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  stacked: true,
+                  ticks: {
+                    callback: (value) => `${value}%`,
+                  },
+                },
+                y: { stacked: true },
+              },
+            }}
+          />
+        </div>
+      ) : (
         <div className="overflow-auto w-full h-full flex-grow">
           <table className="table-auto w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-200">
                 <th className="border border-gray-300 px-4 py-2">Queue</th>
-                <th className="border border-gray-300 px-4 py-2">CPU Available</th>
-                <th className="border border-gray-300 px-4 py-2">CPU Total</th>
-                <th className="border border-gray-300 px-4 py-2">Nodes Available</th>
-                <th className="border border-gray-300 px-4 py-2">Nodes Total</th>
+                <th className="border border-gray-300 px-4 py-2">Resources</th>
                 <th className="border border-gray-300 px-4 py-2">Job Size</th>
                 <th className="border border-gray-300 px-4 py-2">Time Limit</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((queue, index) => (
-                <tr key={index}>
-                  <td className="border border-gray-300 px-4 py-2">{queue.queue}</td>
-                  <td className="border border-gray-300 px-4 py-2">{queue.CPU_avail}</td>
-                  <td className="border border-gray-300 px-4 py-2">{queue.CPU_total}</td>
-                  <td className="border border-gray-300 px-4 py-2">{queue.nodes_avail}</td>
-                  <td className="border border-gray-300 px-4 py-2">{queue.nodes_total}</td>
-                  <td className="border border-gray-300 px-4 py-2">{queue.job_size}</td>
-                  <td className="border border-gray-300 px-4 py-2">{queue.time_limit}</td>
-                </tr>
-              ))}
+              {data.map((queue, index) => {
+                const cpuUsed =
+                  parseInt(queue.CPU_total, 10) -
+                  parseInt(queue.CPU_avail, 10);
+                const cpuTotal = parseInt(queue.CPU_total, 10);
+                const cpuPercentage = calculatePercentage(cpuUsed, cpuTotal);
+
+                const nodesUsed =
+                  parseInt(queue.nodes_total, 10) -
+                  parseInt(queue.nodes_avail, 10);
+                const nodesTotal = parseInt(queue.nodes_total, 10);
+                const nodesPercentage = calculatePercentage(
+                  nodesUsed,
+                  nodesTotal
+                );
+
+                return (
+                  <tr key={index}>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {queue.queue}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      CPU: {cpuUsed}/{cpuTotal} ({cpuPercentage}%)<br />
+                      Nodes: {nodesUsed}/{nodesTotal} ({nodesPercentage}%)
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {queue.job_size}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {queue.time_limit}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-        </div>
-      ) : (
-        <div className="w-full h-full flex-grow">
-          <Bar data={chartData} options={chartOptions} />
         </div>
       )}
     </div>
