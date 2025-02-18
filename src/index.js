@@ -5,6 +5,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import './style.css';
 import { METRIC_TYPES } from './utils/metricTypes';
 import SandboxGrid from "./SandboxGrid";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -26,6 +27,13 @@ const App = () => {
     <DndProvider backend={HTML5Backend}>
       <div className="bg-gray-50 p-10 min-h-screen">
         <SandboxGrid/>
+        <Toaster
+            position="bottom-right"
+            reverseorder={false}
+            toastOptions={{
+                duration: 20000
+            }}
+        />
       </div>
     </DndProvider>
   );

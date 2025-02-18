@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [pyVersions, setPyVersions] = useState(null);
@@ -65,6 +66,9 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			});
 
 			if (createResponse.status != 200) {
+				if (createResponse.status == 502) {
+					throw new Error(`There was a network error when creating your environment. Please try again later!`);
+				}
 				const responseData = await createResponse.json();
 				throw new Error(`Venv creation form api response was not ok: ${responseData.error} `);
 			}
@@ -74,10 +78,10 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			await fetchEnvs();
 			setWaitingForCreation(false);
 			setIsFormOpen(false);
-			alert(`If you want to use jupyter notebook/lab with this env, run:\n$ pip install jupyter\n when you are in your environment`);
+			toast.success(`If you want to use jupyter notebook/lab with this env, run:\n$ pip install jupyter\n when you are in your environment`);
 		} catch (error) {
 			console.error(`${error}`);
-			alert(`bruh ${error}`);	
+			alert(`${error}`);	
 			setIsFormOpen(false);
 		}	
 	}
