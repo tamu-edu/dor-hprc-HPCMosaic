@@ -8,7 +8,6 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [description, setDescription] = useState('');
 	const [envName, setEnvName] = useState(null);
 	const [waitingForCreation, setWaitingForCreation] = useState(false);
-	const [isJupyterEnv, setIsJupyterEnv] = useState(false);
 
 	const devUrl = config.production.dashboard_url;
 	//   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
@@ -54,8 +53,7 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			pyVersion: selectedPyVersion,
 			GCCversion: gccversion,
 			envName: envName,
-			description: description,
-			jupyter: isJupyterEnv
+			description: description
 		};
 		console.log(formData)
 		try {
@@ -67,21 +65,19 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				},
 				body: JSON.stringify(formData)
 			});
-			
-			const response = await createResponse.json();
 
 			if (createResponse.status != 200) {
 				throw new Error(`Venv creation form api response was not ok: ${response.error} `);
 			}
 
 			const responseData = await createResponse.json();
-			console.log(`Successfully created new venv: {response.message}`);
+			console.log(`Successfully created new venv: ${response.message}`);
 			await fetchEnvs();
 			setWaitingForCreation(false);
 			setIsFormOpen(false);
 		} catch (error) {
 			console.error(`${error}`);
-			alert(`${error}`);	
+			alert(`bruh ${error}`);	
 			setIsFormOpen(false);
 		}	
 	}
