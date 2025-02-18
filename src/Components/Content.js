@@ -9,6 +9,8 @@ import { debounce } from "lodash";
 // Elements
 import PyVenvManager from "../Charts/PyVenvManager";
 import ClusterInfo from "../Charts/ClusterInfo";
+import Chatbot from "../Charts/Chatbot";
+import Composer from "../Charts/Composer";
 import QuotaInfo from "../Charts/QuotaInfo";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
@@ -58,6 +60,14 @@ const Content = (props) => {
       i: "5",
       x: 2,
       y: 5,
+      w: 2,
+      h: 3,
+    },
+    {
+      name: "Composer",
+      i: "6",
+      x: 0,
+      y: 3,
       w: 2,
       h: 3,
     },
@@ -122,6 +132,10 @@ const Content = (props) => {
         return <ClusterInfo />;
       case "PyVenvManager":
         return <PyVenvManager />;
+      case "Chatbot":
+        return <Chatbot />;
+      case "Composer":
+        return <Composer />;
       case "Quota Info":
         return <QuotaInfo />;
       case "User Groups":
