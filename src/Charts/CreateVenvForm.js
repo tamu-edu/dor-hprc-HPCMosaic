@@ -69,7 +69,7 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 
 			if (createResponse.status != 200) {
 				if (createResponse.status == 502) {
-					throw new Error(`There was a network error when creating your environment. Please try again later!`);
+					throw new Error(`There was a network error when creating your environment. Please refresh your environment list to see if the creation was successful.`);
 				}
 				const responseData = await createResponse.json();
 				throw new Error(`Venv creation form api response was not ok: ${responseData.error} `);

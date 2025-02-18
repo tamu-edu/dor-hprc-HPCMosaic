@@ -34,7 +34,7 @@ const App = () => {
             position="bottom-right"
             reverseorder={false}
             toastOptions={{
-                duration: 20000
+                duration: 30000
             }}
             />
             <ChatbotComponent />
