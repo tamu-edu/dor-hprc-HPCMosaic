@@ -4,7 +4,7 @@ import ClusterInfo from '../Charts/ClusterInfo';
 import PyVenvManager from '../Charts/PyVenvManager';
 import Chatbot from '../Charts/Chatbot';
 import UserJobs from '../Charts/UserJobs';
-// import Composer from '../Charts/Composer';
+import Composer from '../Charts/Composer';
 import QuotaInfo from '../Charts/QuotaInfo';
 import QuotaButton from '../Charts/QuotaButton';
 import UserGroups from '../Charts/UserGroups';
