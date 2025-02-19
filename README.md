@@ -8,7 +8,12 @@ You will first need to source Node.js to start the app. Use:
 ```
 source scl_source enable rh-nodejs14
 ```
-
+Clone the repository with submodules:
+```
+git clone https://github.com/victoriaemily/dor-hprc-web-tamudashboard.git
+git submodule init
+git submodule update
+```
 Make sure you install any dependencies with 
 ```
 npm i
@@ -37,4 +42,15 @@ But this should be dynamic enough to work on your setup.
 Components that you can edit are located in:
 ```
 src/Charts
+```
+
+The project includes submodules located in:
+```
+external/
+```
+
+Remember to pull and update submodules when updating the repository:
+```
+git pull
+git submodule update --remote
 ```
