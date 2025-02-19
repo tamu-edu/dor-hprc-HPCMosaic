@@ -123,13 +123,12 @@ const PlaceHolder = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className={`flex-1 flex flex-col p-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
+            <div className={`flex-1 flex flex-col mt-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                     <Content
                         change={(data) => changeHandler(0, data)}
                         loadDefaultView={() => [
                             { name: "Node Utilization", id: "0", i: "0", x: 0, y: 0, w: 2, h: 3 },
-                            { name: "Chatbot", id: "1", i: "1", x: 1, y: 0, w: 1, h: 1 },
                             { name: "PyVenvManager", id: "2", i: "2", x: 2, y: 0, w: 1, h: 1 },
                         ]}
                         layoutData={layoutData}

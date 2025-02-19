@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import config from "../../config.yml";
+import Spinner from "../Components/Spinner";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css"; // Default tooltip styling
 
 const QuotaInfo = () => {
   const [quotaData, setQuotaData] = useState([]);
   const [additionalText, setAdditionalText] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const baseUrl = config.production.dashboard_url;
 
   // Conversion factor for units
@@ -60,15 +64,23 @@ const QuotaInfo = () => {
       })
       .catch((err) => {
         setError(err.message);
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  // Custom Tooltip Component
+  const CustomTooltip = ({ content }) => (
+    <div className="bg-gray-800 text-white text-sm p-2 rounded-md shadow-lg z-50">
+      {content}
+    </div>
+  );
 
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
 
-  if (!quotaData.length && !additionalText) {
-    return <p>Loading...</p>;
+  if (loading) {
+    return <Spinner />;
   }
 
   return (
@@ -77,9 +89,21 @@ const QuotaInfo = () => {
       <table className="table-auto w-full border-collapse border border-gray-300">
         <thead>
           <tr className="bg-gray-200">
-            <th className="border border-gray-300 px-4 py-2">Disk</th>
-            <th className="border border-gray-300 px-4 py-2">Disk Usage (%)</th>
-            <th className="border border-gray-300 px-4 py-2">File Usage (%)</th>
+            <th className="border border-gray-300 px-4 py-2">
+              <Tippy content={<CustomTooltip content="The storage disk being monitored." />} placement="top">
+                <span className="cursor-help font-semibold">Disk ⓘ</span>
+              </Tippy>
+            </th>
+            <th className="border border-gray-300 px-4 py-2">
+              <Tippy content={<CustomTooltip content="Percentage of storage used versus total allocated." />} placement="top">
+                <span className="cursor-help font-semibold">Disk Usage (%) ⓘ</span>
+              </Tippy>
+            </th>
+            <th className="border border-gray-300 px-4 py-2">
+              <Tippy content={<CustomTooltip content="Percentage of files used versus total allowed." />} placement="top">
+                <span className="cursor-help font-semibold">File Usage (%) ⓘ</span>
+              </Tippy>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -88,35 +112,25 @@ const QuotaInfo = () => {
             const filePercentage = getFileUsagePercentage(quota.file_usage, quota.file_limit);
 
             return (
-              <tr
-                key={index}
-                className={`${quota.additional_info ? "bg-yellow-100" : ""} group relative`}
-              >
-                <td
-                  className="border border-gray-300 px-4 py-2"
-                  title={quota.additional_info || ""}
-                >
+              <tr key={index} className={`${quota.additional_info ? "bg-yellow-100" : ""} group relative`}>
+                <td className="border border-gray-300 px-4 py-2" title={quota.additional_info || ""}>
                   {quota.disk}
                 </td>
                 <td className="border border-gray-300 px-4 py-4">
-                  <div className="gap-x-4 items-center">
-                  <p>
-                    {quota.disk_usage}/{quota.disk_limit}
-                  </p>
-                  <p className={`${getColor(filePercentage)}`}>
-                    {diskPercentage}%
-                  </p>
-                  </div>
+                  <Tippy content={<CustomTooltip content={`Used: ${quota.disk_usage} / Total: ${quota.disk_limit}`} />} placement="top">
+                    <div className="gap-x-4 items-center cursor-help">
+                      <p>{quota.disk_usage}/{quota.disk_limit}</p>
+                      <p className={`${getColor(diskPercentage)}`}>{diskPercentage}%</p>
+                    </div>
+                  </Tippy>
                 </td>
                 <td className="border border-gray-300 px-4 py-4">
-                  <div className="gap-x-4 items-center">
-                  <p>
-                    {quota.file_usage}/{quota.file_limit}
-                  </p>
-                  <p className={`${getColor(filePercentage)}`}>
-                    {filePercentage}%
-                  </p>
-                  </div>
+                  <Tippy content={<CustomTooltip content={`Used: ${quota.file_usage} / Total: ${quota.file_limit}`} />} placement="top">
+                    <div className="gap-x-4 items-center cursor-help">
+                      <p>{quota.file_usage}/{quota.file_limit}</p>
+                      <p className={`${getColor(filePercentage)}`}>{filePercentage}%</p>
+                    </div>
+                  </Tippy>
                 </td>
               </tr>
             );

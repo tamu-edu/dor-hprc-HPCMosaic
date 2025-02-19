@@ -3,7 +3,8 @@ import Card from './Card';
 import ClusterInfo from '../Charts/ClusterInfo';
 import PyVenvManager from '../Charts/PyVenvManager';
 import Chatbot from '../Charts/Chatbot';
-import Composer from '../Charts/Composer';
+import UserJobs from '../Charts/UserJobs';
+// import Composer from '../Charts/Composer';
 import QuotaInfo from '../Charts/QuotaInfo';
 import QuotaButton from '../Charts/QuotaButton';
 import UserGroups from '../Charts/UserGroups';
@@ -13,7 +14,6 @@ const CardConfig = {
     "Node Utilization": {
         cardComponent: React.memo((props) => <Card {...props} title="Node Utilization" image="/pun/sys/dor-hprc-web-tamudashboard-reu-branch/images/cluster-util.png" />),
         chartComponent: ClusterInfo,
-        // defaultProps: { w: 2, h: 4 },
     },
     PyVenvManager: {
         cardComponent: React.memo((props) => <Card {...props} title="Python Venv Manager" image="/images/python-venv.png" />),
@@ -46,6 +46,10 @@ const CardConfig = {
     Accounts: {
         cardComponent: React.memo((props) => <Card {...props} title="Accounts" image="/pun/sys/dor-hprc-web-tamudashboard-reu-branch/images/cluster-util.png" />),
         chartComponent: Accounts,
+    },
+    "User Jobs": {
+        cardComponent: React.memo((props) => <Card {...props} title="User Jobs" image="/pun/sys/dor-hprc-web-tamudashboard-reu-branch/images/cluster-util.png" />),
+        chartComponent: UserJobs,
     },
 };
 

@@ -6,6 +6,8 @@ import './style.css';
 import { METRIC_TYPES } from './utils/metricTypes';
 import SandboxGrid from "./SandboxGrid";
 import { createRoot } from "react-dom/client";
+import ChatbotComponent from "./Components/ChatbotComponent";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -24,11 +26,22 @@ const App = () => {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="bg-gray-50 p-10 min-h-screen">
-        <SandboxGrid/>
-      </div>
-    </DndProvider>
+    <div className="min-h-screen w-full">
+      <DndProvider backend={HTML5Backend}>
+          <div className="bg-gray-50 p-10 min-h-screen">
+            <SandboxGrid/>
+            <Toaster
+            position="bottom-right"
+            reverseorder={false}
+            toastOptions={{
+                duration: 20000
+            }}
+            />
+            <ChatbotComponent />
+          </div>
+      </DndProvider>
+    </div>
+
   );
 };
 

@@ -200,11 +200,12 @@ def get_envs():
     virtual_envs = "virtual_envs/metadata.json"
     metadataPath = os.path.join(scratch, virtual_envs)
     try:
+        # Check if the metadata file exists first, rather than catching in an exception. It is a common case; exceptions should be used for unexpected edge cases, hence the name
+        if not os.path.exists(metadataPath):
+            return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment", "code": f"NO_METADATA"}), 500
         with open(metadataPath,'r') as file:
             metadata = json.load(file)  
             return metadata, 200
-    except FileNotFoundError as e:
-        return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment: {str(e)}"}), 500
     except json.JSONDecodeError as e:
         return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
     except Exception as e:
@@ -234,6 +235,7 @@ def get_py_versions():
         versions = {}
         with open("captured-output.txt", "r") as file:
             next(file)
+            # Grabbing the Python version and mapping it to corresponding GCC version
             for line in file:
                 words = line.split()
                 if words[6] in versions:
@@ -255,15 +257,20 @@ def create_venv():
 		description = data.get('description')
 		pyVersion = data.get('pyVersion')
 		gccversion = data.get('GCCversion')
+		isJupyter = data.get('jupyter')
 
 		if not envName or not gccversion or not pyVersion:
 			return jsonify({"error": "Missing required parameters from the form submission"}), 400
 	
 		# When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
-		createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		if isJupyer:
+			createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv --jupyter {envName} -d '{description}'"
+		else:
+			createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+		
 		result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
 		if result.returncode != 0:
-			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
+			return jsonify({"error": f"There was an error while creating the virtual environment: {result.stdout}"}), 500
 		return jsonify({"message": f"{envName} was successfully created!"}), 200
 	except Exception as e:
 		return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
@@ -283,20 +290,37 @@ def get_projectinfo():
         else:
             command = "/sw/local/bin/myproject"
 
+        # Log and print the executed command
+        logging.info(f"Executing command: {command}")
+        print(f"Executing command: {command}")
+
+        # Run the command and capture output
         result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         output = result.decode("utf-8").strip()
-        logging.info(f"Raw output from myproject ({command}):\n{output}")
+
+        # Log and print the raw output
+        logging.info(f"Raw output from myproject:\n{output}")
+        print(f"Raw output from myproject:\n{output}")
+
+        # Include the executed command and raw output in the response
+        response_data = {
+            "executed_command": command,
+            "raw_output": output
+        }
 
         # If querying pending jobs
         if pending_jobs and account:
-            return jsonify(parse_pending_jobs(output)), 200
+            response_data["pending_jobs"] = parse_pending_jobs(output)
+            return jsonify(response_data), 200
 
         # If querying job history
         if job_history and account:
-            return jsonify(parse_job_history(output)), 200
+            response_data["job_history"] = parse_job_history(output)
+            return jsonify(response_data), 200
 
         # Otherwise, parse project accounts (default behavior)
-        return jsonify(parse_project_accounts(output)), 200
+        response_data["projects"] = parse_project_accounts(output)
+        return jsonify(response_data), 200
 
     except subprocess.CalledProcessError as e:
         error_message = e.output.decode("utf-8")
@@ -305,7 +329,6 @@ def get_projectinfo():
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
 
 def parse_project_accounts(output):
     """Parses output from `myproject` to extract project account details."""
@@ -356,18 +379,189 @@ def parse_pending_jobs(output):
 def parse_job_history(output):
     """Parses output from `myproject -j <account>` to extract job history."""
     lines = output.split("\n")
+
+    # Log raw lines for debugging
+    logging.info(f"Parsing job history, raw lines: {lines[:10]}")  # Only show the first 10 lines
+    print(f"Parsing job history, raw lines: {lines[:10]}")
+
     history_data = []
 
-    for line in lines[2:]:  # Skip header lines
-        if line.strip().startswith("|") and len(line.split("|")) >= 6:
-            fields = [field.strip() for field in line.split("|")[1:-1]]
-            if len(fields) == 5:  # Ensure correct number of fields
-                history_data.append({
-                    "job_id": fields[0],
-                    "state": fields[1],
-                    "cores": fields[2],
-                    "effective_cores": fields[3],
-                    "walltime_hours": fields[4],
-                })
+    # Find the start of the data table
+    start_index = next((i for i, line in enumerate(lines) if "JobID" in line and "SubmitTime" in line), -1)
+    
+    if start_index == -1 or len(lines) <= start_index + 1:
+        return {"error": "Unexpected output format from myproject"}
+
+    # Parse jobs from the output
+    for line in lines[start_index + 1:]:
+        fields = [field.strip() for field in line.split("|") if field.strip()]
+        if len(fields) >= 8:  # Ensure correct number of fields
+            history_data.append({
+                "job_id": fields[1],  # Job ID is the second column
+                "submit_time": fields[3],
+                "start_time": fields[4],
+                "end_time": fields[5],
+                "walltime": fields[6],
+                "total_slots": fields[7],
+                "used_sus": fields[8],
+            })
 
     return {"job_history": history_data}
+
+@api.route('/set_default_account', methods=['POST'])
+def set_default_account():
+    """
+    Set a new default account using 'myproject -d <accountNo>'.
+    """
+    try:
+        data = request.json
+        account_no = data.get("account_no")
+
+        if not account_no:
+            return jsonify({"error": "Missing account number"}), 400
+
+        command = f"/sw/local/bin/myproject -d {account_no}"
+        
+        # Log command execution
+        logging.info(f"Setting default account with command: {command}")
+        print(f"Executing command: {command}")
+
+        # Execute the command
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() or result.stdout.strip()
+            logging.error(f"Error setting default account: {error_msg}")
+            return jsonify({"error": f"Failed to set default account: {error_msg}"}), 500
+
+        # Return success response
+        return jsonify({"message": f"Default account set to {account_no} successfully"}), 200
+
+    except Exception as e:
+        logging.error(f"Unexpected error setting default account: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+def run_command(command):
+    """
+    Execute a shell command using subprocess and return the output.
+    """
+    try:
+        logging.info(f"Executing command: {command}")
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() or result.stdout.strip()
+            logging.error(f"Command failed: {error_msg}")
+            raise RuntimeError(error_msg)
+
+        return result.stdout.strip()
+    except Exception as e:
+        logging.error(f"Unexpected error executing command: {str(e)}")
+        raise RuntimeError(str(e))
+
+
+# API to fetch jobs for the current user ($USER)
+@api.route("/jobs", methods=["GET"])
+def get_user_jobs():
+    try:
+        result = subprocess.run(
+            ["squeue", "-u", os.getenv("USER"), "--format=%i %t %D"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8"
+        )
+
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip())
+
+        jobs = []
+        lines = result.stdout.strip().split("\n")[1:]  # Skip header
+        for line in lines:
+            parts = line.split()
+            if len(parts) == 3:
+                jobs.append({
+                    "job_id": parts[0],
+                    "state": parts[1],
+                    "nodes": parts[2],
+                })
+
+        return jsonify({"jobs": jobs}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API to cancel a job
+@api.route("/cancel_job/<job_id>", methods=["DELETE"])
+def cancel_job(job_id):
+    try:
+        result = subprocess.run(
+            ["scancel", job_id],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8"
+        )
+
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip())
+
+        return jsonify({"message": f"Job {job_id} canceled successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route("/utilization", methods=["GET"])
+def get_utilization():
+    try:
+        # Fetch Node Data
+        allocated_nodes = int(subprocess.check_output("/sw/local/bin/pestat -s alloc | tail -n+4 | wc -l", shell=True).decode("utf-8").strip())
+        mixed_nodes = int(subprocess.check_output("/sw/local/bin/pestat -s mix | tail -n+4 | wc -l", shell=True).decode("utf-8").strip())
+        idle_nodes = int(subprocess.check_output("/sw/local/bin/pestat -s idle | tail -n+4 | wc -l", shell=True).decode("utf-8").strip())
+
+        # Fetch Core Data
+        allocated_cpus = int(subprocess.check_output("/sw/local/bin/pestat -s alloc,mix,idle | tail -n+4 | awk '{print $4}' | awk 'NR>3' | awk '{s+=$1} END {printf \"%.0f\", s}'", shell=True).decode("utf-8").strip())
+        total_cpus = int(subprocess.check_output("/sw/local/bin/pestat -s alloc,mix,idle | tail -n+4 | awk '{print $5}' | awk 'NR>3' | awk '{s+=$1} END {printf \"%.0f\", s}'", shell=True).decode("utf-8").strip())
+        idle_cpus = total_cpus - allocated_cpus
+
+        # Fetch Job Data
+        running_jobs = int(subprocess.check_output("/usr/bin/squeue --noheader --states=RUNNING | wc -l", shell=True).decode("utf-8").strip())
+        pending_jobs = int(subprocess.check_output("/usr/bin/squeue --noheader --states=PENDING | wc -l", shell=True).decode("utf-8").strip())
+
+        utilization_data = {
+            "nodes": {
+                "allocated": allocated_nodes,
+                "mixed": mixed_nodes,
+                "idle": idle_nodes
+            },
+            "cores": {
+                "allocated": allocated_cpus,
+                "idle": idle_cpus
+            },
+            "jobs": {
+                "running": running_jobs,
+                "pending": pending_jobs
+            }
+        }
+
+        return jsonify(utilization_data), 200
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Command failed: {e.output.decode('utf-8')}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    try:
+        data = request.json
+        envName = data.get('envName')
+        description = data.get('description')
+        pyVersion = data.get('pyVersion')
+        gccversion = data.get('GCCversion')
+        
+        if not envName or not gccversion or not pyVersion:
+            return jsonify({"error": "Missing required parameters from the form submission"}), 400
+    
+        # When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
+        createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
+        
+        result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+        if result.returncode != 0:
+            return jsonify({"error": f"There was an error while creating the virtual environment: {result.stdout}"}), 500
+        return jsonify({"message": f"{envName} was successfully created!"}), 200
+    except Exception as e:
+        return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500

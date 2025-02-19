@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from "react";
 import config from '../../config.yml';
+import toast, { Toaster } from "react-hot-toast";
 
 const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [pyVersions, setPyVersions] = useState(null);
@@ -65,21 +66,25 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				},
 				body: JSON.stringify(formData)
 			});
-			
-			if (!createResponse.ok) {
-				throw new Error(`Venv creation form api response was not ok: ${createResponse.error} `);
-				alert("There was an error attempting to create your environment.");
-				setIsFormOpen(false);
-				return;
+
+			if (createResponse.status != 200) {
+				if (createResponse.status == 502) {
+					throw new Error(`There was a network error when creating your environment. Please try again later!`);
+				}
+				const responseData = await createResponse.json();
+				throw new Error(`Venv creation form api response was not ok: ${responseData.error} `);
 			}
 
 			const responseData = await createResponse.json();
-			console.log(`Successfully created new venv: {responseData.message}`);
+			console.log(`Successfully created new venv: ${responseData.message}`);
 			await fetchEnvs();
 			setWaitingForCreation(false);
 			setIsFormOpen(false);
+			toast.success(`If you want to use jupyter notebook/lab with this env, run:\n$ pip install jupyter\n when you are in your environment`);
 		} catch (error) {
-			console.error(`There has been an error while handling the venv creation form submission: ${error}`);
+			console.error(`${error}`);
+			alert(`${error}`);	
+			setIsFormOpen(false);
 		}	
 	}
 
@@ -123,10 +128,13 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
 			</div>
 
-			{!waitingForCreation && 
-			<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
-				Submit
-			</button>}
+			{!waitingForCreation &&
+			<div className="flex flex-col">
+				<button type='submit' className='w-full bg-maroon text-white py-2 px-4 rounded hover:bg-pink-950 focus:outline-none'>
+					Submit
+				</button>
+			</div>
+			}
 			{waitingForCreation &&
 			 <div>
 			 	<p> Creating Environment (this may take a while)...</p>
