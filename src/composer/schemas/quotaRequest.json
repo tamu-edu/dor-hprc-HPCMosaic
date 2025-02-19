@@ -2,16 +2,6 @@
   "initialCheck": {
     "type": "rowContainer",
     "elements": {
-      "sectionTitle": {
-        "type": "staticText",
-        "value": "Initial Verification",
-        "isHeading": true
-      },
-      "sectionDescription": {
-        "type": "staticText",
-        "value": "Please verify if this is a standard request or requires special approval.",
-        "isHeading": false
-      },
       "isLongRequest": {
         "type": "radioGroup",
         "label": "Is this request more than 10TB or for longer than 6 months?*",
@@ -24,19 +14,10 @@
     }
   },
   "requestDetails": {
-    "type": "rowContainer",
+    "type": "collapsibleRowContainer",
+    "title": "Request Details",
     "condition": "isLongRequest.No",
     "elements": {
-      "sectionTitle": {
-        "type": "staticText",
-        "value": "Request Details",
-        "isHeading": true
-      },
-      "sectionDescription": {
-        "type": "staticText",
-        "value": "Basic information about your request",
-        "isHeading": false
-      },
       "requestContainer": {
         "type": "rowContainer",
         "elements": {
@@ -59,19 +40,10 @@
     }
   },
   "quotaDetails": {
-    "type": "rowContainer",
+    "type": "collapsibleRowContainer",
+    "title": "Storage Requirements",
     "condition": "isLongRequest.No",
     "elements": {
-      "sectionTitle": {
-        "type": "staticText",
-        "value": "Storage Requirements",
-        "isHeading": true
-      },
-      "sectionDescription": {
-        "type": "staticText",
-        "value": "Specify your storage needs and file limits",
-        "isHeading": false
-      },
       "quotaContainer": {
         "type": "rowContainer",
         "elements": {
@@ -114,19 +86,10 @@
     }
   },
   "justification": {
-    "type": "rowContainer",
+    "type": "collapsibleColContainer",
+    "title": "Project Justification",
     "condition": "isLongRequest.No",
     "elements": {
-      "sectionTitle": {
-        "type": "staticText",
-        "value": "Project Justification",
-        "isHeading": true
-      },
-      "sectionDescription": {
-        "type": "staticText",
-        "value": "Please provide detailed information to help us evaluate your request",
-        "isHeading": false
-      },
       "piAwareness": {
         "type": "textarea",
         "label": "PI Approval*",
@@ -148,19 +111,10 @@
     }
   },
   "technical": {
-    "type": "rowContainer",
+    "type": "collapsibleColContainer",
+    "title": "Technical Information",
     "condition": "isLongRequest.No",
     "elements": {
-      "sectionTitle": {
-        "type": "staticText",
-        "value": "Technical Information",
-        "isHeading": true
-      },
-      "sectionDescription": {
-        "type": "staticText",
-        "value": "Technical details about your storage requirements",
-        "isHeading": false
-      },
       "jobSize": {
         "type": "textarea",
         "label": "Input/Output Size*",
@@ -185,16 +139,6 @@
     "type": "rowContainer",
     "condition": "isLongRequest.No",
     "elements": {
-      "sectionTitle": {
-        "type": "staticText",
-        "value": "Final Verification",
-        "isHeading": true
-      },
-      "sectionDescription": {
-        "type": "staticText",
-        "value": "Please verify that you understand and agree to the following",
-        "isHeading": false
-      },
       "verifyCompress": {
         "type": "checkbox",
         "label": "I verify that I will remove any unnecessary data and compress files/folders to save shared resources.*",
