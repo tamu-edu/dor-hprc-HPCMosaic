@@ -3,6 +3,8 @@ import { Bar } from "react-chartjs-2";
 import "chart.js/auto";
 import config from "../../config.yml";
 import Spinner from "../Components/Spinner";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css"; // Import Tippy styles
 
 const ClusterInfo = () => {
   const [data, setData] = useState([]);
@@ -64,11 +66,11 @@ const ClusterInfo = () => {
       </div>
 
       {view === "chart" ? (
-        <div className="w-full h-full flex-grow">
+        <div className="w-full h-full overflow-auto flex-grow">
           <h3 className="text-xl font-semibold mb-4">Core & Node Utilization</h3>
           <Bar
             data={{
-              labels: data.map((queue) => queue.queue), // Queue names on Y-axis
+              labels: data.map((queue) => queue.queue),
               datasets: [
                 {
                   label: "Used Cores (%)",
@@ -117,36 +119,10 @@ const ClusterInfo = () => {
               ],
             }}
             options={{
-              indexAxis: "y", // Vertical stacking with queue names on the left
+              indexAxis: "y",
               responsive: true,
               plugins: {
                 legend: { display: true, position: "top" },
-                tooltip: {
-                  callbacks: {
-                    label: function (context) {
-                      let label = context.dataset.label || "";
-                      if (label) {
-                        label += ": ";
-                      }
-                      label += `${context.raw}%`;
-                      const queue = data[context.dataIndex];
-                      if (context.dataset.label.includes("Cores")) {
-                        const totalCores = parseInt(queue.CPU_total, 10);
-                        const usedCores =
-                          parseInt(queue.CPU_total, 10) -
-                          parseInt(queue.CPU_avail, 10);
-                        label += ` (${usedCores}/${totalCores})`;
-                      } else {
-                        const totalNodes = parseInt(queue.nodes_total, 10);
-                        const usedNodes =
-                          parseInt(queue.nodes_total, 10) -
-                          parseInt(queue.nodes_avail, 10);
-                        label += ` (${usedNodes}/${totalNodes})`;
-                      }
-                      return label;
-                    },
-                  },
-                },
               },
               scales: {
                 x: {
@@ -165,10 +141,26 @@ const ClusterInfo = () => {
           <table className="table-auto w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2">Queue</th>
-                <th className="border border-gray-300 px-4 py-2">Resources</th>
-                <th className="border border-gray-300 px-4 py-2">Job Size</th>
-                <th className="border border-gray-300 px-4 py-2">Time Limit</th>
+                <th className="border border-gray-300 px-4 py-2">
+                  <Tippy content="HPC queues define groups of nodes with specific job scheduling policies.">
+                    <span className="cursor-help">Queue ⓘ</span>
+                  </Tippy>
+                </th>
+                <th className="border border-gray-300 px-4 py-2">
+                  <Tippy content="CPU cores and nodes available vs. used in this queue.">
+                    <span className="cursor-help">Resources ⓘ</span>
+                  </Tippy>
+                </th>
+                <th className="border border-gray-300 px-4 py-2">
+                  <Tippy content="Range of CPU cores or nodes a job can request in this queue. Example: '1-32' means jobs can request between 1 and 32 cores.">
+                    <span className="cursor-help">Job Size ⓘ</span>
+                  </Tippy>
+                </th>
+                <th className="border border-gray-300 px-4 py-2">
+                  <Tippy content="The maximum time a job can run in this queue.">
+                    <span className="cursor-help">Time Limit ⓘ</span>
+                  </Tippy>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -194,9 +186,19 @@ const ClusterInfo = () => {
                       {queue.queue}
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      CPU: {cpuUsed}/{cpuTotal} ({cpuPercentage}%)<br />
-                      Nodes: {nodesUsed}/{nodesTotal} ({nodesPercentage}%)
-                      <p className={`${getColor(diskPercentage)}`}>{diskPercentage}%</p>
+                      CPU: {cpuUsed}/{cpuTotal}{" "}
+                      <Tippy content={`Used: ${cpuUsed}, Total: ${cpuTotal}`}>
+                        <span className={getColor(cpuPercentage)}>
+                          ({cpuPercentage}%)
+                        </span>
+                      </Tippy>
+                      <br />
+                      Nodes: {nodesUsed}/{nodesTotal}{" "}
+                      <Tippy content={`Used: ${nodesUsed}, Total: ${nodesTotal}`}>
+                        <span className={getColor(nodesPercentage)}>
+                          ({nodesPercentage}%)
+                        </span>
+                      </Tippy>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {queue.job_size}

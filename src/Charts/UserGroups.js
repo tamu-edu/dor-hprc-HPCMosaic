@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import config from "../../config.yml";
 import Spinner from "../Components/Spinner";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css"; // Import Tippy styles
 
 const UserGroups = () => {
   const [groups, setGroups] = useState([]);
   const [quotas, setQuotas] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true); // New state to track loading status
+  const [loading, setLoading] = useState(true);
   const baseUrl = config.production.dashboard_url;
 
   // Fetch user groups
@@ -45,7 +47,7 @@ const UserGroups = () => {
       .catch((err) => {
         setError(err.message);
       })
-      .finally(() => setLoading(false)); // Only set loading to false when both fetches are done
+      .finally(() => setLoading(false));
   }, []);
 
   if (error) {
@@ -53,19 +55,34 @@ const UserGroups = () => {
   }
 
   if (loading) {
-    return <Spinner/>;
+    return <Spinner />;
   }
 
   return (
     <div className="p-4 bg-white w-full h-full flex flex-col">
-      <h2 className="text-2xl font-semibold mb-4">User Groups</h2>
+      {/* Title with Tooltip */}
+      <div className="flex items-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          <Tippy content="User groups determine access to HPC resources, storage, and quotas.">
+            <span className="cursor-help">User Groups ⓘ</span>
+          </Tippy>
+        </h2>
+      </div>
 
       <div className="overflow-auto w-full h-full flex-grow">
         <table className="table-auto w-full border-collapse border border-gray-300 rounded-lg shadow-sm">
           <thead>
-            <tr className="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
-              <th className="border border-gray-300 px-4 py-2">Group</th>
-              <th className="border border-gray-300 px-4 py-2">Disk Path</th>
+            <tr className="bg-gray-200 text-gray-700">
+              <th className="border border-gray-300 px-4 py-2">
+                <Tippy content="Groups define which HPC resources and storage quotas users have access to.">
+                  <span className="cursor-help">Group ⓘ</span>
+                </Tippy>
+              </th>
+              <th className="border border-gray-300 px-4 py-2">
+                <Tippy content="The storage path assigned to this group, where their data is stored on the HPC system.">
+                  <span className="cursor-help">Disk Path ⓘ</span>
+                </Tippy>
+              </th>
             </tr>
           </thead>
           <tbody className="text-gray-800 text-sm">
