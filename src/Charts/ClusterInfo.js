@@ -5,6 +5,7 @@ import config from "../../config.yml";
 import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Import Tippy styles
+import ElementDescriptions from "../Components/ElementDescriptions";
 
 const ClusterInfo = () => {
   const [data, setData] = useState([]);
@@ -44,7 +45,14 @@ const ClusterInfo = () => {
 
   return (
     <div className="p-4 bg-white w-full h-full flex flex-col">
-      <h2 className="text-2xl font-semibold mb-4">Queue Availability</h2>
+      {/* Title with Tooltip */}
+      <div className="flex items-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          <Tippy content={ElementDescriptions["Node Utilization"]}>
+            <span className="cursor-help">Queue Availability ⓘ</span>
+          </Tippy>
+        </h2>
+      </div>
 
       <div className="mb-4">
         <button

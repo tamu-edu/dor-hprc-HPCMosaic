@@ -3,6 +3,7 @@ import config from "../../config.yml";
 import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Import Tippy styles
+import ElementDescriptions from "../Components/ElementDescriptions";
 
 const UserGroups = () => {
   const [groups, setGroups] = useState([]);
@@ -63,7 +64,7 @@ const UserGroups = () => {
       {/* Title with Tooltip */}
       <div className="flex items-center">
         <h2 className="text-2xl font-semibold mb-4">
-          <Tippy content="User groups determine access to HPC resources, storage, and quotas.">
+          <Tippy content={ElementDescriptions["User Groups"]}>
             <span className="cursor-help">User Groups ⓘ</span>
           </Tippy>
         </h2>

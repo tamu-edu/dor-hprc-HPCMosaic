@@ -140,8 +140,8 @@ const PlaceHolder = () => {
             {isPopupOpen && (
                 <div>
                     <div className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-6 rounded-t-md z-50 border-t border-gray-300">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-2xl font-semibold mb-4">Add Elements</h3>
+                        <div className="flex justify-between items-center mb-6">  {/* Increased margin */}
+                            <h3 className="text-2xl font-semibold">Add Elements</h3>
                             <button
                                 onClick={closePopup}
                                 className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
@@ -153,6 +153,7 @@ const PlaceHolder = () => {
                     </div>
                 </div>
             )}
+
         </div>
     );
 };

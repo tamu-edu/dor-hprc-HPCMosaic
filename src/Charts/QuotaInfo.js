@@ -3,6 +3,7 @@ import config from "../../config.yml";
 import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default tooltip styling
+import ElementDescriptions from "../Components/ElementDescriptions";
 
 const QuotaInfo = () => {
   const [quotaData, setQuotaData] = useState([]);
@@ -85,7 +86,15 @@ const QuotaInfo = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
-      <h2 className="text-2xl font-semibold mb-4">Quota Information</h2>
+      {/* Title with Tooltip */}
+      <div className="flex items-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          <Tippy content={ElementDescriptions["Quota Info"]}>
+            <span className="cursor-help">Quota Information ⓘ</span>
+          </Tippy>
+        </h2>
+      </div>
+      
       <table className="table-auto w-full border-collapse border border-gray-300">
         <thead>
           <tr className="bg-gray-200">

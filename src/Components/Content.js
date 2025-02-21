@@ -6,13 +6,14 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { debounce } from "lodash";
 import { v4 as uuidv4 } from "uuid"; // For unique IDs
+import { toast, ToastContainer } from "react-toastify"; // ✅ Import Toastify
+import "react-toastify/dist/ReactToastify.css"; // ✅ Import Toastify styles
 
 // Elements
 import PyVenvManager from "../Charts/PyVenvManager";
 import ClusterInfo from "../Charts/ClusterInfo";
 import UserJobs from "../Charts/UserJobs";
 import Chatbot from "../Charts/Chatbot";
-import Composer from "../Charts/Composer";
 import QuotaInfo from "../Charts/QuotaInfo";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
@@ -25,52 +26,52 @@ const Content = (props) => {
 
   // Default layout
   const defaultLayout = [
-    { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 }, // Full width at top
-    { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 }, 
+    { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
+    { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
     { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
   ];
 
-  // Load default layout on component mount
   useEffect(() => {
     setRow(defaultLayout);
     setLayout(defaultLayout.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
   }, []);
 
-  // Update layout when elements change
-  const onLayoutChange = (newLayout) => {
-    setLayout(newLayout);
-  };
-
   // Function to add a new element
-// Function to add a new element
-const addNewElement = (item) => {
-  // Define default width and height based on item type
-  const width = item.name === "Node Utilization" ? 5 : 4; // Adjust size if needed
-  const height = item.name === "Node Utilization" ? 15 : 10;
+  const addNewElement = (item) => {
+    const width = item.name === "Node Utilization" ? 5 : 4;
+    const height = item.name === "Node Utilization" ? 15 : 10;
 
-  // Prevent duplicate elements
-  if (row.some((ele) => ele.name === item.name)) {
-    console.warn(`${item.name} is already added!`);
-    return;
-  }
+    console.log("Adding new element:", item);
 
-  const newItem = {
-    name: item.name,
-    i: uuidv4(), // Unique ID
-    x: row.length % 4,  // Spread them out horizontally
-    y: Math.floor(row.length / 4), // Stagger rows
-    w: width,
-    h: height,
+    // ✅ Prevent duplicate elements and show a toast notification
+    if (row.some((ele) => ele.name === item.name)) {
+      toast.warn(`"${item.name}" is already added!`, {
+        autoClose: 2000,
+        position: "top-right",
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+      });
+      return;
+    }
+
+    const newItem = {
+      name: item.name,
+      i: uuidv4(),
+      x: row.length % 4,
+      y: Math.floor(row.length / 4),
+      w: width,
+      h: height,
+    };
+
+    const newRow = [...row, newItem];
+    setRow(newRow);
+    setLayout(newRow.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
   };
-
-  const newRow = [...row, newItem];
-  setRow(newRow);
-  setLayout(newRow.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
-};
-
 
   // Drop functionality
   const [{ isOver }, drop] = useDrop({
@@ -96,62 +97,50 @@ const addNewElement = (item) => {
   // Remove an element
   const removeElement = (index) => {
     const removedItemId = row[index].i;
-  
+
     // Filter out the removed item
     const newRow = row.filter((_, i) => i !== index);
-    
+
     // Preserve size & position by only removing the deleted item from the layout
     const newLayout = layout.filter((item) => item.i !== removedItemId);
-  
+
     setRow(newRow);
     setLayout(newLayout);
   };
-  
 
-  // Render appropriate component
   const renderChart = (ele) => {
-    switch (ele.name) {
-      case "Node Utilization":
-        return <ClusterInfo />;
-      case "User Jobs":
-        return <UserJobs />;
-      case "PyVenvManager":
-        return <PyVenvManager />;
-      case "Chatbot":
-        return <Chatbot />;
-      // case "Composer":
-      //   return <Composer />;
-      case "Quota Info":
-        return <QuotaInfo />;
-      case "User Groups":
-        return <UserGroups />;
-      case "Accounts":
-        return <Accounts />;
-      default:
-        return <div className="text-center text-red-500">Unknown Chart</div>;
-    }
+    const componentMap = {
+      "Node Utilization": <ClusterInfo />,
+      "User Jobs": <UserJobs />,
+      "PyVenvManager": <PyVenvManager />,
+      "Chatbot": <Chatbot />,
+      "Quota Info": <QuotaInfo />,
+      "User Groups": <UserGroups />,
+      "Accounts": <Accounts />,
+    };
+    return componentMap[ele.name] || <div className="text-center text-red-500">Unknown Chart: {ele.name}</div>;
   };
 
   return (
-    <div
-      ref={drop}
-      className={`max-w-full h-auto p-4 ${isOver ? "bg-gray-100" : ""}`}
-    >
-    <ReactGridLayout
-      layout={layout}
-      onLayoutChange={onLayoutChange}
-      width={1200}
-      cols={10}
-      rowHeight={20} // Reduce this to make height increments smaller
-      isBounded={false}
-      isDroppable={true}
-      isResizable={true}
-      isDraggable={true}
-      preventCollision={false}
-      compactType="vertical"
-      autoSize={true}
-      className="bg-white rounded-lg"
-    >
+    <div ref={drop} className={`max-w-full h-auto p-4 ${isOver ? "bg-gray-100" : ""}`}>
+      {/* ✅ Toast Notification Container */}
+      <ToastContainer />
+
+      <ReactGridLayout
+        layout={layout}
+        onLayoutChange={setLayout}
+        width={1200}
+        cols={10}
+        rowHeight={20}
+        isBounded={false}
+        isDroppable={true}
+        isResizable={true}
+        isDraggable={true}
+        preventCollision={false}
+        compactType="vertical"
+        autoSize={true}
+        className="bg-white rounded-lg"
+      >
         {row.map((ele, index) => (
           <div
             key={ele.i}

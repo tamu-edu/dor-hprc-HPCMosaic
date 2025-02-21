@@ -3,6 +3,7 @@ import config from "../../config.yml";
 import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
+import ElementDescriptions from "../Components/ElementDescriptions";
 
 const ProjectInfo = () => {
   const [projects, setProjects] = useState([]);
@@ -73,7 +74,14 @@ const ProjectInfo = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
-      <h2 className="text-2xl font-semibold mb-4">Project Information</h2>
+      {/* Title with Tooltip */}
+      <div className="flex items-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          <Tippy content={ElementDescriptions.Accounts}>
+            <span className="cursor-help">Project Information ⓘ</span>
+          </Tippy>
+        </h2>
+      </div>
 
       {/* Display success/error messages (toast) */}
       {message && (

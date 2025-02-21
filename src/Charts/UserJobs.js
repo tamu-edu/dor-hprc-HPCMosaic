@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Spinner from "../Components/Spinner";
 import config from "../../config.yml";
+import ElementDescriptions from "../Components/ElementDescriptions";
+import "tippy.js/dist/tippy.css"; // Default styling for tooltips
+import Tippy from "@tippyjs/react";
 
 const UserJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -39,7 +42,14 @@ const UserJobs = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg overflow-auto">
-      <h2 className="text-2xl font-semibold mb-4">Your Jobs</h2>
+      {/* Title with Tooltip */}
+      <div className="flex items-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          <Tippy content={ElementDescriptions["User Jobs"]}>
+            <span className="cursor-help">Your Jobs ⓘ</span>
+          </Tippy>
+        </h2>
+      </div>
       {jobs.length === 0 ? (
         <p className="text-gray-500">No active jobs.</p>
       ) : (
