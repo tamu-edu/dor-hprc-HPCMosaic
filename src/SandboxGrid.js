@@ -1,13 +1,13 @@
-import React from 'react';
-import PlaceHolder from './Components/PlaceHolder';
-import { DndProvider } from 'react-dnd';
-import {HTML5Backend} from 'react-dnd-html5-backend';
+import React from "react";
+import PlaceHolder from "./Components/PlaceHolder";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
-function SandboxGrid() {
+function SandboxGrid({ setRunTour }) {
   return (
-    <div className="">
+    <div className="dashboard-grid">
       <DndProvider backend={HTML5Backend}>
-      <PlaceHolder></PlaceHolder>
+        <PlaceHolder setRunTour={setRunTour} />
       </DndProvider>
     </div>
   );

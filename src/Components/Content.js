@@ -145,7 +145,7 @@ const Content = (props) => {
           <div
             key={ele.i}
             data-grid={ele}
-            className="bg-white shadow-lg rounded-md p-4 border border-gray-300 relative h-full w-full"
+            className="resizable-element bg-white shadow-lg rounded-md p-4 border border-gray-300 relative h-full w-full"
           >
             <button
               onClick={() => removeElement(index)}
@@ -157,6 +157,7 @@ const Content = (props) => {
           </div>
         ))}
       </ReactGridLayout>
+
     </div>
   );
 };

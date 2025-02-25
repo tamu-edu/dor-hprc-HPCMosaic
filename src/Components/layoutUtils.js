@@ -6,7 +6,7 @@ const baseUrl = config.production.dashboard_url + '/api';
 export const saveLayout = async (layoutName, layoutData) => {
     try {
         console.log(layout_data);
-        const response = await axios.post(`${API_BASE_URL}/save_layout`, {
+        const response = await axios.post(`${baseUrl}/save_layout`, {
             layout_name: layoutName,
             layout_data: layoutData,
         });
@@ -18,7 +18,7 @@ export const saveLayout = async (layoutName, layoutData) => {
 
 export const fetchLayouts = async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/get_layouts`);
+        const response = await axios.get(`${baseUrl}/get_layouts`);
         return response.data.layouts;
     } catch (error) {
         console.error(error.response?.data || "Failed to fetch layouts");
@@ -28,7 +28,7 @@ export const fetchLayouts = async () => {
 
 export const loadLayout = async (layoutName) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/load_layout`, {
+        const response = await axios.get(`${baseUrl}/load_layout`, {
             params: { layout_name: layoutName },
         });
         return response.data.layout_data;
