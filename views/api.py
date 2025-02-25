@@ -39,7 +39,7 @@ def save_layout():
 
         # Define the path to save the layout
         user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
-        layouts_dir = f"/scratch/user/{user}/layouts"
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
         os.makedirs(layouts_dir, exist_ok=True)  # Ensure the directory exists
 
         layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")

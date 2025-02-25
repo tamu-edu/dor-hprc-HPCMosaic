@@ -18,6 +18,8 @@ import QuotaInfo from "../Charts/QuotaInfo";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
 
+// Manage Layout Utility
+
 const ReactGridLayout = WidthProvider(RGL);
 
 const Content = (props) => {

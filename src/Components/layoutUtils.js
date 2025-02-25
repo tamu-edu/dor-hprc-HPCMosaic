@@ -5,14 +5,14 @@ const baseUrl = config.production.dashboard_url + '/api';
 
 export const saveLayout = async (layoutName, layoutData) => {
     try {
-        console.log(layout_data);
+        console.log("Saving layout:", layoutName, layoutData); // Fix console.log
         const response = await axios.post(`${baseUrl}/save_layout`, {
             layout_name: layoutName,
             layout_data: layoutData,
         });
         console.log(response.data.message);
     } catch (error) {
-        console.error(error.response?.data || "Failed to save layout");
+        console.error("Error saving layout:", error.response?.data || "Unknown error");
     }
 };
 
