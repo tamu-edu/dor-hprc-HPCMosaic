@@ -57,7 +57,7 @@ def save_layout():
 def get_layouts():
     try:
         user = os.getenv("USER", "default_user")
-        layouts_dir = f"/scratch/user/{user}/layouts"
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
         os.makedirs(layouts_dir, exist_ok=True)  # Ensure the directory exists
 
         # List all JSON files in the layouts directory
@@ -77,7 +77,7 @@ def load_layout():
             return jsonify({"error": "Missing layout name"}), 400
 
         user = os.getenv("USER", "default_user")
-        layouts_dir = f"/scratch/user/{user}/layouts"
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
         layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
 
         if not os.path.exists(layout_file_path):
@@ -561,3 +561,51 @@ def get_utilization():
         return jsonify({"message": f"{envName} was successfully created!"}), 200
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
+
+@api.route('/delete_layout', methods=['DELETE'])
+def delete_layout():
+    """Delete a saved layout"""
+    try:
+        layout_name = request.json.get("layout_name")
+        if not layout_name:
+            return jsonify({"error": "Missing layout name"}), 400
+
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
+        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+
+        if not os.path.exists(layout_file_path):
+            return jsonify({"error": f"Layout {layout_name} does not exist"}), 404
+
+        os.remove(layout_file_path)
+        return jsonify({"message": f"Layout {layout_name} deleted successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api.route('/rename_layout', methods=['POST'])
+def rename_layout():
+    """Rename a saved layout"""
+    try:
+        data = request.json
+        old_name = data.get("old_name")
+        new_name = data.get("new_name")
+
+        if not old_name or not new_name:
+            return jsonify({"error": "Missing old or new layout name"}), 400
+
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
+        old_path = os.path.join(layouts_dir, f"{old_name}.json")
+        new_path = os.path.join(layouts_dir, f"{new_name}.json")
+
+        if not os.path.exists(old_path):
+            return jsonify({"error": f"Layout {old_name} does not exist"}), 404
+
+        if os.path.exists(new_path):
+            return jsonify({"error": f"A layout named {new_name} already exists"}), 400
+
+        os.rename(old_path, new_path)
+        return jsonify({"message": f"Layout {old_name} renamed to {new_name} successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

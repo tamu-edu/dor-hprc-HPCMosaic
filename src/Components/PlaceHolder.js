@@ -7,6 +7,7 @@ import HPRCLogo from "./HPRCLogo";
 import config from "../../config.yml";
 import LayoutUtility from "./LayoutUtility";
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
+import { v4 as uuidv4 } from "uuid"; // For unique IDs
 
 const PlaceHolder = ({ setRunTour }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -15,6 +16,7 @@ const PlaceHolder = ({ setRunTour }) => {
   const [layouts, setLayouts] = useState([]);
   const clusterName = config.development.cluster_name;
   const [userData, setUserData] = useState({});
+  const [loadingLayouts, setLoadingLayouts] = useState(true); // ✅ Track loading state
 
   useEffect(() => {
     console.log("Current layout data in PlaceHolder:", layoutData);
@@ -27,6 +29,8 @@ const PlaceHolder = ({ setRunTour }) => {
         setLayouts(fetchedLayouts);
       } catch (error) {
         console.error("Error fetching layouts:", error);
+      } finally {
+        setLoadingLayouts(false); // ✅ Stop loading when fetching is complete
       }
     };
     loadAvailableLayouts();
@@ -87,23 +91,55 @@ const PlaceHolder = ({ setRunTour }) => {
   };
 
   const applyDefaultView = () => {
+  
+    // Ask user to confirm before applying default layout
+    const userConfirmed = window.confirm("Are you sure you want to apply the default layout? This will remove all changes.");
+    if (!userConfirmed) return;
+  
+    // Ask user if they want to save their current layout first
+    // const saveFirst = window.confirm("Would you like to save your current layout before applying the default?");
+    // if (saveFirst) {
+    //   const layoutName = prompt("Enter a name for the layout:");
+    //   if (layoutName) {
+    //     saveLayout(layoutName, layoutData);
+    //     toast.success(`Layout "${layoutName}" saved successfully!`);
+    //     setLayouts((prev) => [...prev, layoutName]);
+    //   } else {
+    //     toast.warn("Layout save canceled.");
+    //   }
+    // }
+  
+    // Apply the default layout
     const defaultView = [
-        { name: "Node Utilization", id: "0", i: "0", x: 0, y: 0, w: 2, h: 3 },
-        { name: "Chatbot", id: "1", i: "1", x: 1, y: 0, w: 1, h: 1 },
-        { name: "PyVenvManager", id: "2", i: "2", x: 2, y: 0, w: 1, h: 1 },
+      { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
+      { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
+      { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
+      { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
+      { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
+      { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
     ];
-    setLayoutData(defaultView);
+  
+    console.log("Applying Default View:", defaultView);
+    setLayoutData([...defaultView]); // ✅ Ensures a new reference
+  
+    // ✅ Show success popup
+    toast.success("Applied default layout!");
   };
+  
 
   const applySavedLayout = async (layoutName) => {
     try {
-        const layoutData = await loadLayout(layoutName);
-        setLayoutData(layoutData); // Set the saved layout data
+      const fetchedLayout = await loadLayout(layoutName);
+      if (fetchedLayout && Array.isArray(fetchedLayout[0])) {
+        setLayoutData(fetchedLayout[0]); // ✅ Ensure correct data structure
         alert(`Loaded layout "${layoutName}"`);
-        console.log(layoutData);
-    } catch (error) {
-        console.error("Error loading layout:", error);
+      } else {
+        console.warn("Invalid layout format received:", fetchedLayout);
         alert("Failed to load layout.");
+      }
+    } catch (error) {
+      console.error("Error loading layout:", error);
+      alert("Failed to load layout.");
     }
   };
 
@@ -144,6 +180,7 @@ const PlaceHolder = ({ setRunTour }) => {
                 applyDefaultView={applyDefaultView} // Pass default view handler
                 applySavedLayout={applySavedLayout} // Pass saved layout handler
                 saveCurrentLayout={saveCurrentLayout} // Pass save layout handler
+                loadingLayouts={loadingLayouts} // ✅ Pass loading state
             />
 
             {/* Help Button */}
@@ -180,6 +217,7 @@ const PlaceHolder = ({ setRunTour }) => {
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <Content 
             change={(data) => changeHandler(0, data)}
+            layoutData={layoutData} setLayoutData={setLayoutData}
           />
         </div>
       </div>

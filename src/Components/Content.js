@@ -18,15 +18,10 @@ import QuotaInfo from "../Charts/QuotaInfo";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
 
-// Manage Layout Utility
-
 const ReactGridLayout = WidthProvider(RGL);
 
-const Content = (props) => {
-  const [row, setRow] = useState([]);
-  const [layout, setLayout] = useState([]);
-
-  // Default layout
+const Content = ({ layoutData, setLayoutData, change }) => {
+  // ✅ Default layout (used on first load)
   const defaultLayout = [
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
@@ -36,19 +31,23 @@ const Content = (props) => {
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
   ];
 
+  // ✅ Ensure the initial layout is set correctly
+  const [row, setRow] = useState(layoutData?.length > 0 ? layoutData : defaultLayout);
+  const [layout, setLayout] = useState(
+    layoutData?.length > 0 ? layoutData.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })) : []
+  );
+
+  // ✅ Listen for changes to layoutData and update the state
   useEffect(() => {
-    setRow(defaultLayout);
-    setLayout(defaultLayout.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
-  }, []);
+    if (layoutData && Array.isArray(layoutData) && layoutData.length > 0) {
+      console.log("🔄 Updating Content.js with new layoutData:", layoutData);
+      setRow(layoutData);
+      setLayout(layoutData.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
+    }
+  }, [layoutData]);
 
-  // Function to add a new element
+  // ✅ Function to add a new element
   const addNewElement = (item) => {
-    const width = item.name === "Node Utilization" ? 5 : 4;
-    const height = item.name === "Node Utilization" ? 15 : 10;
-
-    console.log("Adding new element:", item);
-
-    // ✅ Prevent duplicate elements and show a toast notification
     if (row.some((ele) => ele.name === item.name)) {
       toast.warn(`"${item.name}" is already added!`, {
         autoClose: 2000,
@@ -66,16 +65,17 @@ const Content = (props) => {
       i: uuidv4(),
       x: row.length % 4,
       y: Math.floor(row.length / 4),
-      w: width,
-      h: height,
+      w: 4,
+      h: 10,
     };
 
     const newRow = [...row, newItem];
     setRow(newRow);
     setLayout(newRow.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
+    setLayoutData(newRow); // ✅ Updates the global layout
   };
 
-  // Drop functionality
+  // ✅ Drop functionality
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.CARD,
     drop: (item) => addNewElement(item),
@@ -84,32 +84,29 @@ const Content = (props) => {
     }),
   });
 
-  // Debounced state update
+  // ✅ Debounced state update
   const debouncedChange = useCallback(
     debounce((newRow) => {
-      props.change(newRow);
+      change(newRow);
     }, 100),
-    [props]
+    [change]
   );
 
   useEffect(() => {
     debouncedChange(row);
   }, [row, debouncedChange]);
 
-  // Remove an element
+  // ✅ Function to remove an element
   const removeElement = (index) => {
-    const removedItemId = row[index].i;
-
-    // Filter out the removed item
     const newRow = row.filter((_, i) => i !== index);
-
-    // Preserve size & position by only removing the deleted item from the layout
-    const newLayout = layout.filter((item) => item.i !== removedItemId);
+    const newLayout = layout.filter((item) => item.i !== row[index].i);
 
     setRow(newRow);
     setLayout(newLayout);
+    setLayoutData(newRow); // ✅ Update global state
   };
 
+  // ✅ Function to render correct charts
   const renderChart = (ele) => {
     const componentMap = {
       "Node Utilization": <ClusterInfo />,
@@ -130,7 +127,7 @@ const Content = (props) => {
 
       <ReactGridLayout
         layout={layout}
-        onLayoutChange={setLayout}
+        onLayoutChange={(newLayout) => setLayout(newLayout)}
         width={1200}
         cols={10}
         rowHeight={20}
@@ -159,7 +156,6 @@ const Content = (props) => {
           </div>
         ))}
       </ReactGridLayout>
-
     </div>
   );
 };
