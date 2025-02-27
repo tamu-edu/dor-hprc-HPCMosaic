@@ -15,8 +15,10 @@ import ClusterInfo from "../Charts/ClusterInfo";
 import UserJobs from "../Charts/UserJobs";
 import Chatbot from "../Charts/Chatbot";
 import QuotaInfo from "../Charts/QuotaInfo";
+import QuotaButton from "../Charts/QuotaButton";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
+import Composer from "../Charts/Composer";
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -108,16 +110,28 @@ const Content = ({ layoutData, setLayoutData, change }) => {
 
   // ✅ Function to render correct charts
   const renderChart = (ele) => {
-    const componentMap = {
-      "Node Utilization": <ClusterInfo />,
-      "User Jobs": <UserJobs />,
-      "PyVenvManager": <PyVenvManager />,
-      "Chatbot": <Chatbot />,
-      "Quota Info": <QuotaInfo />,
-      "User Groups": <UserGroups />,
-      "Accounts": <Accounts />,
-    };
-    return componentMap[ele.name] || <div className="text-center text-red-500">Unknown Chart: {ele.name}</div>;
+    switch (ele.name) {
+      case "Node Utilization":
+        return <ClusterInfo />;
+      case "User Jobs":
+        return <UserJobs />;
+      case "PyVenvManager":
+        return <PyVenvManager />;
+      case "Chatbot":
+        return <Chatbot />;
+      case "Composer":
+        return <Composer />;
+      case "Quota Button":
+        return <QuotaButton />;
+      case "Quota Info":
+        return <QuotaInfo />;
+      case "User Groups":
+        return <UserGroups />;
+      case "Accounts":
+        return <Accounts />;
+      default:
+        return <div className="text-center text-red-500">Unknown Chart</div>;
+    }
   };
 
   return (

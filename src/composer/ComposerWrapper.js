@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, createContext, useMemo } from "react";
+import React, { useState, useRef, useContext, createContext, useMemo, useEffect } from "react";
 import Composer from "./schemaRendering/Composer";
 import "./ComposerStyles.css";
 
@@ -7,18 +7,26 @@ export const GlobalFilesContext = createContext();
 const ComposerWrapper = ({
   schema,
   onSubmit,
-  onPreview,
+  onClose,
   title = "Form Builder",
   apiEndpoint,
   onFileChange,
-  className = ""
+  className = "",
+  defaultValues = {}
 }) => {
   const [error, setError] = useState(null);
   const [globalFiles, setGlobalFiles] = useState([]);
   const formRef = useRef(null);
   const composerRef = useRef(null);
-
   const memoizedSchema = useMemo(() => schema, []);
+  const defaultsAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (composerRef.current && Object.keys(defaultValues).length > 0 && !defaultsAppliedRef.current) {
+      composerRef.current.setValues(defaultValues);
+      defaultsAppliedRef.current = true;
+    }
+  }, []);
 
   const handleUploadedFiles = (files) => {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -40,15 +48,15 @@ const ComposerWrapper = ({
     }
   };
 
-  const handlePreview = async (e) => {
+  const handleClose = async (e) => {
     e.preventDefault();
-    if (!formRef.current || !onPreview) return;
+    if (!formRef.current || !onClose) return;
     const formData = new FormData(formRef.current);
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
     try {
-      await onPreview(formData);
+      await onClose(formData);
     } catch (err) {
       setError(err.message);
     }
@@ -62,7 +70,7 @@ const ComposerWrapper = ({
             <h2>{title}</h2>
             {error && (
               <div className="error-message">
-                <span>{error}</span>
+                <span>{typeof error === 'string' ? error : error.message || 'An error occurred'}</span>
                 <button onClick={() => setError(null)}>✕</button>
               </div>
             )}
@@ -71,7 +79,6 @@ const ComposerWrapper = ({
             ref={formRef}
             onSubmit={handleSubmit}
             encType="multipart/form-data"
-            action={apiEndpoint}
             className="form-content"
           >
             <Composer
@@ -83,16 +90,10 @@ const ComposerWrapper = ({
           </form>
           <div className="form-footer">
             <div className="button-group">
-              <button type="submit" className="btn btn-primary">
-                Submit
-              </button>
-              {onPreview && (
-                <button 
-                  type="button" 
-                  onClick={handlePreview} 
-                  className="btn btn-secondary"
-                >
-                  Preview
+              <button type="submit" onClick={handleSubmit} className="btn btn-primary">Submit</button>
+              {onClose && (
+                <button type="button" onClick={handleClose} className="btn btn-secondary">
+                  Close
                 </button>
               )}
             </div>
