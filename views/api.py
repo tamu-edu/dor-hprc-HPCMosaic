@@ -570,6 +570,8 @@ def delete_layout():
         if not layout_name:
             return jsonify({"error": "Missing layout name"}), 400
 
+        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
+
         layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
         layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
 
@@ -593,6 +595,8 @@ def rename_layout():
 
         if not old_name or not new_name:
             return jsonify({"error": "Missing old or new layout name"}), 400
+
+        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
 
         layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
         old_path = os.path.join(layouts_dir, f"{old_name}.json")

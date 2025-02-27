@@ -1,0 +1,150 @@
+{
+  "initialCheck": {
+    "type": "rowContainer",
+    "elements": {
+      "isLongRequest": {
+        "type": "radioGroup",
+        "label": "Is this request more than 10TB or for longer than 6 months?*",
+        "name": "isLongRequest",
+        "options": [
+          { "value": "No", "label": "No" },
+          { "value": "Yes", "label": "Yes" }
+        ]
+      }
+    }
+  },
+  "requestDetails": {
+    "type": "collapsibleRowContainer",
+    "title": "Request Details",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "requestContainer": {
+        "type": "rowContainer",
+        "elements": {
+          "requestType": {
+            "type": "radioGroup",
+            "label": "Request Type*",
+            "name": "requestType",
+            "options": [
+              { "value": "New Request", "label": "New Request" },
+              { "value": "Extension", "label": "Extension" }
+            ]
+          },
+          "emailId": {
+            "type": "text",
+            "label": "Email ID*",
+            "name": "emailId"
+          }
+        }
+      }
+    }
+  },
+  "quotaDetails": {
+    "type": "collapsibleRowContainer",
+    "title": "Storage Requirements",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "quotaContainer": {
+        "type": "rowContainer",
+        "elements": {
+          "currentQuota": {
+            "type": "unit",
+            "label": "Current Quota*",
+            "name": "currentQuota",
+            "value": "1",
+            "units": [{ "label": "TB", "value": "TB" }]
+          },
+          "newQuota": {
+            "type": "unit",
+            "label": "New Quota*",
+            "name": "newQuota",
+            "units": [{ "label": "TB", "value": "TB" }]
+          }
+        }
+      },
+      "fileContainer": {
+        "type": "rowContainer",
+        "elements": {
+          "fileNote": {
+            "type": "staticText",
+            "value": "File limits help maintain system performance",
+            "isHeading": false
+          },
+          "currentFileLimit": {
+            "type": "text",
+            "label": "Current File Limit*",
+            "name": "currentFileLimit",
+            "value": "250000"
+          },
+          "newFileLimit": {
+            "type": "text",
+            "label": "New File Limit*",
+            "name": "newFileLimit"
+          }
+        }
+      }
+    }
+  },
+  "justification": {
+    "type": "collapsibleColContainer",
+    "title": "Project Justification",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "piAwareness": {
+        "type": "textarea",
+        "label": "PI Approval*",
+        "name": "piAwareness",
+        "help": "Please provide details of PI's awareness and approval"
+      },
+      "storedData": {
+        "type": "textarea",
+        "label": "Data Description*",
+        "name": "storedData",
+        "help": "Describe the type and nature of data to be stored"
+      },
+      "researchDescription": {
+        "type": "textarea",
+        "label": "Research Project Description*",
+        "name": "researchDescription",
+        "help": "Briefly describe the research project that will be supported by the requested storage"
+      }
+    }
+  },
+  "technical": {
+    "type": "collapsibleColContainer",
+    "title": "Technical Information",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "jobSize": {
+        "type": "textarea",
+        "label": "Input/Output Size*",
+        "name": "jobSize",
+        "help": "What is the input/output size of the job?"
+      },
+      "storagePlan": {
+        "type": "textarea",
+        "label": "Long-term Storage Plan*",
+        "name": "storagePlan",
+        "help": "What is your long-term storage plan for your data after the quota increase expires?"
+      },
+      "comment": {
+        "type": "textarea",
+        "label": "Additional Comments",
+        "name": "comment",
+        "help": "Any additional information you would like to provide (Optional)"
+      }
+    }
+  },
+  "verification": {
+    "type": "rowContainer",
+    "condition": "isLongRequest.No",
+    "elements": {
+      "verifyCompress": {
+        "type": "checkbox",
+        "label": "I verify that I will remove any unnecessary data and compress files/folders to save shared resources.*",
+        "name": "verifyCompress",
+        "value": "Yes"
+      }
+    }
+  }
+}

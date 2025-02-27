@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Content from "./Content";
 import Sidebar from "./Sidebar";
 import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback } from "react-icons/md";
@@ -71,24 +71,62 @@ const PlaceHolder = ({ setRunTour }) => {
     setUserData({ ...userData, [index]: [...data] });
   };
 
+  let getLatestLayoutRef = useRef(() => []);
+
   const saveCurrentLayout = async () => {
-    if (!userData || Object.keys(userData).length === 0) {
-      alert("No layout data to save!");
-      return;
+    // Get the latest layout from ReactGridLayout
+    const latestLayout = getLatestLayoutRef.current(); 
+
+    console.log("🔹 Latest layout from getLatestLayoutRef:", latestLayout);
+
+    if (!latestLayout || latestLayout.length === 0) {
+        toast.error("No layout data to save!");
+        return null;
     }
+
+    // Ensure `layoutData` is available and an array
+    const currentLayoutData = layoutData || []; // Fallback to empty array if null
+
+    if (!Array.isArray(currentLayoutData)) {
+        console.error("❌ layoutData is not an array or is null", layoutData);
+        toast.error("Error: No valid layout data available to save.");
+        return null;
+    }
+
+    // Create a proper mapping between layout items and original items with names
+    const enrichedLayout = latestLayout.map((item) => {
+        // Find the matching item in currentLayoutData that has the same "i" value
+        const originalItem = currentLayoutData.find((orig) => orig.i === item.i);
+        
+        // If found, use its name, otherwise use "Unnamed"
+        return {
+            ...item,
+            name: originalItem ? originalItem.name : "Unnamed",
+        };
+    });
+
+    console.log("✅ Saving Enriched Layout:", enrichedLayout);
 
     const layoutName = prompt("Enter a name for the layout:");
     if (layoutName) {
-      try {
-        await saveLayout(layoutName, userData);
-        alert(`Layout "${layoutName}" saved successfully!`);
-        setLayouts((prev) => [...prev, layoutName]);
-      } catch (error) {
-        console.error("Error saving layout:", error);
-        alert("Failed to save layout.");
-      }
+        try {
+            await saveLayout(layoutName, enrichedLayout);
+            toast.success(`Layout "${layoutName}" saved successfully!`);
+            
+            // Update layouts list without a full refresh
+            setLayouts((prev) => [...prev, layoutName]);
+            
+            // Return the layout name to allow LayoutUtility to update activeLayout
+            return { success: true, layoutName };
+        } catch (error) {
+            console.error("Error saving layout:", error);
+            toast.error("Failed to save layout.");
+            return null;
+        }
     }
-  };
+    return null;
+};
+
 
   const applyDefaultView = () => {
   
@@ -174,13 +212,15 @@ const PlaceHolder = ({ setRunTour }) => {
               <span className="font-semibold text-gray-700">Add Element</span>
             </button>
 
-            {/* Layout Utility - COMMENTED OUT FOR NOW */}
+            {/* Layout Utility */}
             <LayoutUtility
                 layouts={layouts} // Pass available layouts
+                setLayouts={setLayouts} // Allow direct updates
                 applyDefaultView={applyDefaultView} // Pass default view handler
                 applySavedLayout={applySavedLayout} // Pass saved layout handler
                 saveCurrentLayout={saveCurrentLayout} // Pass save layout handler
-                loadingLayouts={loadingLayouts} // ✅ Pass loading state
+                loadingLayouts={loadingLayouts} // Pass loading state
+                fetchLayouts={fetchLayouts}
             />
 
             {/* Help Button */}
@@ -218,6 +258,7 @@ const PlaceHolder = ({ setRunTour }) => {
           <Content 
             change={(data) => changeHandler(0, data)}
             layoutData={layoutData} setLayoutData={setLayoutData}
+            getLatestLayout={(fn) => (getLatestLayoutRef.current = fn)}
           />
         </div>
       </div>

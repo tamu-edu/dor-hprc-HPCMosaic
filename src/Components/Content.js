@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ItemTypes } from "./ItemTypes";
 import { useDrop } from "react-dnd";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -15,14 +15,18 @@ import ClusterInfo from "../Charts/ClusterInfo";
 import UserJobs from "../Charts/UserJobs";
 import Chatbot from "../Charts/Chatbot";
 import QuotaInfo from "../Charts/QuotaInfo";
-import QuotaButton from "../Charts/QuotaButton";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
 import Composer from "../Charts/Composer";
 
+// Buttons for testing
+import ButtonTesting from "../Charts/ButtonTesting";
+import QuotaButton from "../Charts/QuotaButton";
+import GroupButton from "../Charts/GroupButton";
+
 const ReactGridLayout = WidthProvider(RGL);
 
-const Content = ({ layoutData, setLayoutData, change }) => {
+const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
   // ✅ Default layout (used on first load)
   const defaultLayout = [
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
@@ -31,22 +35,55 @@ const Content = ({ layoutData, setLayoutData, change }) => {
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
+    {
+      name: "Button Testing",
+      i: "7",
+      x: 0,
+      y: 3,
+      w: 2,
+      h: 3,
+    },
+    {
+      name: "Composer",
+      i: "6",
+      x: 0,
+      y: 3,
+      w: 2,
+      h: 3,
+    },
   ];
+
+  const layoutRef = useRef(layout);
 
   // ✅ Ensure the initial layout is set correctly
   const [row, setRow] = useState(layoutData?.length > 0 ? layoutData : defaultLayout);
   const [layout, setLayout] = useState(
-    layoutData?.length > 0 ? layoutData.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })) : []
+    layoutData?.length > 0 
+    ? layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })) 
+    : []
   );
+
+  // ✅ Capture latest layout when saving
+  useEffect(() => {
+    layoutRef.current = layout; // Keep track of the latest layout
+  }, [layout]);
+
+  // ✅ Provide the latest layout when needed
+  useEffect(() => {
+    getLatestLayout(() => layoutRef.current);
+  }, [getLatestLayout]);
+
 
   // ✅ Listen for changes to layoutData and update the state
   useEffect(() => {
     if (layoutData && Array.isArray(layoutData) && layoutData.length > 0) {
       console.log("🔄 Updating Content.js with new layoutData:", layoutData);
       setRow(layoutData);
-      setLayout(layoutData.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
+      setLayout(layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
     }
   }, [layoutData]);
+
+  const preventDrag = (e) => e.stopPropagation();
 
   // ✅ Function to add a new element
   const addNewElement = (item) => {
@@ -108,6 +145,31 @@ const Content = ({ layoutData, setLayoutData, change }) => {
     setLayoutData(newRow); // ✅ Update global state
   };
 
+  const onLayoutChange = (newLayout) => {
+    console.log("📌 Layout Changed:", newLayout);
+    setLayout(newLayout);
+
+    // Update row state with the new positions and sizes
+    // ✅ FIXED: Preserve the name when updating layout
+    const updatedRow = row.map((item) => {
+        const newItem = newLayout.find((l) => l.i === item.i);
+        return newItem 
+            ? { 
+                ...item, 
+                x: newItem.x, 
+                y: newItem.y, 
+                w: newItem.w, 
+                h: newItem.h 
+              } 
+            : item;
+    });
+
+    setRow(updatedRow);
+    setLayoutData(updatedRow); // Ensure layoutData is updated globally
+};
+
+
+
   // ✅ Function to render correct charts
   const renderChart = (ele) => {
     switch (ele.name) {
@@ -129,6 +191,8 @@ const Content = ({ layoutData, setLayoutData, change }) => {
         return <UserGroups />;
       case "Accounts":
         return <Accounts />;
+      case "Button Testing":
+        return <ButtonTesting />;
       default:
         return <div className="text-center text-red-500">Unknown Chart</div>;
     }
@@ -141,7 +205,7 @@ const Content = ({ layoutData, setLayoutData, change }) => {
 
       <ReactGridLayout
         layout={layout}
-        onLayoutChange={(newLayout) => setLayout(newLayout)}
+        onLayoutChange={onLayoutChange}
         width={1200}
         cols={10}
         rowHeight={20}
