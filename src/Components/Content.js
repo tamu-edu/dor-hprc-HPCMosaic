@@ -5,11 +5,11 @@ import RGL, { WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { debounce } from "lodash";
-import { v4 as uuidv4 } from "uuid"; // For unique IDs
-import { toast, ToastContainer } from "react-toastify"; // ✅ Import Toastify
-import "react-toastify/dist/ReactToastify.css"; // ✅ Import Toastify styles
+import { v4 as uuidv4 } from "uuid";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Elements
+// Import components
 import PyVenvManager from "../Charts/PyVenvManager";
 import ClusterInfo from "../Charts/ClusterInfo";
 import UserJobs from "../Charts/UserJobs";
@@ -18,16 +18,35 @@ import QuotaInfo from "../Charts/QuotaInfo";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
 import Composer from "../Charts/Composer";
-
-// Buttons for testing
 import ButtonTesting from "../Charts/ButtonTesting";
 import QuotaButton from "../Charts/QuotaButton";
-import GroupButton from "../Charts/GroupButton";
 
 const ReactGridLayout = WidthProvider(RGL);
 
+// Component-specific minimum size configurations
+const getMinSize = (componentName) => {
+  // Default minimums if no specific values are set
+  const defaultMin = { minW: 3, minH: 5 };
+
+  // Component-specific minimum sizes
+  const componentMinSizes = {
+    "Accounts": { minW: 5, minH: 8 },
+    "Node Utilization": { minW: 3, minH: 6 },
+    "PyVenvManager": { minW: 4, minH: 10 },
+    "Quota Info": { minW: 3, minH: 8 },
+    "User Groups": { minW: 3, minH: 6 },
+    "User Jobs": { minW: 3, minH: 6 },
+    "Button Testing": { minW: 2, minH: 2 },
+    "Composer": { minW: 2, minH: 2 },
+    "Chatbot": { minW: 4, minH: 8 },
+    "Quota Button": { minW: 2, minH: 2 },
+  };
+
+  return componentMinSizes[componentName] || defaultMin;
+};
+
 const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
-  // ✅ Default layout (used on first load)
+  // Default layout (used on first load)
   const defaultLayout = [
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
@@ -35,27 +54,17 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
-    {
-      name: "Button Testing",
-      i: "7",
-      x: 0,
-      y: 3,
-      w: 2,
-      h: 3,
-    },
-    {
-      name: "Composer",
-      i: "6",
-      x: 0,
-      y: 3,
-      w: 2,
-      h: 3,
-    },
   ];
 
-  const layoutRef = useRef(layout);
+  const [showPlaceholder, setShowPlaceholder] = useState(false);
+  const [placeholderPos, setPlaceholderPos] = useState({ x: 0, y: 0 });
+  const [placeholderSize, setPlaceholderSize] = useState({ w: 4, h: 10 });
+  const [currentDragItem, setCurrentDragItem] = useState(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const gridRef = useRef(null);
+  const layoutRef = useRef([]);
 
-  // ✅ Ensure the initial layout is set correctly
+  // Ensure the initial layout is set correctly
   const [row, setRow] = useState(layoutData?.length > 0 ? layoutData : defaultLayout);
   const [layout, setLayout] = useState(
     layoutData?.length > 0 
@@ -63,18 +72,17 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     : []
   );
 
-  // ✅ Capture latest layout when saving
+  // Capture latest layout when saving
   useEffect(() => {
-    layoutRef.current = layout; // Keep track of the latest layout
+    layoutRef.current = layout;
   }, [layout]);
 
-  // ✅ Provide the latest layout when needed
+  // Provide the latest layout when needed
   useEffect(() => {
     getLatestLayout(() => layoutRef.current);
   }, [getLatestLayout]);
 
-
-  // ✅ Listen for changes to layoutData and update the state
+  // Listen for changes to layoutData and update the state
   useEffect(() => {
     if (layoutData && Array.isArray(layoutData) && layoutData.length > 0) {
       console.log("🔄 Updating Content.js with new layoutData:", layoutData);
@@ -83,47 +91,109 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     }
   }, [layoutData]);
 
-  const preventDrag = (e) => e.stopPropagation();
+  // Calculate grid position based on mouse position
+  const calculateGridPosition = (clientX, clientY) => {
+    if (!gridRef.current) return { x: 0, y: 0 };
+    
+    const gridRect = gridRef.current.getBoundingClientRect();
+    const relX = clientX - gridRect.left;
+    const relY = clientY - gridRect.top;
+    
+    // Convert pixel position to grid position
+    const cols = 10; // Grid column count
+    const rowHeight = 20; // Grid row height
+    
+    const gridX = Math.floor((relX / gridRect.width) * cols);
+    const gridY = Math.floor(relY / rowHeight);
+    
+    return { x: Math.max(0, Math.min(gridX, cols - 4)), y: Math.max(0, gridY) };
+  };
 
-  // ✅ Function to add a new element
-  const addNewElement = (item) => {
+  // Add a placeholder item to preview element placement
+  const addPlaceholderToLayout = (pos, item) => {
+    // Get component-specific minimum sizes
+    const { minW, minH } = getMinSize(item.name);
+    
+    // Use appropriate sizes for placeholder
+    const w = Math.max(4, minW);
+    const h = Math.max(10, minH);
+    
+    setPlaceholderSize({ w, h });
+    setPlaceholderPos(pos);
+    setShowPlaceholder(true);
+  };
+
+  // Function to add a new element
+  const addNewElement = (item, dropPosition) => {
     if (row.some((ele) => ele.name === item.name)) {
       toast.warn(`"${item.name}" is already added!`, {
         autoClose: 2000,
         position: "top-right",
         hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
       });
       return;
     }
 
+    // Get minimum sizes for this component type
+    const { minW, minH } = getMinSize(item.name);
+
+    // Use drop position from placeholder
     const newItem = {
       name: item.name,
       i: uuidv4(),
-      x: row.length % 4,
-      y: Math.floor(row.length / 4),
-      w: 4,
-      h: 10,
+      x: dropPosition.x,
+      y: dropPosition.y,
+      w: Math.max(4, minW),
+      h: Math.max(10, minH),
     };
 
     const newRow = [...row, newItem];
     setRow(newRow);
-    setLayout(newRow.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })));
-    setLayoutData(newRow); // ✅ Updates the global layout
+    setLayout(newRow.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
+    setLayoutData(newRow);
+
+    // Show a success toast
+    toast.success(`Added ${item.name} to dashboard`, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: true,
+    });
   };
 
-  // ✅ Drop functionality
+  // Enhanced drop functionality with displacement preview
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.CARD,
-    drop: (item) => addNewElement(item),
+    hover: (item, monitor) => {
+      setCurrentDragItem(item);
+      setIsDraggingOver(true);
+      
+      const clientOffset = monitor.getClientOffset();
+      if (clientOffset) {
+        const gridPos = calculateGridPosition(clientOffset.x, clientOffset.y);
+        addPlaceholderToLayout(gridPos, item);
+      }
+    },
+    drop: (item, monitor) => {
+      setShowPlaceholder(false);
+      setIsDraggingOver(false);
+      
+      // Add the new element at the placeholder position
+      addNewElement(item, placeholderPos);
+    },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
   });
 
-  // ✅ Debounced state update
+  // Clear placeholder when leaving drop area
+  useEffect(() => {
+    if (!isOver) {
+      setShowPlaceholder(false);
+      setIsDraggingOver(false);
+    }
+  }, [isOver]);
+
+  // Debounced state update
   const debouncedChange = useCallback(
     debounce((newRow) => {
       change(newRow);
@@ -135,22 +205,28 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     debouncedChange(row);
   }, [row, debouncedChange]);
 
-  // ✅ Function to remove an element
+  // Function to remove an element
   const removeElement = (index) => {
+    const deletedName = row[index].name;
     const newRow = row.filter((_, i) => i !== index);
     const newLayout = layout.filter((item) => item.i !== row[index].i);
 
     setRow(newRow);
     setLayout(newLayout);
-    setLayoutData(newRow); // ✅ Update global state
+    setLayoutData(newRow);
+    
+    toast.info(`Removed ${deletedName}`, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: true,
+    });
   };
 
   const onLayoutChange = (newLayout) => {
     console.log("📌 Layout Changed:", newLayout);
     setLayout(newLayout);
 
-    // Update row state with the new positions and sizes
-    // ✅ FIXED: Preserve the name when updating layout
+    // Preserve the name when updating layout
     const updatedRow = row.map((item) => {
         const newItem = newLayout.find((l) => l.i === item.i);
         return newItem 
@@ -165,12 +241,10 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     });
 
     setRow(updatedRow);
-    setLayoutData(updatedRow); // Ensure layoutData is updated globally
-};
+    setLayoutData(updatedRow);
+  };
 
-
-
-  // ✅ Function to render correct charts
+  // Function to render correct charts
   const renderChart = (ele) => {
     switch (ele.name) {
       case "Node Utilization":
@@ -198,13 +272,31 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     }
   };
 
+  // Create a combined layout that includes both regular items and the placeholder
+  const combinedLayout = showPlaceholder 
+    ? [...layout, {
+        i: 'placeholder',
+        x: placeholderPos.x,
+        y: placeholderPos.y,
+        w: placeholderSize.w,
+        h: placeholderSize.h,
+        isPlaceholder: true
+      }]
+    : layout;
+
   return (
-    <div ref={drop} className={`max-w-full h-auto p-4 ${isOver ? "bg-gray-100" : ""}`}>
-      {/* ✅ Toast Notification Container */}
+    <div 
+      ref={(node) => {
+        drop(node);
+        gridRef.current = node;
+      }} 
+      className={`max-w-full h-auto p-4 relative ${isOver ? "bg-blue-50" : ""}`}
+    >
+      {/* Toast Notification Container */}
       <ToastContainer />
 
       <ReactGridLayout
-        layout={layout}
+        layout={combinedLayout}
         onLayoutChange={onLayoutChange}
         width={1200}
         cols={10}
@@ -213,26 +305,58 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
         isDroppable={true}
         isResizable={true}
         isDraggable={true}
-        preventCollision={false}
         compactType="vertical"
+        preventCollision={false}
+        useCSSTransforms={true}
         autoSize={true}
         className="bg-white rounded-lg"
       >
-        {row.map((ele, index) => (
-          <div
-            key={ele.i}
-            data-grid={ele}
-            className="resizable-element bg-white shadow-lg rounded-md p-4 border border-gray-300 relative h-full w-full"
-          >
-            <button
-              onClick={() => removeElement(index)}
-              className="absolute top-4 right-4 bg-red-400 hover:bg-red-500 text-white p-2 rounded-full text-sm"
+        {/* Render actual grid items */}
+        {row.map((ele, index) => {
+          const { minW, minH } = getMinSize(ele.name);
+          return (
+            <div
+              key={ele.i}
+              data-grid={{...ele, minW, minH}}
+              className="resizable-element bg-white shadow-lg rounded-md border border-gray-300 relative h-full w-full overflow-hidden"
             >
-              X
-            </button>
-            <div className="h-full w-full">{renderChart(ele)}</div>
+              {/* Element title bar */}
+              <div className="absolute top-0 left-0 right-0 h-10 bg-gray-100 rounded-t-md flex items-center px-3 cursor-move z-10">
+                <span className="font-medium text-gray-700 truncate">{ele.name}</span>
+                <button
+                  onClick={() => removeElement(index)}
+                  className="absolute top-2 right-2 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="h-full w-full p-4 pt-12">{renderChart(ele)}</div>
+            </div>
+          );
+        })}
+        
+        {/* Render placeholder item */}
+        {showPlaceholder && (
+          <div
+            key="placeholder"
+            data-grid={{
+              x: placeholderPos.x,
+              y: placeholderPos.y,
+              w: placeholderSize.w,
+              h: placeholderSize.h,
+              isResizable: false,
+              isDraggable: false,
+            }}
+            className="border-2 border-dashed border-blue-500 bg-blue-100 bg-opacity-50 rounded-md flex items-center justify-center"
+          >
+            <div className="bg-white px-3 py-1.5 rounded-md shadow-sm">
+              <span className="text-blue-600 font-medium">
+                {currentDragItem ? `Drop to add ${currentDragItem.name}` : 'Drop here'}
+              </span>
+            </div>
           </div>
-        ))}
+        )}
       </ReactGridLayout>
     </div>
   );

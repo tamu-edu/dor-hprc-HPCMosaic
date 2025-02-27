@@ -1,22 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
 import Content from "./Content";
 import Sidebar from "./Sidebar";
-import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback } from "react-icons/md";
-import { Toaster, toast } from "react-hot-toast"; // ✅ Import react-hot-toast
+import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize } from "react-icons/md";
+import { Toaster, toast } from "react-hot-toast";
 import HPRCLogo from "./HPRCLogo";
 import config from "../../config.yml";
 import LayoutUtility from "./LayoutUtility";
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
-import { v4 as uuidv4 } from "uuid"; // For unique IDs
+import { v4 as uuidv4 } from "uuid";
 
 const PlaceHolder = ({ setRunTour }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [sidebarMaximized, setSidebarMaximized] = useState(false);
   const [layoutData, setLayoutData] = useState(null);
   const [layouts, setLayouts] = useState([]);
   const clusterName = config.development.cluster_name;
   const [userData, setUserData] = useState({});
-  const [loadingLayouts, setLoadingLayouts] = useState(true); // ✅ Track loading state
+  const [loadingLayouts, setLoadingLayouts] = useState(true);
+  
+  // Create a ref for the sidebar to help with animations
+  const sidebarRef = useRef(null);
 
   useEffect(() => {
     console.log("Current layout data in PlaceHolder:", layoutData);
@@ -30,7 +33,7 @@ const PlaceHolder = ({ setRunTour }) => {
       } catch (error) {
         console.error("Error fetching layouts:", error);
       } finally {
-        setLoadingLayouts(false); // ✅ Stop loading when fetching is complete
+        setLoadingLayouts(false);
       }
     };
     loadAvailableLayouts();
@@ -39,7 +42,6 @@ const PlaceHolder = ({ setRunTour }) => {
   useEffect(() => {
     const hasSeenTourPrompt = localStorage.getItem("hasSeenTourPrompt");
     if (!hasSeenTourPrompt) {
-      // ✅ Show toast notification
       toast(
         (t) => (
           <div className="flex items-center space-x-3">
@@ -58,7 +60,7 @@ const PlaceHolder = ({ setRunTour }) => {
           </div>
         ),
         {
-          duration: 8000, // ✅ Toast disappears after 8 seconds
+          duration: 8000,
           position: "top-right",
           className: "bg-white border border-gray-300 shadow-lg p-4 rounded-lg",
           closeOnClick: true,
@@ -74,18 +76,14 @@ const PlaceHolder = ({ setRunTour }) => {
   let getLatestLayoutRef = useRef(() => []);
 
   const saveCurrentLayout = async () => {
-    // Get the latest layout from ReactGridLayout
     const latestLayout = getLatestLayoutRef.current(); 
-
-    console.log("🔹 Latest layout from getLatestLayoutRef:", latestLayout);
 
     if (!latestLayout || latestLayout.length === 0) {
         toast.error("No layout data to save!");
         return null;
     }
 
-    // Ensure `layoutData` is available and an array
-    const currentLayoutData = layoutData || []; // Fallback to empty array if null
+    const currentLayoutData = layoutData || [];
 
     if (!Array.isArray(currentLayoutData)) {
         console.error("❌ layoutData is not an array or is null", layoutData);
@@ -93,19 +91,14 @@ const PlaceHolder = ({ setRunTour }) => {
         return null;
     }
 
-    // Create a proper mapping between layout items and original items with names
     const enrichedLayout = latestLayout.map((item) => {
-        // Find the matching item in currentLayoutData that has the same "i" value
         const originalItem = currentLayoutData.find((orig) => orig.i === item.i);
         
-        // If found, use its name, otherwise use "Unnamed"
         return {
             ...item,
             name: originalItem ? originalItem.name : "Unnamed",
         };
     });
-
-    console.log("✅ Saving Enriched Layout:", enrichedLayout);
 
     const layoutName = prompt("Enter a name for the layout:");
     if (layoutName) {
@@ -113,10 +106,8 @@ const PlaceHolder = ({ setRunTour }) => {
             await saveLayout(layoutName, enrichedLayout);
             toast.success(`Layout "${layoutName}" saved successfully!`);
             
-            // Update layouts list without a full refresh
             setLayouts((prev) => [...prev, layoutName]);
             
-            // Return the layout name to allow LayoutUtility to update activeLayout
             return { success: true, layoutName };
         } catch (error) {
             console.error("Error saving layout:", error);
@@ -125,29 +116,12 @@ const PlaceHolder = ({ setRunTour }) => {
         }
     }
     return null;
-};
-
+  };
 
   const applyDefaultView = () => {
-  
-    // Ask user to confirm before applying default layout
     const userConfirmed = window.confirm("Are you sure you want to apply the default layout? This will remove all changes.");
     if (!userConfirmed) return;
   
-    // Ask user if they want to save their current layout first
-    // const saveFirst = window.confirm("Would you like to save your current layout before applying the default?");
-    // if (saveFirst) {
-    //   const layoutName = prompt("Enter a name for the layout:");
-    //   if (layoutName) {
-    //     saveLayout(layoutName, layoutData);
-    //     toast.success(`Layout "${layoutName}" saved successfully!`);
-    //     setLayouts((prev) => [...prev, layoutName]);
-    //   } else {
-    //     toast.warn("Layout save canceled.");
-    //   }
-    // }
-  
-    // Apply the default layout
     const defaultView = [
       { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
       { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
@@ -158,9 +132,8 @@ const PlaceHolder = ({ setRunTour }) => {
     ];
   
     console.log("Applying Default View:", defaultView);
-    setLayoutData([...defaultView]); // ✅ Ensures a new reference
+    setLayoutData([...defaultView]); 
   
-    // ✅ Show success popup
     toast.success("Applied default layout!");
   };
   
@@ -169,15 +142,15 @@ const PlaceHolder = ({ setRunTour }) => {
     try {
       const fetchedLayout = await loadLayout(layoutName);
       if (fetchedLayout && Array.isArray(fetchedLayout[0])) {
-        setLayoutData(fetchedLayout[0]); // ✅ Ensure correct data structure
-        alert(`Loaded layout "${layoutName}"`);
+        setLayoutData(fetchedLayout[0]);
+        toast.success(`Loaded layout "${layoutName}"`);
       } else {
         console.warn("Invalid layout format received:", fetchedLayout);
-        alert("Failed to load layout.");
+        toast.error("Failed to load layout.");
       }
     } catch (error) {
       console.error("Error loading layout:", error);
-      alert("Failed to load layout.");
+      toast.error("Failed to load layout.");
     }
   };
 
@@ -187,11 +160,17 @@ const PlaceHolder = ({ setRunTour }) => {
 
   const closePopup = () => {
     setIsPopupOpen(false);
+    setSidebarMaximized(false);
+  };
+
+  // Toggle sidebar between default and maximized height
+  const toggleSidebarSize = () => {
+    setSidebarMaximized(!sidebarMaximized);
   };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      {/* 🔥 Toast Notifications */}
+      {/* Toast Notifications */}
       <Toaster position="top-right" />
 
       {/* Header */}
@@ -206,7 +185,7 @@ const PlaceHolder = ({ setRunTour }) => {
             {/* Add Element Button */}
             <button
               onClick={openPopup}
-              className="add-element-btn flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100"
+              className="add-element-btn flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors"
             >
               <MdAddchart className="text-3xl mr-2 text-gray-500" />
               <span className="font-semibold text-gray-700">Add Element</span>
@@ -214,18 +193,18 @@ const PlaceHolder = ({ setRunTour }) => {
 
             {/* Layout Utility */}
             <LayoutUtility
-                layouts={layouts} // Pass available layouts
-                setLayouts={setLayouts} // Allow direct updates
-                applyDefaultView={applyDefaultView} // Pass default view handler
-                applySavedLayout={applySavedLayout} // Pass saved layout handler
-                saveCurrentLayout={saveCurrentLayout} // Pass save layout handler
-                loadingLayouts={loadingLayouts} // Pass loading state
+                layouts={layouts} 
+                setLayouts={setLayouts} 
+                applyDefaultView={applyDefaultView} 
+                applySavedLayout={applySavedLayout} 
+                saveCurrentLayout={saveCurrentLayout} 
+                loadingLayouts={loadingLayouts}
                 fetchLayouts={fetchLayouts}
             />
 
             {/* Help Button */}
             <button
-              className="request-help-btn flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100"
+              className="request-help-btn flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors"
             >
               <MdOutlineQuestionAnswer className="text-3xl mr-2 text-gray-500" />
               <span className="font-semibold text-gray-700">Request Help</span>
@@ -234,7 +213,7 @@ const PlaceHolder = ({ setRunTour }) => {
             {/* Start Tour Button */}
             <button
               onClick={() => setRunTour(true)}
-              className="start-tour-btn flex items-center px-5 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600"
+              className="start-tour-btn flex items-center px-5 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition-colors"
             >
               <MdPlayCircleOutline className="text-3xl mr-2" />
               <span className="font-semibold">Start Tour</span>
@@ -242,7 +221,7 @@ const PlaceHolder = ({ setRunTour }) => {
 
             {/* Feedback Button */}
             <a href={null} target="_blank" rel="noopener noreferrer" className="feedback-btn">
-              <button className="flex items-center px-5 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600">
+              <button className="flex items-center px-5 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition-colors">
                 <MdFeedback className="text-3xl mr-2" />
                 <span className="font-semibold">Give Feedback</span>
               </button>
@@ -254,7 +233,7 @@ const PlaceHolder = ({ setRunTour }) => {
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col mt-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mx-4">
           <Content 
             change={(data) => changeHandler(0, data)}
             layoutData={layoutData} setLayoutData={setLayoutData}
@@ -263,20 +242,43 @@ const PlaceHolder = ({ setRunTour }) => {
         </div>
       </div>
 
-      {/* Sidebar Popup */}
+      {/* Enhanced Sidebar Popup */}
       {isPopupOpen && (
-        <div>
-          <div className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-6 rounded-t-md z-50 border-t border-gray-300">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-semibold">Add Elements</h3>
-              <button
-                onClick={closePopup}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
-              >
-                Close
-              </button>
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-end justify-center pointer-events-none">
+          <div 
+            ref={sidebarRef}
+            className={`w-full pointer-events-auto bg-white shadow-2xl rounded-t-xl border-t border-gray-300 transition-all duration-300 ease-in-out transform ${
+              sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
+            }`}
+          >
+            {/* Sidebar Header with Controls */}
+            <div className="sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white rounded-t-xl">
+              <h3 className="text-2xl font-semibold text-gray-800 flex items-center">
+                <MdAddchart className="text-blue-500 mr-2" /> 
+                Add Dashboard Elements
+              </h3>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={toggleSidebarSize}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                  title={sidebarMaximized ? "Minimize panel" : "Maximize panel"}
+                >
+                  {sidebarMaximized ? <MdMinimize className="text-xl" /> : <MdMaximize className="text-xl" />}
+                </button>
+                <button
+                  onClick={closePopup}
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  title="Close panel"
+                >
+                  <MdClose className="text-xl" />
+                </button>
+              </div>
             </div>
-            <Sidebar />
+            
+            {/* Sidebar Content */}
+            <div className={`${sidebarMaximized ? 'h-[calc(80vh-64px)]' : 'h-[calc(40vh-64px)]'} transition-all duration-300`}>
+              <Sidebar />
+            </div>
           </div>
         </div>
       )}
