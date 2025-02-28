@@ -1,98 +1,209 @@
 {
       
    "helpRequest": {
-      "type": "radioGroup",
+      "type": "select",
       "label": "What do you need help with?*",
       "name": "helpRequest",
       "options": [
          { "value": "software", "label": "Software Installation" },
-         { "value": "accounnts", "label": "Accounts" },
+         { "value": "accounts", "label": "Accounts" },
          { "value": "jobs", "label": "Job" },
          { "value": "other", "label": "Other" }
       ]
    },
 
-   "memberQestions": {
+   "softwareQestions": {
       "type": "collapsibleColContainer",
-      "title": "Managing group members",
-      "condition" : "helpRequest.sofrtware",
+      "title": "Software Install Requests",
+      "condition" : "helpRequest.software",
       "elements": {
 
-          "memeberNote": {
+         "softwareNote": {
             "type": "staticText",
-            "value": "In this section you can add or remove members of your group. NOTE: only the owner or delegate of this group can preform this action. Ir you are not the owner or a delegate, do not contionue this action.",
+            "value": "Software reqeusts are evaluated by HPRC staff.",
             "isHeading": false
          },
    
-         "groupAdd": {
-            "type": "textarea",
-            "label": "Provide netids of members to add to group, one per line",
-            "name": "groupAdd",
-            "help": "Provide netids of members to add to group, one per line",
-            "condition" : "groupRequest.madd"
-         },   
+ 
+         "softwareCategory": {
+            "type": "radioGroup",
+            "label": "Software Category (this will help with routing the request to the correct channels).",
+            "name": "softwareCategory",
+            "options": [
+               { "value": "bio", "label": "Bio" },
+               { "value": "engineering", "label": "Engineering" },
+               { "value": "general", "label": "Other" }
+            ]
+         },
 
 
-         "groupRemove": {
+         "SoftwareInfoContainer": {
+            "type": "rowContainer",
+            "elements": {
+        
+               "softwareName": {
+                  "type": "text",
+                  "label": "Name of software",
+                  "name": "softwareName",
+                  "help": "Name of software"
+               },
+
+               "softwareVersion": {
+                  "type": "text",
+                  "label": "Software version",
+                  "name": "softwareVersion",
+                  "help": "Software version"
+               }
+            }
+         },
+
+         "softwareLink": {
+            "type": "text",
+            "label": "Software download page",
+            "name": "softwareLink",
+            "help": "Software download page"
+         }, 
+
+         "softwareToolchain": {
+            "type": "text",
+            "label": "Preferred toolchain",
+            "name": "softwareToolChain",
+            "help": "Preferred toolchain"
+         },    
+
+
+         "softwareOptional": {
             "type": "textarea",
-            "label": "Provide netids of members to remove from group, one per line",
-            "name": "groupRemove",
-            "help": "Provide netids of members to remove from group, one per line",
-            "condition" : "groupRequest.mremove"
+            "label": "Additional information",
+            "name": "softwareInfo",
+            "help": "Enter any relevant info that might help installing the software. If this is licensed  software rpovide license information."
+         }   
+      }  
+   },
+
+   "jobQestions": {
+      "type": "collapsibleColContainer",
+      "title": "Job Related Qestions",
+      "condition" : "helpRequest.jobs",
+      "elements": {
+
+         "jobID": {
+            "type": "text",
+            "label": "Provide JobID",
+            "name": "jobID",
+            "help": "Provide JobID"
+         },
+
+          "jobLocation": {
+            "type": "text",
+            "label": "Provide location of job script",
+            "name": "jobLocation",
+            "help": "Provide location of job script"
+         },
+
+
+         "jobIssue": {
+            "type": "textarea",
+            "label": "Provide detailed info about your job issue",
+            "name": "jobIssue",
+            "help": "Provide location jo job script"
+         },
+
+         "jobIrrors": {
+            "type": "textarea",
+            "label": "Copy/Paste any relevant output",
+            "name": "jobErrors",
+            "help": "Provide location jo job script"
          }
       }
    },
 
-   "createQuestions": {
+   "accountQestions": {
       "type": "collapsibleColContainer",
-      "title": "Creating new group",
-      "condition" : "groupRequest.cgroup",
+      "title": "Account Related Qestions",
+      "condition" : "helpRequest.accounts",
       "elements": {
 
+         "accountType": {
+            "type": "select",
+            "label": "What do you need help with?*",
+            "name": "accountType",
+            "options": [
+               { "value": "general", "label": "General account question" },
+               { "value": "addAccount", "label": "Add user to Account" },
+               { "value": "transferSU", "label": "Tranfer SUs" }
+            ]
+         },
+      
+         "accountGeneral": {
+            "type": "textarea",
+            "label": "What is your account question, be as detailed as possible",
+            "name": "jobIssue",
+            "help": "What is your account question, be as detailed as possible",
+            "condition" : "accountType.general"
+         },
 
-         "newGHroupNote": {
+         "accountAddNote": {
             "type": "staticText",
-            "value": "In this section you can provide all information we need to create a (Linux) group. For the name of the group, you cannot use spaces or any special characters, aside from _ and -. We also recommend to provide a descriptive name for the group.",
-            "isHeading": false
+            "value": "Provide the account number and the name of the user you want to add to the  project account.",
+            "isHeading": false,
+            "condition" : "accountType.addAccount"
          },
 
-        "groupName": {
-           "type": "text",
-           "label": "Provide group name (no special characters aside from _ and -",
-           "name": "groupName",
-           "help": "Provide group name (no special characters aside from _ and -"
+         "accountAddNote": {
+            "type": "staticText",
+            "value": "Provide the account number to sue, the name of the user to transfer the SUs to and the number of SUs.",
+            "isHeading": false,
+            "condition" : "accountType.transferSU"
          },
 
-        "groupMembers": {
-           "type": "textarea",
-           "label": "Provide netids of members to add to group, one per line",
-           "name": "groupMembers",
-           "help": "Provide netids of members to add to group, one per line"
+         "AccounteInfoContainer": {
+            "type": "rowContainer",
+            "elements": {
+
+               "accountNumber": {
+                  "type": "text",
+                  "label": "Account number",
+                  "name": "accountNumber",
+                  "help": "Provide location of job script",
+                  "condition" : "accountType.addAccount || accountType.transferSU"
+               },
+
+               "accountUser": {
+                  "type": "text",
+                  "label": "User",
+                  "name": "accountUser",
+                  "help": "User",
+                  "condition" : "accountType.addAccount || accountType.transferSU"
+               },
+
+               "accountSU": {
+                  "type": "text",
+                  "label": "Number of SUs to transfer",
+                  "name": "jobIssue",
+                  "help": "Number of SUs to transfer",
+                  "condition" : "accountType.transferSU"
+               }
+            }
          }
-      }  
-   },   
+      }
+   },
 
-   "RequesttQuestions": {
+   "OtherQestions": {
       "type": "collapsibleColContainer",
-      "title": "Requesting access to a group",
-      "condition" : "groupRequest.rgroup",
+      "title": "Other Qestions",
+      "condition" : "helpRequest.other",
       "elements": {
 
-
-         "newGHroupNote": {
-            "type": "staticText",            
-            "value": "In this secction you can request access to a group. This is typically done to gain access to restricted software or gsin access to a specific group directory. HPRC staff will evaluate the request and ir needed, contact the owner of the group. Please make sure you have a legitimate reason to request access ",
-            "isHeading": false
-         },
-
-        "groupName": {
-           "type": "text",
-           "label": "Provide group name you request access to",
-           "name": "groupName",
-           "help": "Provide group name you request access to"
+         "otherDesciption": {
+            "type": "textarea",
+            "label": "Describe your issue. Provide as much detsil as possible",
+            "name": "otherDescription",
+            "help": "Describe your issue. Provide as much detsil as possible"
          }
-
-      } 
+      }
    }
+
+
 
 }

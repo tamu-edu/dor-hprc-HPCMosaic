@@ -4,6 +4,7 @@ import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default tooltip styling
 import ElementDescriptions from "../Components/ElementDescriptions";
+import QuotaButton from "../Charts/QuotaButton"; // Import QuotaButton component
 
 const QuotaInfo = () => {
   const [quotaData, setQuotaData] = useState([]);
@@ -84,15 +85,41 @@ const QuotaInfo = () => {
     return <Spinner />;
   }
 
+  // Find the highest usage percentage for highlighting
+  const findHighestUsage = () => {
+    let highest = 0;
+    quotaData.forEach((quota) => {
+      const diskPercentage = parseFloat(getUsagePercentage(quota.disk_usage, quota.disk_limit));
+      if (diskPercentage > highest) highest = diskPercentage;
+    });
+    return highest;
+  };
+  
+  const highestUsage = findHighestUsage();
+
   return (
     <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
-      {/* Title with Tooltip */}
-      <div className="flex items-center">
-        <h2 className="text-2xl font-semibold mb-4">
-          <Tippy content={ElementDescriptions["Quota Info"]}>
-            <span className="cursor-help">Quota Information ⓘ</span>
-          </Tippy>
-        </h2>
+      {/* Header section with title and action button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+        <div className="mb-2 sm:mb-0">
+          <h2 className="text-2xl font-semibold">
+            <Tippy content={ElementDescriptions["Quota Info"]}>
+              <span className="cursor-help">Quota Information ⓘ</span>
+            </Tippy>
+          </h2>
+        </div>
+        
+        {/* Quota Request Button - Conditionally show with a message when usage is high */}
+        <div className="flex items-center">
+          {highestUsage >= 75 && (
+            <div className="mr-3 text-red-600 text-sm font-medium bg-red-50 px-2 py-1 rounded">
+              <span>High usage detected!</span>
+            </div>
+          )}
+          <div className="quota-request-action">
+            <QuotaButton />
+          </div>
+        </div>
       </div>
       
       <table className="table-auto w-full border-collapse border border-gray-300">
@@ -129,7 +156,13 @@ const QuotaInfo = () => {
                   <Tippy content={<CustomTooltip content={`Used: ${quota.disk_usage} / Total: ${quota.disk_limit}`} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
                       <p>{quota.disk_usage}/{quota.disk_limit}</p>
-                      <p className={`${getColor(diskPercentage)}`}>{diskPercentage}%</p>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                        <div 
+                          className={`h-2.5 rounded-full ${diskPercentage >= 75 ? 'bg-red-600' : diskPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                          style={{ width: `${Math.min(100, diskPercentage)}%` }}
+                        ></div>
+                      </div>
+                      <p className={`${getColor(diskPercentage)} text-sm mt-1`}>{diskPercentage}%</p>
                     </div>
                   </Tippy>
                 </td>
@@ -137,7 +170,13 @@ const QuotaInfo = () => {
                   <Tippy content={<CustomTooltip content={`Used: ${quota.file_usage} / Total: ${quota.file_limit}`} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
                       <p>{quota.file_usage}/{quota.file_limit}</p>
-                      <p className={`${getColor(filePercentage)}`}>{filePercentage}%</p>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                        <div 
+                          className={`h-2.5 rounded-full ${filePercentage >= 75 ? 'bg-red-600' : filePercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                          style={{ width: `${Math.min(100, filePercentage)}%` }}
+                        ></div>
+                      </div>
+                      <p className={`${getColor(filePercentage)} text-sm mt-1`}>{filePercentage}%</p>
                     </div>
                   </Tippy>
                 </td>
@@ -146,7 +185,15 @@ const QuotaInfo = () => {
           })}
         </tbody>
       </table>
+      
       {additionalText && <p className="mt-4 text-gray-700 italic text-left">{additionalText}</p>}
+      
+      {/* Additional note at the bottom */}
+      <div className="mt-4 pt-3 border-t border-gray-200">
+        <p className="text-sm text-gray-600">
+          Need more storage space? Use the "Request Quota Increase" button above to submit a request.
+        </p>
+      </div>
     </div>
   );
 };
