@@ -7,10 +7,10 @@ import SandboxGrid from "./SandboxGrid";
 import { createRoot } from "react-dom/client";
 import ChatbotComponent from "./Components/ChatbotComponent";
 import { Toaster } from "react-hot-toast";
+import { useChatbotVisibility, ChatbotVisibilityProvider } from "./Components/ChatbotVisibilityContext"; // Import the context provider
 
 const App = () => {
   const [runTour, setRunTour] = useState(false);
-
   const steps = [
     {
       target: ".add-element-btn",
@@ -39,50 +39,61 @@ const App = () => {
       spotlightClicks: true,
     },
   ];
-
+  
   return (
-    <div className="min-h-screen w-full">
-      <DndProvider backend={HTML5Backend}>
-      <Joyride
-        steps={steps}
-        run={runTour}
-        continuous
-        showProgress
-        showSkipButton
-        callback={(data) => {
-          if (data.status === "finished" || data.status === "skipped") {
-            setRunTour(false);
-          }
-        }}
-        styles={{
-          options: { 
-            primaryColor: "#5c0025",
-            zIndex: 1000 
-          },
-          buttonNext: {
-            backgroundColor: "#5c0025",
-            color: "#ffffff", // text color
-            // fontWeight: "bold",
-            borderRadius: "6px",
-            padding: "10px 20px", // Button padding
-          },
-          buttonBack: {
-            color: "#555", 
-          },
-          buttonClose: {
-            color: "#000", 
-          }
-        }}
-      />
-
-        <div className="bg-gray-50 p-10 min-h-screen">
-          <SandboxGrid setRunTour={setRunTour} />
-          <Toaster position="bottom-right" reverseorder={false} toastOptions={{ duration: 30000 }} />
-          <ChatbotComponent />
-        </div>
-      </DndProvider>
-    </div>
+    <ChatbotVisibilityProvider> {/* Wrap the app with the provider */}
+      <div className="min-h-screen w-full">
+        <DndProvider backend={HTML5Backend}>
+          <Joyride
+            steps={steps}
+            run={runTour}
+            continuous
+            showProgress
+            showSkipButton
+            callback={(data) => {
+              if (data.status === "finished" || data.status === "skipped") {
+                setRunTour(false);
+              }
+            }}
+            styles={{
+              options: {
+                primaryColor: "#5c0025",
+                zIndex: 1000
+              },
+              buttonNext: {
+                backgroundColor: "#5c0025",
+                color: "#ffffff", // text color
+                borderRadius: "6px",
+                padding: "10px 20px", // Button padding
+              },
+              buttonBack: {
+                color: "#555",
+              },
+              buttonClose: {
+                color: "#000",
+              }
+            }}
+          />
+          <div className="bg-gray-50 p-10 min-h-screen">
+            <SandboxGrid setRunTour={setRunTour} />
+            <Toaster position="bottom-right" reverseorder={false} toastOptions={{ duration: 30000 }} />
+            <EnhancedChatbotComponent />
+          </div>
+        </DndProvider>
+      </div>
+    </ChatbotVisibilityProvider>
   );
+};
+
+// Enhanced chatbot component that respects visibility context
+const EnhancedChatbotComponent = () => {
+  const { isChatbotVisible } = useChatbotVisibility();
+  
+  if (!isChatbotVisible) {
+    return null; // Don't render if not visible
+  }
+  
+  return <ChatbotComponent />;
 };
 
 const root = createRoot(document.getElementById("root"));

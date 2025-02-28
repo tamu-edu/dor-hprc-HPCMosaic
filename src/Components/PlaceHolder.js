@@ -8,6 +8,9 @@ import config from "../../config.yml";
 import LayoutUtility from "./LayoutUtility";
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
 import { v4 as uuidv4 } from "uuid";
+import PopupForm from '../composer/PopupForm'; // Import PopupForm directly
+import helpRequestSchema from '../composer/schemas/helpRequest.json'; // Import the schema directly
+import { useChatbotVisibility } from "../Components/ChatbotVisibilityContext";
 
 const PlaceHolder = ({ setRunTour }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -17,9 +20,35 @@ const PlaceHolder = ({ setRunTour }) => {
   const clusterName = config.development.cluster_name;
   const [userData, setUserData] = useState({});
   const [loadingLayouts, setLoadingLayouts] = useState(true);
+
+  const { hideChatbot, showChatbot } = useChatbotVisibility();
   
+  // Update openPopup to hide chatbot when sidebar opens
+  const openPopup = () => {
+    setIsPopupOpen(true);
+    hideChatbot(); // Hide chatbot when sidebar opens
+  };
+  
+  // Update closePopup to show chatbot when sidebar closes
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setSidebarMaximized(false);
+    showChatbot(); // Show chatbot when sidebar closes
+  };
+
   // Create a ref for the sidebar to help with animations
   const sidebarRef = useRef(null);
+
+  // Handle help request form submission
+  const handleHelpSubmit = async (formData) => {
+    console.log('Help request submitted:', formData);
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+    
+    // Show success message
+    toast.success("Help request submitted successfully!");
+  };
 
   useEffect(() => {
     console.log("Current layout data in PlaceHolder:", layoutData);
@@ -76,44 +105,44 @@ const PlaceHolder = ({ setRunTour }) => {
   let getLatestLayoutRef = useRef(() => []);
 
   const saveCurrentLayout = async () => {
-    const latestLayout = getLatestLayoutRef.current(); 
+    const latestLayout = getLatestLayoutRef.current();
 
     if (!latestLayout || latestLayout.length === 0) {
-        toast.error("No layout data to save!");
-        return null;
+      toast.error("No layout data to save!");
+      return null;
     }
 
     const currentLayoutData = layoutData || [];
 
     if (!Array.isArray(currentLayoutData)) {
-        console.error("❌ layoutData is not an array or is null", layoutData);
-        toast.error("Error: No valid layout data available to save.");
-        return null;
+      console.error("❌ layoutData is not an array or is null", layoutData);
+      toast.error("Error: No valid layout data available to save.");
+      return null;
     }
 
     const enrichedLayout = latestLayout.map((item) => {
-        const originalItem = currentLayoutData.find((orig) => orig.i === item.i);
-        
-        return {
-            ...item,
-            name: originalItem ? originalItem.name : "Unnamed",
-        };
+      const originalItem = currentLayoutData.find((orig) => orig.i === item.i);
+
+      return {
+        ...item,
+        name: originalItem ? originalItem.name : "Unnamed",
+      };
     });
 
     const layoutName = prompt("Enter a name for the layout:");
     if (layoutName) {
-        try {
-            await saveLayout(layoutName, enrichedLayout);
-            toast.success(`Layout "${layoutName}" saved successfully!`);
-            
-            setLayouts((prev) => [...prev, layoutName]);
-            
-            return { success: true, layoutName };
-        } catch (error) {
-            console.error("Error saving layout:", error);
-            toast.error("Failed to save layout.");
-            return null;
-        }
+      try {
+        await saveLayout(layoutName, enrichedLayout);
+        toast.success(`Layout "${layoutName}" saved successfully!`);
+
+        setLayouts((prev) => [...prev, layoutName]);
+
+        return { success: true, layoutName };
+      } catch (error) {
+        console.error("Error saving layout:", error);
+        toast.error("Failed to save layout.");
+        return null;
+      }
     }
     return null;
   };
@@ -121,7 +150,7 @@ const PlaceHolder = ({ setRunTour }) => {
   const applyDefaultView = () => {
     const userConfirmed = window.confirm("Are you sure you want to apply the default layout? This will remove all changes.");
     if (!userConfirmed) return;
-  
+
     const defaultView = [
       { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
       { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
@@ -130,13 +159,13 @@ const PlaceHolder = ({ setRunTour }) => {
       { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
       { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
     ];
-  
+
     console.log("Applying Default View:", defaultView);
-    setLayoutData([...defaultView]); 
-  
+    setLayoutData([...defaultView]);
+
     toast.success("Applied default layout!");
   };
-  
+
 
   const applySavedLayout = async (layoutName) => {
     try {
@@ -153,16 +182,7 @@ const PlaceHolder = ({ setRunTour }) => {
       toast.error("Failed to load layout.");
     }
   };
-
-  const openPopup = () => {
-    setIsPopupOpen(true);
-  };
-
-  const closePopup = () => {
-    setIsPopupOpen(false);
-    setSidebarMaximized(false);
-  };
-
+  
   // Toggle sidebar between default and maximized height
   const toggleSidebarSize = () => {
     setSidebarMaximized(!sidebarMaximized);
@@ -193,22 +213,43 @@ const PlaceHolder = ({ setRunTour }) => {
 
             {/* Layout Utility */}
             <LayoutUtility
-                layouts={layouts} 
-                setLayouts={setLayouts} 
-                applyDefaultView={applyDefaultView} 
-                applySavedLayout={applySavedLayout} 
-                saveCurrentLayout={saveCurrentLayout} 
-                loadingLayouts={loadingLayouts}
-                fetchLayouts={fetchLayouts}
+              layouts={layouts}
+              setLayouts={setLayouts}
+              applyDefaultView={applyDefaultView}
+              applySavedLayout={applySavedLayout}
+              saveCurrentLayout={saveCurrentLayout}
+              loadingLayouts={loadingLayouts}
+              fetchLayouts={fetchLayouts}
             />
 
-            {/* Help Button */}
-            <button
-              className="request-help-btn flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors"
-            >
-              <MdOutlineQuestionAnswer className="text-3xl mr-2 text-gray-500" />
-              <span className="font-semibold text-gray-700">Request Help</span>
-            </button>
+            {/* Help Button - Using PopupForm directly */}
+            <div className="request-help-container">
+              <PopupForm
+                buttonText={
+                  <div className="flex items-center">
+                    <MdOutlineQuestionAnswer className="text-3xl mr-2 text-gray-500" />
+                    <span className="font-semibold text-gray-700">Request Help</span>
+                  </div>
+                }
+                schema={helpRequestSchema}
+                onSubmit={handleHelpSubmit}
+                title="Help Request"
+                disclaimerText={[]}
+                buttonStyle={{
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  border: '1px solid #D1D5DB',
+                  padding: '8px 20px',
+                  borderRadius: '0.5rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                  width: 'auto',
+                }}
+                errorMessage="Please fill out all required fields."
+              />
+            </div>
 
             {/* Start Tour Button */}
             <button
@@ -234,7 +275,7 @@ const PlaceHolder = ({ setRunTour }) => {
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col mt-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mx-4">
-          <Content 
+          <Content
             change={(data) => changeHandler(0, data)}
             layoutData={layoutData} setLayoutData={setLayoutData}
             getLatestLayout={(fn) => (getLatestLayoutRef.current = fn)}
@@ -242,39 +283,38 @@ const PlaceHolder = ({ setRunTour }) => {
         </div>
       </div>
 
-      {/* Enhanced Sidebar Popup */}
+      {/* Enhanced Sidebar Popup with fixed button alignment */}
       {isPopupOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-end justify-center pointer-events-none">
-          <div 
+          <div
             ref={sidebarRef}
-            className={`w-full pointer-events-auto bg-white shadow-2xl rounded-t-xl border-t border-gray-300 transition-all duration-300 ease-in-out transform ${
-              sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
-            }`}
+            className={`w-full pointer-events-auto bg-white shadow-2xl rounded-t-xl border-t border-gray-300 transition-all duration-300 ease-in-out transform ${sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
+              }`}
           >
-            {/* Sidebar Header with Controls */}
+            {/* Fixed: Sidebar Header with properly aligned controls */}
             <div className="sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white rounded-t-xl">
               <h3 className="text-2xl font-semibold text-gray-800 flex items-center">
-                <MdAddchart className="text-blue-500 mr-2" /> 
+                <MdAddchart className="text-blue-500 mr-2" />
                 Add Dashboard Elements
               </h3>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3"> {/* Fixed: Increased space between buttons */}
                 <button
                   onClick={toggleSidebarSize}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                   title={sidebarMaximized ? "Minimize panel" : "Maximize panel"}
                 >
                   {sidebarMaximized ? <MdMinimize className="text-xl" /> : <MdMaximize className="text-xl" />}
                 </button>
                 <button
                   onClick={closePopup}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   title="Close panel"
                 >
                   <MdClose className="text-xl" />
                 </button>
               </div>
             </div>
-            
+
             {/* Sidebar Content */}
             <div className={`${sidebarMaximized ? 'h-[calc(80vh-64px)]' : 'h-[calc(40vh-64px)]'} transition-all duration-300`}>
               <Sidebar />

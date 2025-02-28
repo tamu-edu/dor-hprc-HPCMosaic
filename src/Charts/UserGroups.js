@@ -12,7 +12,7 @@ const UserGroups = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const baseUrl = config.production.dashboard_url;
-
+  
   // Fetch user groups
   useEffect(() => {
     fetch(`${baseUrl}/api/groups`)

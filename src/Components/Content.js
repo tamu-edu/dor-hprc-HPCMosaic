@@ -54,6 +54,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
+    { name: "Button Testing", i: uuidv4(), x: 0, y: 10, w: 5, h: 10 },
   ];
 
   const [showPlaceholder, setShowPlaceholder] = useState(false);
