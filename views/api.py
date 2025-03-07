@@ -9,6 +9,29 @@ from collections import OrderedDict
 import subprocess
 import logging  # Add this line at the top
 
+import datetime
+import requests
+
+import yaml
+
+# Get the path to the config file
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+config_path = os.path.join(base_dir, 'config.yml')
+
+# Load the YAML file
+with open(config_path, 'r') as file:
+    config_data = yaml.safe_load(file)
+
+# Get the production settings
+production = config_data.get('development', {})
+
+# Create variables for easy access
+cluster_name = 'Grace'
+dashboard_url = production.get('dashboard_url')
+request_email = production.get('request_email')
+help_email = production.get('help_email')
+hprcbot_route = production.get('hprcbot_route')
+
 api = Blueprint('api', __name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -249,7 +272,7 @@ def get_py_versions():
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while fetching Python versions: {str(e)}"}), 500
 
-@api.route('create_venv', methods=['POST'])
+@api.route('/create_venv', methods=['POST'])
 def create_venv():
     try:
         data = request.json
@@ -542,25 +565,6 @@ def get_utilization():
         return jsonify({"error": f"Command failed: {e.output.decode('utf-8')}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    try:
-        data = request.json
-        envName = data.get('envName')
-        description = data.get('description')
-        pyVersion = data.get('pyVersion')
-        gccversion = data.get('GCCversion')
-        
-        if not envName or not gccversion or not pyVersion:
-            return jsonify({"error": "Missing required parameters from the form submission"}), 400
-    
-        # When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
-        createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
-        
-        result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-        if result.returncode != 0:
-            return jsonify({"error": f"There was an error while creating the virtual environment: {result.stdout}"}), 500
-        return jsonify({"message": f"{envName} was successfully created!"}), 200
-    except Exception as e:
-        return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
 
 @api.route('/delete_layout', methods=['DELETE'])
 def delete_layout():
@@ -613,3 +617,321 @@ def rename_layout():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@api.route('/quota', methods=['POST'])
+def request_quota():
+    try:
+        # Extract form data
+        directory = request.form.get('directory')
+        current_quota = request.form.get('currentQuota')
+        current_file_limit = request.form.get('currentFileLimit')
+        new_quota = request.form.get('newQuota')
+        new_file_limit = request.form.get('newFileLimit')
+        request_type = request.form.get('requestType')
+        pi_awareness = request.form.get('piAwareness')
+        stored_data = request.form.get('storedData')
+        research_description = request.form.get('researchDescription')
+        job_size = request.form.get('jobSize')
+        storage_plan = request.form.get('storagePlan')
+        comment = request.form.get('comment', '')
+        is_long_request = request.form.get('isLongRequest')
+        is_pi_request = request.form.get('isPIRequest')
+        is_buy_request = request.form.get('isBuyRequest')
+        
+        # For buy-in requests
+        expiration_date = request.form.get('expiration', '')
+        account_number = request.form.get('account', '')
+        
+        # Get username from environment
+        user = os.environ.get('USER', 'unknown')
+                
+        # Create timestamp for logging
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Log the initial request
+        logging.info(f"Quota request received from {user} for disk {directory}")
+        
+        # Prepare email subject and body
+        subject = f"[{cluster_name}] Quota Request: {user}"
+        
+        # Build email body based on request type
+        if is_buy_request == 'Yes':
+            body = f"""
+Cluster: {cluster_name}
+User: {user}
+DiskName: {directory}
+Request Type: Buy-in Quota Request
+Expiration Date: {expiration_date}
+Account Number: {account_number}
+
+--- CURRENT QUOTA ---
+Current disk space: {current_quota}
+Current file limit: {current_file_limit}
+
+--- REQUESTING QUOTA ---
+Requesting disk space: {new_quota}TB
+Requesting file limit: {new_file_limit}
+
+Comment: {comment}
+            """
+        else:
+            body = f"""
+Cluster: {cluster_name}
+User: {user}
+DiskName: {directory}
+Request Type: {request_type}
+
+--- CURRENT QUOTA ---
+Current disk space: {current_quota}
+Current file limit: {current_file_limit}
+
+--- REQUESTING QUOTA ---
+Requesting disk space: {new_quota}TB
+Requesting file limit: {new_file_limit}
+
+--- Justification ---
+Is the PI aware of this request?
+{pi_awareness}
+
+What data is stored with the requested quota?
+{stored_data}
+
+Briefly describe the research project that will be supported by the requested storage?
+{research_description}
+
+What is the input/output size of the job?
+{job_size}
+
+What is your long-term storage plan for your data after the quota increase expires?
+{storage_plan}
+
+Comment: {comment}
+            """
+        
+        # Create log directory if it doesn't exist
+        log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # Log the request details to file
+        log_file_path = os.path.join(log_dir, 'quota_request_log.txt')
+        log_entry = f"{timestamp}\t{user}\t{directory}\t{current_quota}\t{new_quota}\t{current_file_limit}\t{new_file_limit}\t{request_type}\n"
+        
+        with open(log_file_path, 'a') as log_file:
+            log_file.write(log_entry)
+            logging.info(f"Quota request logged to {log_file_path}")
+        
+        # Try to send the request to HPRC Bot first
+        try:
+            # Combine justification fields similar to how quota.js does it
+            combined_justification = f"""
+Is the PI aware of this request?
+{pi_awareness}
+
+What data is stored with the requested quota?
+{stored_data}
+
+Briefly describe the research project that will be supported by the requested storage?
+{research_description}
+
+What is the input/output size of the job?
+{job_size}
+
+What is your long-term storage plan for your data after the quota increase expires?
+{storage_plan}
+"""
+
+            # Log the combined justification
+            logging.info(f"Combined justification prepared:\n{combined_justification}")
+
+            # Convert form values to appropriate types
+            try:
+                formatted_current_quota = float(current_quota) if current_quota else None
+                formatted_current_file_limit = int(current_file_limit) if current_file_limit else None
+                formatted_new_quota = float(new_quota) if new_quota else None
+                formatted_new_file_limit = int(new_file_limit) if new_file_limit else None
+                has_previous = (request_type == 'Extension')
+                
+                logging.info(f"Converted field types: current_quota={formatted_current_quota}, " 
+                            f"current_file_limit={formatted_current_file_limit}, "
+                            f"new_quota={formatted_new_quota}, "
+                            f"new_file_limit={formatted_new_file_limit}, "
+                            f"has_previous={has_previous}")
+            except ValueError as ve:
+                logging.error(f"Error converting field types: {str(ve)}")
+                # Continue with original values
+                formatted_current_quota = current_quota
+                formatted_current_file_limit = current_file_limit
+                formatted_new_quota = new_quota
+                formatted_new_file_limit = new_file_limit
+                has_previous = (request_type == 'Extension')
+
+            # Convert buyin status to lowercase for consistency
+            buyin_status = 'yes' if is_buy_request == 'Yes' else 'no'
+            logging.info(f"Buyin status: {buyin_status} (original value: {is_buy_request})")
+            
+            # Prepare parameters for HPRC Bot
+            params = {
+                'request_type': 'Quota',
+                'user': user,
+                'directory': directory,
+                'current_quota': formatted_current_quota,
+                'current_file_limit': formatted_current_file_limit,
+                'desired_disk': formatted_new_quota,
+                'total_file_limit': formatted_new_file_limit,
+                'request_justification': combined_justification,
+                'comment': comment,
+                'cluster_name': cluster_name,
+                'confirmBuyin': buyin_status,
+                'has_previous': has_previous,
+                'request_until': expiration_date,
+                'account_number': account_number if buyin_status == 'yes' else '',
+                'email': f"{user}@tamu.edu",  # Default email format, adjust if needed
+            }
+            
+            # Send to HPRC Bot - use config value instead of environment variable
+            hprcbot_url = hprcbot_route  # Replace with your actual config structure
+            logging.info(f"Attempting to send quota request to HPRC Bot at {hprcbot_url}")
+            
+            # Log the payload being sent
+            import json
+            logging.info(f"Sending payload to HPRC Bot: {json.dumps(params, indent=2)}")
+            
+            response = requests.post(f"{hprcbot_url}/HPRCapp/OOD", json=params, timeout=5)
+            
+            # Log the response
+            logging.info(f"HPRC Bot response: {response.status_code}, {response.text}")
+            
+            if response.status_code == 200:
+                # Log successful bot submission
+                bot_log_path = os.path.join(log_dir, 'quota_bot_success.log')
+                with open(bot_log_path, 'a') as bot_log:
+                    bot_log.write(f"{timestamp}\t{user}\t{directory}\tBOT_SUCCESS\n")
+                
+                logging.info(f"Quota request successfully sent to HPRC Bot")
+                return jsonify({
+                    "message": "Your quota request has been submitted successfully. A notification will be sent to your email.",
+                    "status": "bot_success"
+                }), 200
+            else:
+                # Log failed bot submission
+                bot_log_path = os.path.join(log_dir, 'quota_bot_failure.log')
+                with open(bot_log_path, 'a') as bot_log:
+                    bot_log.write(f"{timestamp}\t{user}\t{directory}\tBOT_FAILURE\t{response.status_code}\t{response.text}\n")
+                
+                logging.warning(f"HPRC Bot returned non-200 status: {response.status_code}, {response.text}")
+                # Fall back to email method
+                raise Exception(f"HPRC Bot returned status {response.status_code}")
+        
+        except Exception as bot_error:
+            # Log bot exception
+            bot_log_path = os.path.join(log_dir, 'quota_bot_failure.log')
+            with open(bot_log_path, 'a') as bot_log:
+                bot_log.write(f"{timestamp}\t{user}\t{directory}\tBOT_EXCEPTION\t{str(bot_error)}\n")
+            
+            logging.error(f"Error sending to HPRC Bot: {str(bot_error)}")
+            # Fall back to email method
+        
+        # If HPRC Bot fails or is not available, send email
+        try:
+            # Import smtplib for sending emails
+            import smtplib
+            from email.mime.text import MIMEText
+            
+            # Create a message
+            msg = MIMEText(body)
+            msg['Subject'] = subject
+            msg['From'] = f"{user}@tamu.edu"
+            
+            # Use request_email from config instead of environment variable
+            recipient = request_email  # Replace with your actual config structure
+            msg['To'] = recipient
+            
+            # Log email attempt
+            logging.info(f"Attempting to send email for quota request from {user} to {recipient}")
+            
+            # Send the message
+            smtp_server = "smtp.tamu.edu"  # Could also be in config if needed
+            smtp_port = 25
+            
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                # Optional: Add SMTP debugging
+                # server.set_debuglevel(1)
+                
+                # Log connection success
+                logging.info(f"Connected to SMTP server {smtp_server}:{smtp_port}")
+                
+                # Send the message and capture response
+                response = server.send_message(msg)
+                
+                # If response is empty dict, all recipients accepted
+                if not response:
+                    logging.info(f"Email successfully sent to {recipient}")
+                    
+                    # Log the successful email in a dedicated file
+                    email_log_path = os.path.join(log_dir, 'quota_email_success.log')
+                    with open(email_log_path, 'a') as email_log:
+                        email_log.write(f"{timestamp}\t{user}\t{directory}\tEMAIL_SUCCESS\t{recipient}\n")
+                        
+                    return jsonify({
+                        "message": "Your quota request has been submitted successfully. A notification has been sent to your email.",
+                        "status": "email_success"
+                    }), 200
+                else:
+                    # Some recipients were rejected
+                    logging.warning(f"Email partially failed. Rejected recipients: {response}")
+                    
+                    # Log the partial failure
+                    email_log_path = os.path.join(log_dir, 'quota_email_partial.log')
+                    with open(email_log_path, 'a') as email_log:
+                        email_log.write(f"{timestamp}\t{user}\t{directory}\tEMAIL_PARTIAL\t{recipient}\t{response}\n")
+                        
+                    return jsonify({
+                        "message": "Your quota request has been logged, but there may have been issues sending the email notification.",
+                        "status": "email_partial",
+                        "details": str(response)
+                    }), 200
+        
+        except Exception as email_error:
+            # Log the email failure
+            logging.error(f"Error sending email: {str(email_error)}")
+            
+            # Log the failure to a dedicated file
+            email_log_path = os.path.join(log_dir, 'quota_email_failure.log')
+            with open(email_log_path, 'a') as email_log:
+                email_log.write(f"{timestamp}\t{user}\t{directory}\tEMAIL_FAILURE\t{str(email_error)}\n")
+            
+            # Get help_email from config for error message
+            help_email_address = help_email  # Replace with your actual config structure
+            
+            # Even if email fails, we've logged the request, so return partial success
+            return jsonify({
+                "message": f"Your quota request has been logged, but we couldn't send an email confirmation. If you need immediate assistance, please contact {help_email_address}.",
+                "status": "email_failed",
+                "error": str(email_error)
+            }), 202  # Using 202 Accepted since we processed the request but couldn't complete all actions
+    
+    except Exception as e:
+        # Log the overall failure
+        logging.error(f"Error processing quota request: {str(e)}")
+        
+        # Attempt to log to failure file
+        try:
+            log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
+            os.makedirs(log_dir, exist_ok=True)
+            
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            user = os.environ.get('USER', 'unknown')
+            
+            failure_log_path = os.path.join(log_dir, 'quota_request_failures.log')
+            with open(failure_log_path, 'a') as failure_log:
+                failure_log.write(f"{timestamp}\t{user}\tREQUEST_FAILURE\t{str(e)}\n")
+        except Exception as log_error:
+            logging.error(f"Failed to log failure: {str(log_error)}")
+        
+        # Get help_email from config for error message
+        help_email_address = help_email  # Replace with your actual config structure
+        
+        return jsonify({
+            "error": f"Failed to process your quota request: {str(e)}. Please contact {help_email_address} for assistance.",
+            "status": "failed"
+        }), 500

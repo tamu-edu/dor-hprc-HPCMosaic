@@ -18,7 +18,6 @@ import QuotaInfo from "../Charts/QuotaInfo";
 import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
 import Composer from "../Charts/Composer";
-import ButtonTesting from "../Charts/ButtonTesting";
 import QuotaButton from "../Charts/QuotaButton";
 
 const ReactGridLayout = WidthProvider(RGL);
@@ -54,7 +53,6 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
-    { name: "Button Testing", i: uuidv4(), x: 0, y: 10, w: 5, h: 10 },
   ];
 
   const [showPlaceholder, setShowPlaceholder] = useState(false);
@@ -266,8 +264,6 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
         return <UserGroups />;
       case "Accounts":
         return <Accounts />;
-      case "Button Testing":
-        return <ButtonTesting />;
       default:
         return <div className="text-center text-red-500">Unknown Chart</div>;
     }
@@ -319,20 +315,19 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
             <div
               key={ele.i}
               data-grid={{...ele, minW, minH}}
-              className="resizable-element bg-white shadow-lg rounded-md border border-gray-300 relative h-full w-full overflow-hidden"
+              className="resizable-element bg-white rounded-md border border-gray-300 relative h-full w-full overflow-hidden"
             >
-              {/* Element title bar */}
-              <div className="absolute top-0 left-0 right-0 h-10 bg-gray-100 rounded-t-md flex items-center px-3 cursor-move z-10">
-                <span className="font-medium text-gray-700 truncate">{ele.name}</span>
-                <button
-                  onClick={() => removeElement(index)}
-                  className="absolute top-2 right-2 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full text-sm"
-                >
-                  ✕
-                </button>
-              </div>
+              {/* Clean, elegant remove button */}
+              <button
+                onClick={() => removeElement(index)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
+                title="Remove this element"
+              >
+                <span className="text-sm">✕</span>
+              </button>
               
-              <div className="h-full w-full p-4 pt-12">{renderChart(ele)}</div>
+              {/* Component content */}
+              <div className="h-full w-full p-8">{renderChart(ele)}</div>
             </div>
           );
         })}

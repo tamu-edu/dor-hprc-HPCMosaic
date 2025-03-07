@@ -140,12 +140,18 @@ const QuotaInfo = () => {
                 <span className="cursor-help font-semibold">File Usage (%) ⓘ</span>
               </Tippy>
             </th>
+            <th className="border border-gray-300 px-4 py-2">
+              <span className="font-semibold">Action</span>
+            </th>
           </tr>
         </thead>
         <tbody>
           {quotaData.map((quota, index) => {
             const diskPercentage = getUsagePercentage(quota.disk_usage, quota.disk_limit);
             const filePercentage = getFileUsagePercentage(quota.file_usage, quota.file_limit);
+
+            // Check if this is home directory (we might want to skip showing buttons for certain disks)
+            const isHomeDir = quota.disk.includes("/home");
 
             return (
               <tr key={index} className={`${quota.additional_info ? "bg-yellow-100" : ""} group relative`}>
@@ -180,6 +186,15 @@ const QuotaInfo = () => {
                     </div>
                   </Tippy>
                 </td>
+                <td className="border border-gray-300 px-4 py-4 text-center">
+                  {!isHomeDir && (
+                    <QuotaButton 
+                      disk={quota.disk} 
+                      currentQuota={quota.disk_limit}
+                      currentFileLimit={quota.file_limit}
+                    />
+                  )}
+                </td>
               </tr>
             );
           })}
@@ -191,7 +206,8 @@ const QuotaInfo = () => {
       {/* Additional note at the bottom */}
       <div className="mt-4 pt-3 border-t border-gray-200">
         <p className="text-sm text-gray-600">
-          Need more storage space? Use the "Request Quota Increase" button above to submit a request.
+          Need more storage space? Use the "Request Quota Increase" button above to submit a general request, 
+          or click "Request" next to a specific disk to request an increase for that disk.
         </p>
       </div>
     </div>

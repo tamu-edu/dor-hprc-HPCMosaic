@@ -9,6 +9,7 @@
     "axios": "^1.7.9",
     "chart.js": "^4.4.6",
     "chartjs-plugin-datalabels": "^2.2.0",
+    "datetime": "0.0.3",
     "flask": "^0.2.10",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
@@ -24,6 +25,7 @@
     "react-select": "^5.10.0",
     "react-syntax-highlighter": "^15.6.1",
     "react-toastify": "^11.0.3",
+    "requests": "^0.3.0",
     "styled-components": "^6.1.15",
     "tippy.js": "^6.3.7"
   },
