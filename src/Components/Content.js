@@ -307,6 +307,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
         useCSSTransforms={true}
         autoSize={true}
         className="bg-white rounded-lg"
+        draggableCancel=".non-draggable"
       >
         {/* Render actual grid items */}
         {row.map((ele, index) => {

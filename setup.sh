@@ -3,7 +3,7 @@ set -eo pipefail
 IFS=$'\n\t'
 
 CURRENTDIR=`basename "$PWD"`
-CLUSTERNAME=$(clustername)
+CLUSTERNAME=Grace
 
 # Capitalize first letter of CLUSTERNAME
 CLUSTERNAME="$(tr '[:lower:]' '[:upper:]' <<< ${CLUSTERNAME:0:1})${CLUSTERNAME:1}"

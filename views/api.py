@@ -25,6 +25,50 @@ with open(config_path, 'r') as file:
 # Get the production settings
 production = config_data.get('development', {})
 
+def get_group_directory_info(group_name):
+    directory_path = f"/scratch/group/{group_name}"
+    owner = None
+
+    try:
+        result = subprocess.check_output(['ls', '-la', '/scratch/group/'], encoding='utf-8')
+        lines = result.strip().split('\n')
+
+        for line in lines:
+            if group_name in line:
+                logging.info(f"Matched line for group '{group_name}': {line}")
+                parts = line.split()
+                if len(parts) >= 3:
+                    owner = parts[2]  # third field is the owner
+                    logging.info(f"Inferred group owner: {owner}")
+
+                # Check for symlink
+                if '->' in line:
+                    target_path = line.split('->')[-1].strip()
+                    directory_path = target_path if target_path.startswith('/') else f"/scratch/group/{target_path}"
+                    logging.info(f"Resolved symlink path: {directory_path}")
+                break
+        else:
+            logging.warning(f"No match found for group '{group_name}' in /scratch/group/")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error fetching group directory info for {group_name}: {e}")
+
+    return {
+        "directory": directory_path,
+        "owner": owner
+    }
+
+def clean_number(value):
+    """
+    Strips non-numeric characters (like 'TB', 'GB', etc.) and converts to float.
+    Returns None if input is None or invalid.
+    """
+    if value:
+        try:
+            return float(re.sub(r"[^\d.]+", "", value))
+        except ValueError:
+            return None
+    return None
+
 # Create variables for easy access
 cluster_name = 'Grace'
 dashboard_url = production.get('dashboard_url')
@@ -637,24 +681,13 @@ def request_quota():
         is_long_request = request.form.get('isLongRequest')
         is_pi_request = request.form.get('isPIRequest')
         is_buy_request = request.form.get('isBuyRequest')
-        
-        # For buy-in requests
         expiration_date = request.form.get('expiration', '')
         account_number = request.form.get('account', '')
-        
-        # Get username from environment
+
         user = os.environ.get('USER', 'unknown')
-                
-        # Create timestamp for logging
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        # Log the initial request
-        logging.info(f"Quota request received from {user} for disk {directory}")
-        
-        # Prepare email subject and body
         subject = f"[{cluster_name}] Quota Request: {user}"
-        
-        # Build email body based on request type
+
         if is_buy_request == 'Yes':
             body = f"""
 Cluster: {cluster_name}
@@ -673,7 +706,7 @@ Requesting disk space: {new_quota}TB
 Requesting file limit: {new_file_limit}
 
 Comment: {comment}
-            """
+"""
         else:
             body = f"""
 Cluster: {cluster_name}
@@ -706,23 +739,10 @@ What is your long-term storage plan for your data after the quota increase expir
 {storage_plan}
 
 Comment: {comment}
-            """
-        
-        # Create log directory if it doesn't exist
-        log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        
-        # Log the request details to file
-        log_file_path = os.path.join(log_dir, 'quota_request_log.txt')
-        log_entry = f"{timestamp}\t{user}\t{directory}\t{current_quota}\t{new_quota}\t{current_file_limit}\t{new_file_limit}\t{request_type}\n"
-        
-        with open(log_file_path, 'a') as log_file:
-            log_file.write(log_entry)
-            logging.info(f"Quota request logged to {log_file_path}")
-        
-        # Try to send the request to HPRC Bot first
+"""
+
+        # First attempt: send to HPRC Bot
         try:
-            # Combine justification fields similar to how quota.js does it
             combined_justification = f"""
 Is the PI aware of this request?
 {pi_awareness}
@@ -740,36 +760,21 @@ What is your long-term storage plan for your data after the quota increase expir
 {storage_plan}
 """
 
-            # Log the combined justification
-            logging.info(f"Combined justification prepared:\n{combined_justification}")
-
-            # Convert form values to appropriate types
             try:
-                formatted_current_quota = float(current_quota) if current_quota else None
-                formatted_current_file_limit = int(current_file_limit) if current_file_limit else None
-                formatted_new_quota = float(new_quota) if new_quota else None
-                formatted_new_file_limit = int(new_file_limit) if new_file_limit else None
-                has_previous = (request_type == 'Extension')
-                
-                logging.info(f"Converted field types: current_quota={formatted_current_quota}, " 
-                            f"current_file_limit={formatted_current_file_limit}, "
-                            f"new_quota={formatted_new_quota}, "
-                            f"new_file_limit={formatted_new_file_limit}, "
-                            f"has_previous={has_previous}")
+                formatted_current_quota = clean_number(current_quota)
+                formatted_current_file_limit = int(re.sub(r"[^\d]", "", current_file_limit)) if current_file_limit else None
+                formatted_new_quota = clean_number(new_quota)
+                formatted_new_file_limit = int(re.sub(r"[^\d]", "", new_file_limit)) if new_file_limit else None
+                has_previous = request_type == 'Extension'
             except ValueError as ve:
-                logging.error(f"Error converting field types: {str(ve)}")
-                # Continue with original values
+                logging.warning(f"Failed to convert quota fields: {ve}")
                 formatted_current_quota = current_quota
                 formatted_current_file_limit = current_file_limit
                 formatted_new_quota = new_quota
                 formatted_new_file_limit = new_file_limit
-                has_previous = (request_type == 'Extension')
+                has_previous = request_type == 'Extension'
 
-            # Convert buyin status to lowercase for consistency
             buyin_status = 'yes' if is_buy_request == 'Yes' else 'no'
-            logging.info(f"Buyin status: {buyin_status} (original value: {is_buy_request})")
-            
-            # Prepare parameters for HPRC Bot
             params = {
                 'request_type': 'Quota',
                 'user': user,
@@ -785,153 +790,330 @@ What is your long-term storage plan for your data after the quota increase expir
                 'has_previous': has_previous,
                 'request_until': expiration_date,
                 'account_number': account_number if buyin_status == 'yes' else '',
-                'email': f"{user}@tamu.edu",  # Default email format, adjust if needed
+                'email': f"{user}@tamu.edu"
             }
-            
-            # Send to HPRC Bot - use config value instead of environment variable
-            hprcbot_url = hprcbot_route  # Replace with your actual config structure
-            logging.info(f"Attempting to send quota request to HPRC Bot at {hprcbot_url}")
-            
-            # Log the payload being sent
-            import json
-            logging.info(f"Sending payload to HPRC Bot: {json.dumps(params, indent=2)}")
-            
-            response = requests.post(f"{hprcbot_url}/HPRCapp/OOD", json=params, timeout=5)
-            
-            # Log the response
-            logging.info(f"HPRC Bot response: {response.status_code}, {response.text}")
-            
+
+            logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
+            response = requests.post(f"{hprcbot_route}/HPRCapp/OOD", json=params, timeout=5)
+
             if response.status_code == 200:
-                # Log successful bot submission
-                bot_log_path = os.path.join(log_dir, 'quota_bot_success.log')
-                with open(bot_log_path, 'a') as bot_log:
-                    bot_log.write(f"{timestamp}\t{user}\t{directory}\tBOT_SUCCESS\n")
-                
-                logging.info(f"Quota request successfully sent to HPRC Bot")
+                print(f"HPRC Bot returned status {response.status_code}: {response.text}")
                 return jsonify({
-                    "message": "Your quota request has been submitted successfully. A notification will be sent to your email.",
+                    "message": "Your quota request has been submitted successfully via HPRC Bot.",
                     "status": "bot_success"
                 }), 200
             else:
-                # Log failed bot submission
-                bot_log_path = os.path.join(log_dir, 'quota_bot_failure.log')
-                with open(bot_log_path, 'a') as bot_log:
-                    bot_log.write(f"{timestamp}\t{user}\t{directory}\tBOT_FAILURE\t{response.status_code}\t{response.text}\n")
-                
-                logging.warning(f"HPRC Bot returned non-200 status: {response.status_code}, {response.text}")
-                # Fall back to email method
-                raise Exception(f"HPRC Bot returned status {response.status_code}")
-        
+                print(f"HPRC Bot returned status {response.status_code}: {response.text}")
+                raise Exception(f"HPRC Bot returned status {response.status_code}: {response.text}")
+
         except Exception as bot_error:
-            # Log bot exception
-            bot_log_path = os.path.join(log_dir, 'quota_bot_failure.log')
-            with open(bot_log_path, 'a') as bot_log:
-                bot_log.write(f"{timestamp}\t{user}\t{directory}\tBOT_EXCEPTION\t{str(bot_error)}\n")
-            
-            logging.error(f"Error sending to HPRC Bot: {str(bot_error)}")
-            # Fall back to email method
-        
-        # If HPRC Bot fails or is not available, send email
+            print(f"HPRC Bot submission failed: {bot_error}")
+            logging.warning(f"HPRC Bot submission failed: {bot_error}")
+
+        # Fallback: Send Email
         try:
-            # Import smtplib for sending emails
             import smtplib
             from email.mime.text import MIMEText
-            
-            # Create a message
+
             msg = MIMEText(body)
             msg['Subject'] = subject
             msg['From'] = f"{user}@tamu.edu"
-            
-            # Use request_email from config instead of environment variable
-            recipient = request_email  # Replace with your actual config structure
-            msg['To'] = recipient
-            
-            # Log email attempt
-            logging.info(f"Attempting to send email for quota request from {user} to {recipient}")
-            
-            # Send the message
-            smtp_server = "smtp.tamu.edu"  # Could also be in config if needed
+            msg['To'] = request_email
+
+            smtp_server = "smtp.tamu.edu"
             smtp_port = 25
-            
+
             with smtplib.SMTP(smtp_server, smtp_port) as server:
-                # Optional: Add SMTP debugging
-                # server.set_debuglevel(1)
-                
-                # Log connection success
-                logging.info(f"Connected to SMTP server {smtp_server}:{smtp_port}")
-                
-                # Send the message and capture response
                 response = server.send_message(msg)
-                
-                # If response is empty dict, all recipients accepted
+
                 if not response:
-                    logging.info(f"Email successfully sent to {recipient}")
-                    
-                    # Log the successful email in a dedicated file
-                    email_log_path = os.path.join(log_dir, 'quota_email_success.log')
-                    with open(email_log_path, 'a') as email_log:
-                        email_log.write(f"{timestamp}\t{user}\t{directory}\tEMAIL_SUCCESS\t{recipient}\n")
-                        
                     return jsonify({
-                        "message": "Your quota request has been submitted successfully. A notification has been sent to your email.",
+                        "message": "Your quota request has been submitted successfully via email.",
                         "status": "email_success"
                     }), 200
                 else:
-                    # Some recipients were rejected
-                    logging.warning(f"Email partially failed. Rejected recipients: {response}")
-                    
-                    # Log the partial failure
-                    email_log_path = os.path.join(log_dir, 'quota_email_partial.log')
-                    with open(email_log_path, 'a') as email_log:
-                        email_log.write(f"{timestamp}\t{user}\t{directory}\tEMAIL_PARTIAL\t{recipient}\t{response}\n")
-                        
                     return jsonify({
-                        "message": "Your quota request has been logged, but there may have been issues sending the email notification.",
+                        "message": "Quota request logged, but some email issues occurred.",
                         "status": "email_partial",
                         "details": str(response)
                     }), 200
-        
+
         except Exception as email_error:
-            # Log the email failure
-            logging.error(f"Error sending email: {str(email_error)}")
-            
-            # Log the failure to a dedicated file
-            email_log_path = os.path.join(log_dir, 'quota_email_failure.log')
-            with open(email_log_path, 'a') as email_log:
-                email_log.write(f"{timestamp}\t{user}\t{directory}\tEMAIL_FAILURE\t{str(email_error)}\n")
-            
-            # Get help_email from config for error message
-            help_email_address = help_email  # Replace with your actual config structure
-            
-            # Even if email fails, we've logged the request, so return partial success
+            logging.error(f"Email fallback failed: {email_error}")
             return jsonify({
-                "message": f"Your quota request has been logged, but we couldn't send an email confirmation. If you need immediate assistance, please contact {help_email_address}.",
+                "message": f"Your quota request was logged, but we couldn't email support. Please contact {help_email}.",
                 "status": "email_failed",
                 "error": str(email_error)
-            }), 202  # Using 202 Accepted since we processed the request but couldn't complete all actions
-    
+            }), 202
+
     except Exception as e:
-        # Log the overall failure
-        logging.error(f"Error processing quota request: {str(e)}")
-        
-        # Attempt to log to failure file
-        try:
-            log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
-            os.makedirs(log_dir, exist_ok=True)
-            
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            user = os.environ.get('USER', 'unknown')
-            
-            failure_log_path = os.path.join(log_dir, 'quota_request_failures.log')
-            with open(failure_log_path, 'a') as failure_log:
-                failure_log.write(f"{timestamp}\t{user}\tREQUEST_FAILURE\t{str(e)}\n")
-        except Exception as log_error:
-            logging.error(f"Failed to log failure: {str(log_error)}")
-        
-        # Get help_email from config for error message
-        help_email_address = help_email  # Replace with your actual config structure
-        
+        logging.error(f"Quota request processing failed: {e}")
         return jsonify({
-            "error": f"Failed to process your quota request: {str(e)}. Please contact {help_email_address} for assistance.",
+            "error": f"Failed to process quota request: {str(e)}. Please contact {help_email}.",
+            "status": "failed"
+        }), 500
+
+@api.route('/group', methods=['POST'])
+def request_group():
+    try:
+        def split_netids(input_str):
+            return [line.strip() for line in input_str.strip().splitlines() if line.strip()]
+
+        # Extract form data
+        group_request_type = request.form.get('groupRequest')
+        group_name = request.form.get('groupName')
+        group_members = request.form.get('groupMembers', '')
+        group_add = request.form.get('groupAdd', '')
+        group_remove = request.form.get('groupRemove', '')
+        comments = request.form.get('comments', '')
+
+        user = os.environ.get('USER', 'unknown')
+        email = f"{user}@tamu.edu"
+
+        logging.info(f"Group request received from {user}, type: {group_request_type}")
+
+        params = {
+            'request_type': 'Group',
+            'user': user,
+            'email': email,
+            'cluster_name': cluster_name,
+            'comments': comments,
+            'new_group': group_request_type == 'cgroup'
+        }
+
+        # Inject group_name into path and fetch owner if available
+        if group_name and group_name.strip():
+            group_name = group_name.strip()
+            dir_info = get_group_directory_info(group_name)
+            logging.info(f"Group directory: {dir_info['directory']}")
+
+            params['group_name'] = group_name
+            params['directory'] = dir_info['directory']
+
+        if group_request_type == 'cgroup':
+            params['action'] = 'createGroup'
+            params['Add'] = 'createGroup'
+            params['target_users'] = split_netids(group_members)
+        elif group_request_type == 'madd':
+            params['action'] = 'addMembers'
+            params['Add'] = 'addMembers'
+            params['target_users'] = split_netids(group_add)
+        elif group_request_type == 'mremove':
+            params['action'] = 'deleteMembers'
+            params['Add'] = 'deleteMembers'
+            params['target_users'] = split_netids(group_remove)
+        elif group_request_type == 'rgroup':
+            params['action'] = 'requestAccess'
+            params['Add'] = 'requestAccess'
+
+        else:
+            return jsonify({"error": f"Unknown group request type: {group_request_type}"}), 400
+
+        logging.info(f"Sending to HPRC Bot: {params}")
+
+        hprcbot_url = hprcbot_route
+        response = requests.post(f"{hprcbot_url}/HPRCapp/OOD", json=params, timeout=15)
+
+        if response.status_code == 200:
+            logging.info("Group request successfully submitted to HPRC Bot")
+            return jsonify({
+                "message": "Your group request has been submitted successfully.",
+                "status": "bot_success"
+            }), 200
+        else:
+            logging.warning(f"HPRC Bot returned {response.status_code}: {response.text}")
+            raise Exception(f"HPRC Bot returned non-200 response")
+
+    except Exception as e:
+        logging.error(f"Error processing group request: {str(e)}")
+        return jsonify({
+            "error": f"Failed to process your group request: {str(e)}. Please contact {help_email}.",
+            "status": "failed"
+        }), 500
+
+@api.route('/help', methods=['POST'])
+def request_help():
+    try:
+        logging.info("🔥 HELP REQUEST RECEIVED 🔥")
+        user = os.environ.get('USER', 'unknown')
+        email = f"{user}@tamu.edu"
+
+        # Raw form fields
+        help_request_type = request.form.get("helpRequest", "").strip()
+
+        logging.info(f"Received help request type: {help_request_type} from {user}")
+
+        # Initialize shared fields
+        params = {
+            "request_type": "Help",
+            "user": user,
+            "email": email,
+            "cluster_name": cluster_name,
+            "help_topic": help_request_type,
+            "issue_description": "",
+            "error_message": "",
+            "job_file_path": "",
+            "job_id": "",
+            "program_file_path": "",
+            "additional_information": ""
+        }
+
+        # Software Help
+        if help_request_type == "software":
+            software_name = request.form.get("softwareName", "")
+            software_version = request.form.get("softwareVersion", "")
+            software_toolchain = request.form.get("softwareToolChain", "")
+            software_link = request.form.get("softwareLink", "")
+            software_info = request.form.get("softwareInfo", "")
+            params["issue_description"] = f"{software_name} (v{software_version}) - Toolchain: {software_toolchain}"
+            params["program_file_path"] = software_link
+            params["additional_information"] = software_info
+
+        # Job Help
+        elif help_request_type == "jobs":
+            params["job_id"] = request.form.get("jobID", "")
+            params["job_file_path"] = request.form.get("jobLocation", "")
+            params["issue_description"] = request.form.get("jobIssue", "")
+            params["error_message"] = request.form.get("jobErrors", "")
+
+        # Account Help
+        elif help_request_type == "accounts":
+            account_type = request.form.get("accountType", "")
+            if account_type == "general":
+                params["issue_description"] = request.form.get("jobIssue", "")
+            elif account_type == "addAccount":
+                acct = request.form.get("accountNumber", "")
+                user_to_add = request.form.get("accountUser", "")
+                params["issue_description"] = f"Add user {user_to_add} to account {acct}."
+            elif account_type == "transferSU":
+                acct = request.form.get("accountNumber", "")
+                target_user = request.form.get("accountUser", "")
+                sus = request.form.get("jobIssue", "")
+                params["issue_description"] = f"Transfer {sus} SUs from account {acct} to {target_user}."
+
+        # Other Help
+        elif help_request_type == "other":
+            params["issue_description"] = request.form.get("otherDescription", "")
+
+        logging.info(f"Sending Help request to HPRC Bot: {params}")
+
+        response = requests.post(f"{hprcbot_route}/HPRCapp/OOD", json=params, timeout=15)
+
+        if response.status_code == 200:
+            logging.info("Help request successfully submitted to HPRC Bot")
+            return jsonify({
+                "message": "Your help request has been submitted successfully.",
+                "status": "bot_success"
+            }), 200
+        else:
+            logging.warning(f"HPRC Bot returned {response.status_code}: {response.text}")
+            raise Exception(f"HPRC Bot returned non-200 response")
+
+    except Exception as e:
+        logging.error(f"Error processing help request: {str(e)}")
+        return jsonify({
+            "error": f"Failed to process your help request: {str(e)}. Please contact {help_email}.",
+            "status": "failed"
+        }), 500
+
+@api.route('/software', methods=['POST'])
+def request_software():
+    try:
+        logging.info("🧪 SOFTWARE REQUEST RECEIVED 🧪")
+        user = os.environ.get('USER', 'unknown')
+        email = f"{user}@tamu.edu"
+
+        software_name = request.form.get("softwareName", "").strip()
+        software_version = request.form.get("softwareVersion", "").strip()
+        software_link = request.form.get("softwareLink", "").strip()
+        software_toolchain = request.form.get("softwareToolChain", "").strip()
+        software_info = request.form.get("softwareInfo", "").strip()
+        software_category = request.form.get("softwareCategory", "").strip()
+
+        if not software_name:
+            raise ValueError("Software name is required.")
+
+        params = {
+            "request_type": "Software",
+            "user": user,
+            "email": email,
+            "cluster_name": cluster_name,
+            "software_name": software_name,
+            "software_version": software_version,
+            "software_link": software_link,
+            "toolchains": software_toolchain,
+            "request_justification": f"Category: {software_category}\n{software_info}",
+            "additional_notes": ""
+        }
+
+        logging.info(f"Sending software request to HPRC Bot: {params}")
+
+        response = requests.post(f"{hprcbot_route}/HPRCapp/OOD", json=params, timeout=15)
+
+        if response.status_code == 200:
+            logging.info("Software request successfully submitted to HPRC Bot")
+            return jsonify({
+                "message": "Your software request has been submitted successfully.",
+                "status": "bot_success"
+            }), 200
+        else:
+            logging.warning(f"HPRC Bot returned {response.status_code}: {response.text}")
+            raise Exception(f"HPRC Bot returned non-200 response")
+
+    except Exception as e:
+        logging.error(f"Error processing software request: {str(e)}")
+        return jsonify({
+            "error": f"Failed to process your software request: {str(e)}. Please contact {help_email}.",
+            "status": "failed"
+        }), 500
+
+@api.route('/account', methods=['POST'])
+def request_account_purchase():
+    try:
+        logging.info("🧾 ACCOUNT PURCHASE REQUEST RECEIVED 🧾")
+        user = os.environ.get('USER', 'unknown')
+        email = f"{user}@tamu.edu"
+
+        what = request.form.get("purchaseWhat", "").strip()
+        who = request.form.get("purchaseWho", "").strip()
+        due_raw = request.form.get("purchaseDue", "").strip()
+        accounts_raw = request.form.get("purchaseAccounts", "").strip()
+        notes = request.form.get("purchaseNotes", "").strip()
+
+        try:
+            due = datetime.strptime(due_raw, "%Y-%m-%d") if due_raw else None
+        except ValueError:
+            due = None
+
+        accounts = [acct.strip() for acct in accounts_raw.split(",") if acct.strip()]
+
+        params = {
+            "request_type": "Purchase",
+            "user": user,
+            "email": email,
+            "cluster_name": cluster_name,
+            "what": what,
+            "who": who,
+            "due": due.isoformat() if due else "",
+            "accounts": accounts,
+            "additional_notes": notes
+        }
+
+        logging.info(f"Sending account purchase request to HPRC Bot: {params}")
+        response = requests.post(f"{hprcbot_route}/HPRCapp/OOD", json=params, timeout=15)
+
+        if response.status_code == 200:
+            logging.info("Account request successfully submitted to HPRC Bot")
+            return jsonify({
+                "message": "Your account purchase request has been submitted successfully.",
+                "status": "bot_success"
+            }), 200
+        else:
+            raise Exception(f"HPRC Bot returned non-200: {response.status_code}")
+
+    except Exception as e:
+        logging.error(f"Error processing account request: {str(e)}")
+        return jsonify({
+            "error": f"Failed to process your account purchase request: {str(e)}",
             "status": "failed"
         }), 500

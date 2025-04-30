@@ -12,6 +12,8 @@ import PopupForm from '../composer/PopupForm'; // Import PopupForm directly
 import helpRequestSchema from '../composer/schemas/helpRequest.json'; // Import the schema directly
 import { useChatbotVisibility } from "../Components/ChatbotVisibilityContext";
 
+import HelpButton from "../Charts/HelpButton";
+
 const PlaceHolder = ({ setRunTour }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [sidebarMaximized, setSidebarMaximized] = useState(false);
@@ -222,19 +224,9 @@ const PlaceHolder = ({ setRunTour }) => {
               fetchLayouts={fetchLayouts}
             />
 
-            {/* Help Button - Using PopupForm directly */}
+            {/* Help Button - Using HelpButton component directly */}
             <div className="request-help-container">
-              <PopupForm
-                buttonText={
-                  <div className="flex items-center">
-                    <MdOutlineQuestionAnswer className="text-3xl mr-2 text-gray-500" />
-                    <span className="font-semibold text-gray-700">Request Help</span>
-                  </div>
-                }
-                schema={helpRequestSchema}
-                onSubmit={handleHelpSubmit}
-                title="Help Request"
-                disclaimerText={[]}
+              <HelpButton
                 buttonStyle={{
                   backgroundColor: 'white',
                   color: '#374151',
@@ -247,7 +239,12 @@ const PlaceHolder = ({ setRunTour }) => {
                   boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
                   width: 'auto',
                 }}
-                errorMessage="Please fill out all required fields."
+                buttonText={
+                  <div className="flex items-center">
+                    <MdOutlineQuestionAnswer className="text-3xl mr-2 text-gray-500" />
+                    <span className="font-semibold text-gray-700">Request Help</span>
+                  </div>
+                }
               />
             </div>
 
@@ -261,12 +258,12 @@ const PlaceHolder = ({ setRunTour }) => {
             </button>
 
             {/* Feedback Button */}
-            <a href={null} target="_blank" rel="noopener noreferrer" className="feedback-btn">
+            {/* <a href={null} target="_blank" rel="noopener noreferrer" className="feedback-btn">
               <button className="flex items-center px-5 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition-colors">
                 <MdFeedback className="text-3xl mr-2" />
                 <span className="font-semibold">Give Feedback</span>
               </button>
-            </a>
+            </a> */}
 
           </div>
         </div>

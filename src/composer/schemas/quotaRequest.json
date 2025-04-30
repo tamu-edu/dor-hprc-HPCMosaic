@@ -170,7 +170,7 @@
       "comment": {
         "type": "textarea",
         "label": "Additional Comments",
-        "name": "Optional comments",
+        "name": "comment",
         "help": "Any additional information you would like to provide (Optional)"
       }
     }

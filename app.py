@@ -13,7 +13,7 @@ app = Flask(__name__)
 def detect_env():
     path = os.getcwd()
     if "dev" in path:
-        return "development"
+        return "production"
     elif "sys" in path:
         return "production"
     else:

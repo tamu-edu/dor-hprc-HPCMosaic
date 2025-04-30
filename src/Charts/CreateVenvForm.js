@@ -90,7 +90,7 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 
 
 	return (
-		<form onSubmit={handleSubmission} className='space-y-4'>
+		<form onSubmit={handleSubmission} className='space-y-4 source /var/www/ood/apps/sys/dor-hprc-web-tamudashboard-reu/.venv/bin/activate'>
 			{!pyVersions && 
 				<div>
 					<p> Loading... </p>
@@ -98,16 +98,20 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			}	
 			{pyVersions &&
 			<div>
-				<label htmlFor='pyVersion' className='block text-sm font-medium text-gray-700'>
+				<label htmlFor='pyVersion' className='block text-sm font-medium text-gray-700 non-draggable'>
 					Select Python Version
 				</label>
-				<select id="pyVersion" value={selectedPyVersion} onChange={handlePyVersionSelect}
-				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'>	
-					{Object.keys(pyVersions).map((version, index) => (
-						<option value={version} key={index}>
-							{version}
-						</option>
-					))}
+				<select
+				id="pyVersion"
+				value={selectedPyVersion}
+				onChange={handlePyVersionSelect}
+				className="mt-1 block w-full border-gray-300 rounded-md shadow-sm non-draggable"
+				>	
+				{Object.keys(pyVersions).map((version, index) => (
+					<option value={version} key={index}>
+					{version}
+					</option>
+				))}
 				</select>
 			</div>
 			}

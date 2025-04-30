@@ -4,3 +4,9 @@
 2025-03-07 13:06:03	victoria.c6140	None	1.0	3TB	250000	500000	New Request
 2025-03-07 14:10:27	victoria.c6140	None	1.0	2TB	250000	5000000	New Request
 2025-03-07 15:02:41	victoria.c6140	None	1.0	5TB	250000	500000	New Request
+2025-04-08 13:58:44	pennings	None	10.0		1000000		New Request
+2025-04-08 16:21:48	pennings	None	1.0		250000		New Request
+2025-04-09 10:32:28	victoria.c6140	None	1.0	5TB	250000	250000	New Request
+2025-04-09 10:32:59	victoria.c6140	None	1.0	4TB	250000	12	New Request
+2025-04-09 10:36:38	victoria.c6140	/scratch/user/victoria.c6140	1.0	5TB	250000	500000	New Request
+2025-04-09 10:43:57	victoria.c6140	/scratch/user/victoria.c6140	1.0	5TB	250000	5	New Request

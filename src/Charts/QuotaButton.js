@@ -16,21 +16,51 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
       if (formData instanceof FormData) {
         // Use the existing FormData
         dataToSubmit = formData;
+        
+        // Debug: log all form fields
         for (let pair of dataToSubmit.entries()) {
           console.log(pair[0], pair[1]);
+        }
+        
+        // Add request_type field - this is crucial for the backend
+        dataToSubmit.append('request_type', 'Quota');
+        
+        // Add confirmBuyin field based on isBuyRequest value
+        const isBuyRequest = dataToSubmit.get('isBuyRequest') || 'No';
+        dataToSubmit.append('confirmBuyin', isBuyRequest === 'Yes' ? 'yes' : 'no');
+        
+        // Map field names that don't match what the backend expects
+        if (dataToSubmit.has('Optional comments') && !dataToSubmit.has('comment')) {
+          dataToSubmit.append('comment', dataToSubmit.get('Optional comments'));
         }
       } else {
         // Convert a regular object to FormData
         dataToSubmit = new FormData();
+        
+        // Add essential fields
+        dataToSubmit.append('request_type', 'Quota');
+        dataToSubmit.append('confirmBuyin', formData.isBuyRequest === 'Yes' ? 'yes' : 'no');
+        
+        // Add the rest of the fields
         for (const [key, value] of Object.entries(formData)) {
-          dataToSubmit.append(key, value);
+          // Handle special cases for field name mapping
+          if (key === 'Optional comments') {
+            dataToSubmit.append('comment', value);
+          } else {
+            dataToSubmit.append(key, value);
+          }
         }
+      }
+      
+      // Add directory from disk prop if available and not already set
+      if (disk && !dataToSubmit.get('directory')) {
+        dataToSubmit.append('directory', disk);
       }
       
       // Add cluster_name to the form data
       dataToSubmit.append('cluster_name', config.production.cluster_name || 'default');
       
-      // Submit the form data to your server
+      // Submit the form data to your Flask API endpoint
       const response = await fetch(`${baseUrl}/api/quota`, {
         method: 'POST',
         body: dataToSubmit,
@@ -41,8 +71,16 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
         throw new Error(errorData.error || 'Failed to submit quota request');
       }
       
-      const result = await response.text();
-      alert(result || 'Quota request submitted successfully');
+      // Handle either JSON or text response
+      const contentType = response.headers.get('content-type');
+      let result;
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+        alert(result.message || 'Quota request submitted successfully');
+      } else {
+        result = await response.text();
+        alert(result || 'Quota request submitted successfully');
+      }
       
       // Return true to indicate success
       return true;

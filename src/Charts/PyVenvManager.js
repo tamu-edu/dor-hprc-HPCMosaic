@@ -93,7 +93,7 @@ const PyVenvManager = () => {
   return (
     <div className="p-4 bg-white rounded-lg w-full h-full flex flex-col">
       {isFormOpen && 
-	  	<div className='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50'>
+	  	<div className='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-9999'>
 			<div className='relative bg-white p-6 rounded-lg w-2/3'>
 				<button className='absolute top-2 right-2 text-gray-500 hover:text-red-500'
 				onClick={() => {setIsFormOpen(false)}}>
@@ -114,13 +114,16 @@ const PyVenvManager = () => {
 	  	<h2 className="text-2xl font-semibold mb-4"> Virtual Env Management </h2>
 			<table className="table-auto w-full border-collapse border border-gray-300 m-2">
 				<thead>
-					<tr className="bg-gray-200">
-						{envKeys.map((field, index) => (
-							<th className="border border-gray-300 px-4 py-2"key={index}>
-								{field.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())} 
-							</th>
-						))}
-					</tr>
+				<tr className="bg-gray-200">
+					{envKeys.map((field, index) => (
+					<th className="border border-gray-300 px-4 py-2" key={index}>
+						{field.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+					</th>
+					))}
+					<th className="border border-gray-300 px-4 py-2">
+					Action
+					</th>
+				</tr>
 				</thead>
 				<tbody>
 					{envData.map((env) => (

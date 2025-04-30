@@ -116,9 +116,9 @@ const QuotaInfo = () => {
               <span>High usage detected!</span>
             </div>
           )}
-          <div className="quota-request-action">
+          {/* <div className="quota-request-action">
             <QuotaButton />
-          </div>
+          </div> */}
         </div>
       </div>
       
@@ -206,8 +206,7 @@ const QuotaInfo = () => {
       {/* Additional note at the bottom */}
       <div className="mt-4 pt-3 border-t border-gray-200">
         <p className="text-sm text-gray-600">
-          Need more storage space? Use the "Request Quota Increase" button above to submit a general request, 
-          or click "Request" next to a specific disk to request an increase for that disk.
+          Need more storage space? Click "Request" next to a specific disk to request an increase for that disk.
         </p>
       </div>
     </div>
