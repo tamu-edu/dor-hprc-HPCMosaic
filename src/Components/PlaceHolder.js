@@ -8,13 +8,16 @@ import config from "../../config.yml";
 import LayoutUtility from "./LayoutUtility";
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
 import { v4 as uuidv4 } from "uuid";
-import PopupForm from '../composer/PopupForm'; // Import PopupForm directly
-import helpRequestSchema from '../composer/schemas/helpRequest.json'; // Import the schema directly
 import { useChatbotVisibility } from "../Components/ChatbotVisibilityContext";
-
+import Joyride, { STATUS, ACTIONS } from 'react-joyride';
 import HelpButton from "../Charts/HelpButton";
+import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen } from "react-icons/md";
 
 const PlaceHolder = ({ setRunTour }) => {
+  // Tour state
+  const [runTour, setRunTourState] = useState(false);
+  
+  // Other state variables
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [sidebarMaximized, setSidebarMaximized] = useState(false);
   const [layoutData, setLayoutData] = useState(null);
@@ -24,6 +27,99 @@ const PlaceHolder = ({ setRunTour }) => {
   const [loadingLayouts, setLoadingLayouts] = useState(true);
 
   const { hideChatbot, showChatbot } = useChatbotVisibility();
+  
+  // Tour steps configuration
+  const tourSteps = [
+    {
+      target: '.start-tour-btn',
+      content: (
+        <div>
+          <h3 className="text-lg font-bold mb-2">Dashboard Tour</h3>
+          <p>Welcome to the cluster dashboard! This quick tour will guide you through the main interactive elements.</p>
+        </div>
+      ),
+      placement: 'bottom',
+      disableBeacon: true,
+    },
+    {
+      target: 'h1',
+      content: (
+        <div>
+          <h3 className="text-lg font-bold mb-2">Cluster Dashboard</h3>
+          <p>This is your central hub for monitoring and managing your cluster resources.</p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '.add-element-btn',
+      content: (
+        <div>
+          <h3 className="text-lg font-bold mb-2">Add Elements</h3>
+          <p>Click here to add new widgets and charts to your dashboard.</p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '.LayoutUtility',
+      content: (
+        <div>
+          <h3 className="text-lg font-bold mb-2">Layout Settings</h3>
+          <p>Save, load, and reset your dashboard layout from this menu.</p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '.request-help-container',
+      content: (
+        <div>
+          <h3 className="text-lg font-bold mb-2">Request Help</h3>
+          <p>Need assistance? Click here to contact our support team.</p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '.feedback-btn',
+      content: (
+        <div>
+          <h3 className="text-lg font-bold mb-2">Feedback</h3>
+          <p>Help us improve by providing your feedback through the Google form.</p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: 'body',
+      content: (
+        <div>
+          <h3 className="text-lg font-bold mb-2">Tour Complete!</h3>
+          <p>You're now ready to use the dashboard. You can restart this tour anytime by clicking the "Start Tour" button.</p>
+        </div>
+      ),
+      placement: 'center',
+    }
+  ];
+
+  // Handle tour callbacks
+  const handleJoyrideCallback = (data) => {
+    const { status, action } = data;
+    
+    // End the tour if it's completed, skipped, or closed
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status) || action === ACTIONS.CLOSE) {
+      setRunTourState(false);
+      localStorage.setItem("hasCompletedTour", "true");
+    }
+  };
+  
+  // Respond to external setRunTour prop changes (if needed)
+  useEffect(() => {
+    if (setRunTour === true) {
+      setRunTourState(true);
+    }
+  }, [setRunTour]);
   
   // Update openPopup to hide chatbot when sidebar opens
   const openPopup = () => {
@@ -69,36 +165,6 @@ const PlaceHolder = ({ setRunTour }) => {
     };
     loadAvailableLayouts();
   }, []);
-
-  useEffect(() => {
-    const hasSeenTourPrompt = localStorage.getItem("hasSeenTourPrompt");
-    if (!hasSeenTourPrompt) {
-      toast(
-        (t) => (
-          <div className="flex items-center space-x-3">
-            <MdPlayCircleOutline className="text-xl text-blue-600" />
-            <span className="text-gray-800">New here? Take a quick tour!</span>
-            <button
-              onClick={() => {
-                setRunTour(true);
-                localStorage.setItem("hasSeenTourPrompt", "true");
-                toast.dismiss(t.id);
-              }}
-              className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
-            >
-              Start
-            </button>
-          </div>
-        ),
-        {
-          duration: 8000,
-          position: "top-right",
-          className: "bg-white border border-gray-300 shadow-lg p-4 rounded-lg",
-          closeOnClick: true,
-        }
-      );
-    }
-  }, [setRunTour]);
 
   const changeHandler = (index, data) => {
     setUserData({ ...userData, [index]: [...data] });
@@ -192,6 +258,45 @@ const PlaceHolder = ({ setRunTour }) => {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
+      {/* Tour Component */}
+      <Joyride
+        steps={tourSteps}
+        run={runTour}
+        continuous={true}
+        scrollToFirstStep={true}
+        showProgress={true}
+        showSkipButton={true}
+        callback={handleJoyrideCallback}
+        styles={{
+          options: {
+            primaryColor: '#3B82F6', // Blue to match your UI
+            zIndex: 10000,
+          },
+          tooltip: {
+            borderRadius: '8px',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+          },
+          buttonNext: {
+            backgroundColor: '#3B82F6',
+            fontSize: '14px',
+          },
+          buttonBack: {
+            color: '#3B82F6',
+            fontSize: '14px',
+          },
+          buttonSkip: {
+            color: '#6B7280',
+          }
+        }}
+        locale={{
+          back: 'Previous',
+          close: 'Close',
+          last: 'Finish',
+          next: 'Next',
+          skip: 'Skip Tour'
+        }}
+      />
+      
       {/* Toast Notifications */}
       <Toaster position="top-right" />
 
@@ -213,16 +318,18 @@ const PlaceHolder = ({ setRunTour }) => {
               <span className="font-semibold text-gray-700">Add Element</span>
             </button>
 
-            {/* Layout Utility */}
-            <LayoutUtility
-              layouts={layouts}
-              setLayouts={setLayouts}
-              applyDefaultView={applyDefaultView}
-              applySavedLayout={applySavedLayout}
-              saveCurrentLayout={saveCurrentLayout}
-              loadingLayouts={loadingLayouts}
-              fetchLayouts={fetchLayouts}
-            />
+            {/* Layout Utility - Add wrapper with class for tour */}
+            <div className="LayoutUtility">
+              <LayoutUtility
+                layouts={layouts}
+                setLayouts={setLayouts}
+                applyDefaultView={applyDefaultView}
+                applySavedLayout={applySavedLayout}
+                saveCurrentLayout={saveCurrentLayout}
+                loadingLayouts={loadingLayouts}
+                fetchLayouts={fetchLayouts}
+              />
+            </div>
 
             {/* Help Button - Using HelpButton component directly */}
             <div className="request-help-container">
@@ -250,7 +357,7 @@ const PlaceHolder = ({ setRunTour }) => {
 
             {/* Start Tour Button */}
             <button
-              onClick={() => setRunTour(true)}
+              onClick={() => setRunTourState(true)}
               className="start-tour-btn flex items-center px-5 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition-colors"
             >
               <MdPlayCircleOutline className="text-3xl mr-2" />
@@ -258,13 +365,31 @@ const PlaceHolder = ({ setRunTour }) => {
             </button>
 
             {/* Feedback Button */}
-            {/* <a href={null} target="_blank" rel="noopener noreferrer" className="feedback-btn">
+            <a href="https://forms.gle/7RwxdFgXVamGVVss8" target="_blank" rel="noopener noreferrer" className="feedback-btn">
               <button className="flex items-center px-5 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition-colors">
                 <MdFeedback className="text-3xl mr-2" />
                 <span className="font-semibold">Give Feedback</span>
               </button>
-            </a> */}
+            </a>
 
+          </div>
+        </div>
+      </div>
+
+      {/* Development Disclaimer */}
+      <div className="mx-4 mt-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-md shadow-sm">
+        <div className="flex items-start">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <h3 className="font-semibold text-yellow-800 text-base mb-1">Development Notice</h3>
+            <p className="text-yellow-700 text-sm leading-relaxed">
+              This dashboard is currently in <span className="font-medium">active development</span>. Features may change or behave unexpectedly.
+            </p>
+            <p className="text-yellow-700 text-sm mt-2 font-medium">
+              Your feedback will be used to guide the ongoing development of the dashboard.
+            </p>
           </div>
         </div>
       </div>
@@ -288,19 +413,42 @@ const PlaceHolder = ({ setRunTour }) => {
             className={`w-full pointer-events-auto bg-white shadow-2xl rounded-t-xl border-t border-gray-300 transition-all duration-300 ease-in-out transform ${sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
               }`}
           >
-            {/* Fixed: Sidebar Header with properly aligned controls */}
+            {/* Improved Sidebar Header with better maximize/minimize button */}
             <div className="sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white rounded-t-xl">
               <h3 className="text-2xl font-semibold text-gray-800 flex items-center">
                 <MdAddchart className="text-blue-500 mr-2" />
                 Add Dashboard Elements
               </h3>
-              <div className="flex items-center space-x-3"> {/* Fixed: Increased space between buttons */}
+              <div className="flex items-center space-x-3"> 
+                {/* Enhanced maximize/minimize button */}
                 <button
                   onClick={toggleSidebarSize}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  className={`p-2 flex items-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors ${sidebarMaximized ? 'bg-blue-50' : ''}`}
                   title={sidebarMaximized ? "Minimize panel" : "Maximize panel"}
                 >
-                  {sidebarMaximized ? <MdMinimize className="text-xl" /> : <MdMaximize className="text-xl" />}
+                  {sidebarMaximized ? (
+                    <>
+                      {/* Option 1: Arrow icons */}
+                      <MdKeyboardArrowDown className="text-xl" />
+                      <span className="ml-1 text-sm">Minimize</span>
+                      
+                      {/* Option 2: Full screen / close full screen icons 
+                      <MdOutlineCloseFullscreen className="text-xl" />
+                      <span className="ml-1 text-sm">Minimize</span>
+                      */}
+                    </>
+                  ) : (
+                    <>
+                      {/* Option 1: Arrow icons */}
+                      <MdKeyboardArrowUp className="text-xl" />
+                      <span className="ml-1 text-sm">Maximize</span>
+                      
+                      {/* Option 2: Full screen / close full screen icons 
+                      <MdOutlineOpenInFull className="text-xl" />
+                      <span className="ml-1 text-sm">Maximize</span>
+                      */}
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={closePopup}
