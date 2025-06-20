@@ -1,0 +1,85 @@
+from flask import Blueprint, request, jsonify
+import json
+import os
+import subprocess
+
+api = Blueprint('api', __name__)
+
+@api.route('/sinfo', methods=['GET'])
+def get_sinfo():
+    try:
+        result = subprocess.check_output("/sw/local/bin/retrieve_sinfo", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8")
+        print("Raw Output:", output)  # Debugging: print raw output
+        return jsonify(eval(output)), 200
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/save_layout', methods=['POST'])
+def save_layout():
+    try:
+        data = request.json  # Expecting a JSON payload
+        layout_name = data.get("layout_name")
+        layout_data = data.get("layout_data")
+
+        if not layout_name or not layout_data:
+            print("layout name", layout_name)
+            print("layout data", layout_data)
+            return jsonify({"error": "Invalid data :()"}), 400
+
+        # Define the path to save the layout
+        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
+        layouts_dir = f"/scratch/user/{user}/layouts"
+        os.makedirs(layouts_dir, exist_ok=True)  # Ensure the directory exists
+
+        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+
+        # Save the layout data as a JSON file
+        with open(layout_file_path, 'w') as f:
+            json.dump(layout_data, f, indent=4)
+
+        return jsonify({"message": f"Layout {layout_name} saved successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api.route('/get_layouts', methods=['GET'])
+def get_layouts():
+    try:
+        user = os.getenv("USER", "default_user")
+        layouts_dir = f"/scratch/user/{user}/layouts"
+        os.makedirs(layouts_dir, exist_ok=True)  # Ensure the directory exists
+
+        # List all JSON files in the layouts directory
+        layout_files = [f for f in os.listdir(layouts_dir) if f.endswith('.json')]
+        layout_names = [os.path.splitext(f)[0] for f in layout_files]
+
+        return jsonify({"layouts": layout_names}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api.route('/load_layout', methods=['GET'])
+def load_layout():
+    try:
+        layout_name = request.args.get("layout_name")
+        if not layout_name:
+            return jsonify({"error": "Missing layout name"}), 400
+
+        user = os.getenv("USER", "default_user")
+        layouts_dir = f"/scratch/user/{user}/layouts"
+        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+
+        if not os.path.exists(layout_file_path):
+            return jsonify({"error": f"Layout {layout_name} does not exist"}), 404
+
+        # Load the layout data
+        with open(layout_file_path, 'r') as f:
+            layout_data = json.load(f)
+
+        return jsonify({"layout_name": layout_name, "layout_data": layout_data}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

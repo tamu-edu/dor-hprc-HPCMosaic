@@ -1,0 +1,179 @@
+{
+      
+   "isLongRequest": {
+      "type": "radioGroup",
+      "label": "Is this request more than 10TB or for longer than 6 months?*",
+      "name": "isLongRequest",
+      "options": [
+         { "value": "No", "label": "No" },
+         { "value": "Yes", "label": "Yes" }
+      ]
+   },
+
+   
+   "isPIRequest": {
+      "type": "radioGroup",
+      "label": "Are you a principal investigator (PI)",
+      "name": "isPIRequest",
+      "condition" : "isLongRequest.Yes",
+      "options": [
+         { "value": "No", "label": "No" },
+         { "value": "Yes", "label": "Yes" }
+      ]
+   },
+
+   
+   "isBuyRequest": {
+      "type": "radioGroup",
+      "label": "Do you want to buy in quota",
+      "name": "isBuyRequest",
+      "condition" : "isPIRequest.Yes",
+      "options": [
+         { "value": "No", "label": "No" },
+         { "value": "Yes", "label": "Yes" }
+      ]
+   },
+
+   "noBuyContainer": {
+      "type": "rowContainer",
+      "condition" : "isPIRequest.No && isLongRequest.Yes",
+      "elements": {
+         "noBuyinNote": {            
+            "type": "staticText",            
+            "value": "\n\n\n\n\n<p>Only PIs can request quota increases for more than 10TB, longer than 6 months, or buy in quota. Please ask your PI to make the request.\n\n",
+            "isHeading": true
+          }
+      }
+   }, 
+
+
+   "buyinQuestions": {
+      "type": "collapsibleColContainer",
+      "title": "Questions for buy-in request",
+      "condition" : "isBuyRequest.Yes",
+      "elements": {
+
+
+         "buyinNote": {
+            "type": "staticText",
+            "value": "TAMU HPRC can provide dedicated storage in longer term for a cost. The rate for Grace storage is $175/TB for 5 years based on the pure hardware cost. The new storage has 5-year warranty, so the rate is $35/TB per year. HPRC has subsidized all other operation costs.",
+            "isHeading": false
+          },
+
+         "expirationDate": {
+            "type": "text",
+            "label": "Expiration data for quota request (YYYY-MM-DD)",
+            "name": "expiration",
+            "value": ""
+         },
+   
+         "account": {
+            "type": "text",
+            "label": "Please provide account number to use",
+            "name": "account",
+            "value": ""
+          }
+      }
+
+   },
+
+
+  "justification": {
+    "type": "collapsibleColContainer",
+    "title": "Request Justification",
+    "condition" : "isBuyRequest.No || isLongRequest.No ",
+    "elements": {
+
+
+
+          "requestType": {
+      "type": "radioGroup",
+      "label": "Request Type*",
+      "name": "requestType",
+      "options": [
+         { "value": "New Request", "label": "New Request" },
+         { "value": "Extension", "label": "Extension" }
+      ]
+   },
+
+   "quotaContainer": {
+      "type": "rowContainer",
+      "elements": {
+         "currentQuota": {
+            "type": "unit",
+            "label": "Current Quota*",
+            "name": "currentQuota",
+            "value": "1",
+            "units": [{ "label": "TB", "value": "TB" }]
+         },
+         "newQuota": {
+            "type": "unit",
+            "label": "New Quota*",
+            "name": "newQuota",
+            "units": [{ "label": "TB", "value": "TB" }]
+         }
+      }
+   },
+
+   "fileContainer": {
+      "type": "rowContainer",
+      "elements": {
+         "currentFileLimit": {
+            "type": "text",
+            "label": "Current File Limit*",
+            "name": "currentFileLimit",
+            "value": "250000"
+         },
+         "newFileLimit": {
+            "type": "text",
+            "label": "New File Limit*",
+            "name": "newFileLimit"
+         }
+        }
+   },
+
+
+
+
+
+      "piAwareness": {
+        "type": "textarea",
+        "label": "Is your PI aware of this request",
+        "name": "piAwareness",
+        "help": "Please provide details of PI's awareness and approval"
+      },
+      "storedData": {
+        "type": "textarea",
+        "label": "What data is stored with the requested quota?",
+        "name": "storedData",
+        "help": "Describe the type and nature of data to be stored"
+      },
+      "researchDescription": {
+        "type": "textarea",
+        "label": "Briefly describe the research project that will be supported by the requested storage?",
+        "name": "researchDescription",
+        "help": "Briefly describe the research project that will be supported by the requested storage"
+      },
+
+      "jobSize": {
+        "type": "textarea",
+        "label": "What is the input/output size of the job?",
+        "name": "jobSize",
+        "help": "What is the input/output size of the job?"
+      },
+      "storagePlan": {
+        "type": "textarea",
+        "label": "What is your long-term storage plan for your data after the quota increase expires?",
+        "name": "storagePlan",
+        "help": "What is your long-term storage plan for your data after the quota increase expires?"
+      },
+      "comment": {
+        "type": "textarea",
+        "label": "Additional Comments",
+        "name": "comment",
+        "help": "Any additional information you would like to provide (Optional)"
+      }
+    }
+  }
+
+}

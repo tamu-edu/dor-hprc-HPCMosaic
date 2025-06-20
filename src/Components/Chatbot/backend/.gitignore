@@ -1,0 +1,11 @@
+__pycache__
+.env
+venv
+dist
+build
+*.spec
+*.log
+
+
+*.tsx
+*.ts

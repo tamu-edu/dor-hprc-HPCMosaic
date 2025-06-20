@@ -1,24 +1,23 @@
 development: &common_settings
-    cluster_name: '[cluster-name]'
-    dashboard_url: '/pun/dev/[app-name]'
-    file_app_url: '/pun/sys/files/fs'
-    file_editor_url: '/pun/sys/file-editor/edit'
-    home_page: 'https://hprc.tamu.edu'
-    request_email: '[user-name]@tamu.edu'
-    help_email: '[user-name]@tamu.edu'
-    hprcbot_route: 'https://courant.hprc.tamu.edu:8557'
-    modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
-    driver_scripts_path: '/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts'
-    tamubatch_path: '/sw/local/bin/tamubatch'
-    default_matlab_module: 'Matlab/R2020b'
-    default_python_venv: '/sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/'
-    send_result_path: '/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts/send_result.sh'
-    
+  cluster_name: "Grace"
+  dashboard_url: "http://127.0.0.1:5000"
+  file_app_url: "/pun/sys/files/fs"
+  file_editor_url: "/pun/sys/file-editor/edit"
+  home_page: "https://hprc.tamu.edu"
+  request_email: "help@hprc.tamu.edu"
+  help_email: "help@hprc.tamu.edu"
+  modules_db_path: "/sw/hprc/sw/portal_utils/modules.sqlite3"
+  driver_scripts_path: "/var/www/ood/apps/dev/victoria.c6140/gateway/dor-hprc-web-tamudashboard-reu-branch/machine_driver_scripts"
+  tamubatch_path: "/sw/local/bin/tamubatch"
+  default_matlab_module: "Matlab/R2020b"
+  hprcbot_route: 'http://courant.hprc.tamu.edu:8553'
+  default_python_venv: "/sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/"
+  send_result_path: "/var/www/ood/apps/dev/victoria.c6140/gateway/dor-hprc-web-tamudashboard-reu-branch/machine_driver_scripts/send_result.sh"
+
 production:
-    <<: *common_settings
-    dashboard_url: '/pun/sys/[app-name]'
-    request_email: 'help@hprc.tamu.edu'
-    hprcbot_route: 'https://courant.hprc.tamu.edu:8553'
-    driver_scripts_path: '/var/www/ood/apps/sys/[app-name]/machine_driver_scripts'
-    send_result_path: '/var/www/ood/apps/sys/[app-name]/machine_driver_scripts/send_result.sh'
-    help_email: 'help@hprc.tamu.edu'
+  <<: *common_settings
+  dashboard_url: "/pun/sys/dor-hprc-web-tamudashboard-reu"
+  request_email: "help@hprc.tamu.edu"
+  driver_scripts_path: "/var/www/ood/apps/sys/dor-hprc-web-tamudashboard-reu-branch/machine_driver_scripts"
+  send_result_path: "/var/www/ood/apps/sys/dor-hprc-web-tamudashboard-reu-branch/machine_driver_scripts/send_result.sh"
+  help_email: "help@hprc.tamu.edu"

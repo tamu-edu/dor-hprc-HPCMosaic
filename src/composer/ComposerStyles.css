@@ -1,0 +1,296 @@
+.composer-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.composer-wrapper * {
+  box-sizing: border-box;
+}
+
+.composer-wrapper .form-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(128, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  margin: 1rem;
+}
+
+.composer-wrapper .form-header {
+  flex-shrink: 0;
+  padding: 1.5rem;
+  background: white;
+  border-bottom: 1px solid rgba(128, 0, 0, 0.1);
+}
+
+.composer-wrapper .form-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  min-height: 0;
+}
+
+/* Row Container Styles */
+.composer-wrapper .form-group.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -0.75rem;  /* Negative margin to offset child padding */
+  align-items: flex-start;
+}
+
+.composer-wrapper .form-group.row > .col {
+  flex: 1;
+  padding: 0.75rem;
+  min-width: 200px; /* Ensure columns don't get too narrow */
+}
+
+/* Form Controls */
+.composer-wrapper .form-control {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.composer-wrapper .form-control:focus {
+  border-color: maroon;
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+  outline: none;
+}
+
+.composer-wrapper .form-control:hover:not(:focus) {
+  border-color: #d1d5db;
+}
+
+/* Labels */
+.composer-wrapper .form-label {
+  display: flex;
+  align-items: center;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Form Groups */
+.composer-wrapper .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.composer-wrapper .form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Error Message */
+.composer-wrapper .error-message {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #dc2626;
+  padding: 0.875rem 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+
+.composer-wrapper .error-message button {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 1rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.composer-wrapper .error-message button:hover {
+  opacity: 1;
+}
+
+/* Footer */
+.composer-wrapper .form-footer {
+  flex-shrink: 0;
+  padding: 1.5rem;
+  background: #fafafa;
+  border-top: 1px solid rgba(128, 0, 0, 0.1);
+}
+
+/* Buttons */
+.composer-wrapper .button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.composer-wrapper .btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.composer-wrapper .btn-primary {
+  background-color: maroon;
+  color: white;
+  border: 1px solid maroon;
+}
+
+.composer-wrapper .btn-primary:hover {
+  background-color: #600000;
+  border-color: #600000;
+}
+
+.composer-wrapper .btn-secondary {
+  background-color: white;
+  color: maroon;
+  border: 1px solid #d1d5db;
+}
+
+.composer-wrapper .btn-secondary:hover {
+  background-color: #f9fafb;
+  border-color: maroon;
+}
+
+/* Container sections */
+.composer-wrapper .container-section {
+  background-color: #fafafa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.composer-wrapper .container-title {
+  color: maroon;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .composer-wrapper .form-group.row > .col {
+    flex: 0 0 100%;
+  }
+  
+  .composer-wrapper .button-group {
+    flex-direction: column;
+  }
+  
+  .composer-wrapper .btn {
+    width: 100%;
+  }
+}
+
+.composer-wrapper .input-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+}
+
+.composer-wrapper .time-inputs {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  max-width: 400px; /* Prevent inputs from getting too wide */
+}
+
+.composer-wrapper .time-input-container {
+  flex: 1;
+  min-width: 80px; /* Ensure minimum width */
+}
+
+.composer-wrapper .time-input-container input[type="number"] {
+  width: 100%;
+  text-align: center;
+  padding: 0.625rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+/* Remove spinner buttons */
+.composer-wrapper .time-input-container input[type="number"]::-webkit-outer-spin-button,
+.composer-wrapper .time-input-container input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.composer-wrapper .time-input-container input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Labels */
+.composer-wrapper .time-label {
+  display: block;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Time input specific styling */
+.composer-wrapper .time-input-container input[type="number"]::placeholder {
+  color: #9ca3af;
+}
+
+.composer-wrapper .time-input-container input[type="number"]:focus {
+  border-color: maroon;
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+  outline: none;
+}
+
+/* Adjustments for the memory field to align properly */
+.composer-wrapper .memory-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.composer-wrapper .memory-row input {
+  flex: 1;
+  max-width: 120px;
+}
+
+.composer-wrapper .memory-row select {
+  width: auto;
+  min-width: 80px;
+}
+
+/* Add spacing between row sections */
+.composer-wrapper .form-row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.composer-wrapper .form-row > * {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .composer-wrapper .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .composer-wrapper .time-inputs {
+    max-width: 100%;
+  }
+}

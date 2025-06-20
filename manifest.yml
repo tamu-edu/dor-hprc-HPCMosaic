@@ -1,4 +1,6 @@
-name: [cluster-name] Dashboard
-description: [cluster-name] utilites
+name: Grace Dashboard (REU branch)
+description: Grace utilites
 icon: fa://columns
 category: Dashboard
+description: Dashboard - React & Flask
+icon: ''

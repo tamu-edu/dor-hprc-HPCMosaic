@@ -1,0 +1,209 @@
+{
+      
+   "helpRequest": {
+      "type": "select",
+      "label": "What do you need help with?*",
+      "name": "helpRequest",
+      "options": [
+         { "value": "software", "label": "Software Installation" },
+         { "value": "accounts", "label": "Accounts" },
+         { "value": "jobs", "label": "Job" },
+         { "value": "other", "label": "Other" }
+      ]
+   },
+
+   "softwareQestions": {
+      "type": "collapsibleColContainer",
+      "title": "Software Install Requests",
+      "condition" : "helpRequest.software",
+      "elements": {
+
+         "softwareNote": {
+            "type": "staticText",
+            "value": "Software reqeusts are evaluated by HPRC staff.",
+            "isHeading": false
+         },
+   
+ 
+         "softwareCategory": {
+            "type": "radioGroup",
+            "label": "Software Category (this will help with routing the request to the correct channels).",
+            "name": "softwareCategory",
+            "options": [
+               { "value": "bio", "label": "Bio" },
+               { "value": "engineering", "label": "Engineering" },
+               { "value": "general", "label": "Other" }
+            ]
+         },
+
+
+         "SoftwareInfoContainer": {
+            "type": "rowContainer",
+            "elements": {
+        
+               "softwareName": {
+                  "type": "text",
+                  "label": "Name of software",
+                  "name": "softwareName",
+                  "help": "Name of software"
+               },
+
+               "softwareVersion": {
+                  "type": "text",
+                  "label": "Software version",
+                  "name": "softwareVersion",
+                  "help": "Software version"
+               }
+            }
+         },
+
+         "softwareLink": {
+            "type": "text",
+            "label": "Software download page",
+            "name": "softwareLink",
+            "help": "Software download page"
+         }, 
+
+         "softwareToolchain": {
+            "type": "text",
+            "label": "Preferred toolchain",
+            "name": "softwareToolChain",
+            "help": "Preferred toolchain"
+         },    
+
+
+         "softwareOptional": {
+            "type": "textarea",
+            "label": "Additional information",
+            "name": "softwareInfo",
+            "help": "Enter any relevant info that might help installing the software. If this is licensed  software rpovide license information."
+         }   
+      }  
+   },
+
+   "jobQestions": {
+      "type": "collapsibleColContainer",
+      "title": "Job Related Qestions",
+      "condition" : "helpRequest.jobs",
+      "elements": {
+
+         "jobID": {
+            "type": "text",
+            "label": "Provide JobID",
+            "name": "jobID",
+            "help": "Provide JobID"
+         },
+
+          "jobLocation": {
+            "type": "text",
+            "label": "Provide location of job script",
+            "name": "jobLocation",
+            "help": "Provide location of job script"
+         },
+
+
+         "jobIssue": {
+            "type": "textarea",
+            "label": "Provide detailed info about your job issue",
+            "name": "jobIssue",
+            "help": "Provide location jo job script"
+         },
+
+         "jobIrrors": {
+            "type": "textarea",
+            "label": "Copy/Paste any relevant output",
+            "name": "jobErrors",
+            "help": "Provide location jo job script"
+         }
+      }
+   },
+
+   "accountQestions": {
+      "type": "collapsibleColContainer",
+      "title": "Account Related Qestions",
+      "condition" : "helpRequest.accounts",
+      "elements": {
+
+         "accountType": {
+            "type": "select",
+            "label": "What do you need help with?*",
+            "name": "accountType",
+            "options": [
+               { "value": "general", "label": "General account question" },
+               { "value": "addAccount", "label": "Add user to Account" },
+               { "value": "transferSU", "label": "Tranfer SUs" }
+            ]
+         },
+      
+         "accountGeneral": {
+            "type": "textarea",
+            "label": "What is your account question, be as detailed as possible",
+            "name": "jobIssue",
+            "help": "What is your account question, be as detailed as possible",
+            "condition" : "accountType.general"
+         },
+
+         "accountAddNote": {
+            "type": "staticText",
+            "value": "Provide the account number and the name of the user you want to add to the  project account.",
+            "isHeading": false,
+            "condition" : "accountType.addAccount"
+         },
+
+         "accountAddNote": {
+            "type": "staticText",
+            "value": "Provide the account number to sue, the name of the user to transfer the SUs to and the number of SUs.",
+            "isHeading": false,
+            "condition" : "accountType.transferSU"
+         },
+
+         "AccounteInfoContainer": {
+            "type": "rowContainer",
+            "elements": {
+
+               "accountNumber": {
+                  "type": "text",
+                  "label": "Account number",
+                  "name": "accountNumber",
+                  "help": "Provide location of job script",
+                  "condition" : "accountType.addAccount || accountType.transferSU"
+               },
+
+               "accountUser": {
+                  "type": "text",
+                  "label": "User",
+                  "name": "accountUser",
+                  "help": "User",
+                  "condition" : "accountType.addAccount || accountType.transferSU"
+               },
+
+               "accountSU": {
+                  "type": "text",
+                  "label": "Number of SUs to transfer",
+                  "name": "jobIssue",
+                  "help": "Number of SUs to transfer",
+                  "condition" : "accountType.transferSU"
+               }
+            }
+         }
+      }
+   },
+
+   "OtherQestions": {
+      "type": "collapsibleColContainer",
+      "title": "Other Qestions",
+      "condition" : "helpRequest.other",
+      "elements": {
+
+         "otherDesciption": {
+            "type": "textarea",
+            "label": "Describe your issue. Provide as much detsil as possible",
+            "name": "otherDescription",
+            "help": "Describe your issue. Provide as much detsil as possible"
+         }
+      }
+   }
+
+
+
+}
