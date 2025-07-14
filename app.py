@@ -8,7 +8,7 @@ import sqlite3
 import re
 import logging
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 def detect_env():
     path = os.getcwd()

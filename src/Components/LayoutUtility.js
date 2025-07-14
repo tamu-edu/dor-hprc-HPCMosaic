@@ -4,16 +4,17 @@ import config from "../../config.yml";
 import { toast } from "react-hot-toast";
 import { fetchLayouts as fetchLayoutsUtil, deleteLayout as deleteLayoutUtil } from './layoutUtils';
 
-const LayoutUtility = ({ 
+const LayoutUtility = ({
   layouts, 
   loadingLayouts, 
   applyDefaultView, 
   applySavedLayout, 
   saveCurrentLayout, 
   fetchLayouts: parentFetchLayouts, // renamed to avoid confusion
-  setLayouts // add this prop to directly update layouts in parent
+  setLayouts, // add this prop to directly update layouts in parent
+  isOpen,
+  setIsOpen
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
     const [activeLayout, setActiveLayout] = useState(null);
     const [actionInProgress, setActionInProgress] = useState(null);
     const [localLayouts, setLocalLayouts] = useState(layouts);
@@ -241,22 +242,6 @@ const LayoutUtility = ({
 
     return (
         <div className="relative inline-block">
-            <button
-                onClick={() => !loadingLayouts && setIsOpen(!isOpen)}
-                className={`flex items-center px-5 py-2 border rounded-lg shadow transition-all
-                    ${loadingLayouts ? "bg-gray-200 cursor-not-allowed" : 
-                     activeLayout ? "bg-blue-50 border-blue-300 hover:bg-blue-100" : 
-                     "bg-white hover:bg-gray-100"}
-                `}
-                disabled={loadingLayouts || !!actionInProgress} 
-            >
-                <MdViewQuilt className={`text-3xl mr-2 ${activeLayout ? "text-blue-500" : "text-gray-500"}`} />
-                <span className={`font-semibold ${activeLayout ? "text-blue-700" : "text-gray-700"}`}>
-                    {getButtonText()}
-                </span>
-                <MdArrowDropDown className="text-2xl text-gray-500" />
-            </button>
-
             {isOpen && !loadingLayouts && (
                 <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                     <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200">

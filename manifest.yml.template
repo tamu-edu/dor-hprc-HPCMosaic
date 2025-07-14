@@ -1,0 +1,4 @@
+name: ${CLUSTERNAME} Dashboard (${APPNAME} branch)
+description: ${CLUSTERNAME} utilities
+icon: fa://columns
+category: Dashboard

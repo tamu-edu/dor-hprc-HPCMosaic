@@ -9,7 +9,7 @@ const DashboardTour = ({ run, setRun }) => {
       content: (
         <div>
           <h3 className="text-lg font-bold mb-2">Dashboard Tour</h3>
-          <p>Welcome to the cluster dashboard! This quick tour will guide you through the main interactive elements.</p>
+          <p>Howdy! Welcome to the cluster dashboard! This quick tour will guide you through the main interactive elements.</p>
         </div>
       ),
       placement: 'bottom',

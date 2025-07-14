@@ -70,7 +70,7 @@ def clean_number(value):
     return None
 
 # Create variables for easy access
-cluster_name = 'Grace'
+cluster_name = 'Aces'
 dashboard_url = production.get('dashboard_url')
 request_email = production.get('request_email')
 help_email = production.get('help_email')

@@ -74,8 +74,8 @@ const App = () => {
               }
             }}
           />
-          <div className="bg-gray-50 p-10 min-h-screen">
-            <SandboxGrid setRunTour={setRunTour} />
+          <div style={{ backgroundColor: '#f0f0f0'}} className="p-10 min-h-screen">
+	    <SandboxGrid setRunTour={setRunTour} />
             <Toaster position="bottom-right" reverseorder={false} toastOptions={{ duration: 30000 }} />
             <EnhancedChatbotComponent />
           </div>

@@ -11,13 +11,16 @@ import { v4 as uuidv4 } from "uuid";
 import { useChatbotVisibility } from "../Components/ChatbotVisibilityContext";
 import Joyride, { STATUS, ACTIONS } from 'react-joyride';
 import HelpButton from "../Charts/HelpButton";
-import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen } from "react-icons/md";
+import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdAddChart } from "react-icons/md";
+import { Menu, Transition } from '@headlessui/react';
 
-const PlaceHolder = ({ setRunTour }) => {
+
+const Banner = ({ setRunTour }) => {
   // Tour state
   const [runTour, setRunTourState] = useState(false);
   
   // Other state variables
+  const [layoutUtilityOpen, setLayoutUtilityOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [sidebarMaximized, setSidebarMaximized] = useState(false);
   const [layoutData, setLayoutData] = useState(null);
@@ -149,7 +152,7 @@ const PlaceHolder = ({ setRunTour }) => {
   };
 
   useEffect(() => {
-    console.log("Current layout data in PlaceHolder:", layoutData);
+    console.log("Current layout data in Banner:", layoutData);
   }, [layoutData]);
 
   useEffect(() => {
@@ -257,7 +260,7 @@ const PlaceHolder = ({ setRunTour }) => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div style={{ backgroundColor: '#f0f0f0'}} className="h-screen flex flex-col">
       {/* Tour Component */}
       <Joyride
         steps={tourSteps}
@@ -301,35 +304,81 @@ const PlaceHolder = ({ setRunTour }) => {
       <Toaster position="top-right" />
 
       {/* Header */}
-      <div className="p-2 rounded-md bg-white border-b border-gray-300 shadow-sm">
+      <div
+        className="w-full rounded-md border-b border-gray-300 shadow-sm"
+	style={{
+          backgroundImage: `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 200 50'><defs><pattern id='dots' x='0' y='0' width='4' height='4' patternUnits='userSpaceOnUse'><circle cx='1' cy='1' r='1' fill='white' /></pattern></defs><rect width='200' height='50' fill='%23500000'/><rect width='200' height='50' fill='url(%23dots)' opacity='0.2'/></svg>")`,
+          backgroundRepeat: 'repeat'
+        }}
+        >
         <div className="flex justify-between w-full items-center space-x-3 pr-3">
-          <HPRCLogo />
-          <h1 className="text-2xl font-semibold text-gray-800">
-            {`${clusterName.charAt(0).toUpperCase()}${clusterName.slice(1).toLowerCase()} Dashboard`}
+	  <HPRCLogo />
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white">
+	    {`${clusterName.toUpperCase()} Dashboard`}
           </h1>
+
+
           <div className="flex items-center space-x-3">
 
-            {/* Add Element Button */}
-            <button
-              onClick={openPopup}
-              className="add-element-btn flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors"
-            >
-              <MdAddchart className="text-3xl mr-2 text-gray-500" />
-              <span className="font-semibold text-gray-700">Add Element</span>
-            </button>
+            {/* Settings Dropdown - Contains Add Element, Layout, Feedback */}
+            <Menu as="div" className="relative inline-block text-left">
+	      <Menu.Button className="flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors">
+	        <MdSettings className="text-2l mr-2 text-gray-500" />
+	        <span className="font-semibold text-gray-700">Settings</span>
+	      </Menu.Button>
 
-            {/* Layout Utility - Add wrapper with class for tour */}
-            <div className="LayoutUtility">
-              <LayoutUtility
-                layouts={layouts}
-                setLayouts={setLayouts}
-                applyDefaultView={applyDefaultView}
-                applySavedLayout={applySavedLayout}
-                saveCurrentLayout={saveCurrentLayout}
-                loadingLayouts={loadingLayouts}
-                fetchLayouts={fetchLayouts}
-              />
-            </div>
+	      <Transition
+	        enter="transition duration-100 ease-out"
+	        enterFrom="transform scale-95 opacity-0"
+	        enterTo="transform scale-100 opacity-100"
+	        leave="transition duration-75 ease-in"
+	        leaveFrom="transform scale-100 opacity-100"
+	        leaveTo="transform scale-95 opacity-0"
+	      >
+	
+                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none z-50">
+                  <div className="py-1">
+	            {/*Add Element Menu Option*/}
+	            <Menu.Item>
+                      {({ active }) => (
+                        <button onClick={openPopup} className={`${active ? 'bg-gray-100' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700`}>
+                          <MdAddchart className="text-lg mr-2" />
+                          Add Dashboard Element
+                        </button>
+		      )}
+	            </Menu.Item>
+
+ 	            {/*Layout Utility*/}
+	            <Menu.Item>
+	              {({ active }) => (
+			<button onClick={() => setLayoutUtilityOpen(!layoutUtilityOpen)} className={`${active ? 'bg-gray-100' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700`}>
+
+			  <MdAddchart className="text-lg mr-2" />
+                          Layouts
+			</button>	        
+                      )}
+	            </Menu.Item>
+
+                    {/*Give Feedback*/}
+	            <Menu.Item>
+	              {({ active }) => (
+			<a
+			  href="https://forms.gle/7RwxdFgXVamGVVss8"
+			  target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${active ? 'bg-gray-100' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700 items-center`}
+                        >
+                          <MdFeedback className="text-lg mr-2 text-green-600" />
+                          Give Feedback
+                        </a>
+                      )}
+                    </Menu.Item>
+
+	          </div>
+	        </Menu.Items>
+	      </Transition>
+            </Menu>
+            
 
             {/* Help Button - Using HelpButton component directly */}
             <div className="request-help-container">
@@ -356,43 +405,29 @@ const PlaceHolder = ({ setRunTour }) => {
             </div>
 
             {/* Start Tour Button */}
-            <button
+	    {/*<button
               onClick={() => setRunTourState(true)}
               className="start-tour-btn flex items-center px-5 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition-colors"
             >
               <MdPlayCircleOutline className="text-3xl mr-2" />
               <span className="font-semibold">Start Tour</span>
             </button>
-
-            {/* Feedback Button */}
-            <a href="https://forms.gle/7RwxdFgXVamGVVss8" target="_blank" rel="noopener noreferrer" className="feedback-btn">
-              <button className="flex items-center px-5 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition-colors">
-                <MdFeedback className="text-3xl mr-2" />
-                <span className="font-semibold">Give Feedback</span>
-              </button>
-            </a>
-
-          </div>
-        </div>
+	    */}
+         </div>
+	</div>
       </div>
 
-      {/* Development Disclaimer */}
-      <div className="mx-4 mt-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-md shadow-sm">
-        <div className="flex items-start">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <div>
-            <h3 className="font-semibold text-yellow-800 text-base mb-1">Development Notice</h3>
-            <p className="text-yellow-700 text-sm leading-relaxed">
-              This dashboard is currently in <span className="font-medium">active development</span>. Features may change or behave unexpectedly.
-            </p>
-            <p className="text-yellow-700 text-sm mt-2 font-medium">
-              Your feedback will be used to guide the ongoing development of the dashboard.
-            </p>
-          </div>
-        </div>
-      </div>
+      <LayoutUtility
+        layouts={layouts}
+        setLayouts={setLayouts}
+        applyDefaultView={applyDefaultView}
+        applySavedLayout={applySavedLayout}
+        saveCurrentLayout={saveCurrentLayout}
+        loadingLayouts={loadingLayouts}
+        fetchLayouts={fetchLayouts}
+        isOpen={layoutUtilityOpen}
+        setIsOpen={setLayoutUtilityOpen}
+      />
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col mt-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
@@ -405,20 +440,43 @@ const PlaceHolder = ({ setRunTour }) => {
         </div>
       </div>
 
-      {/* Enhanced Sidebar Popup with fixed button alignment */}
+      {/* Development Disclaimer */}
+      {/*
+      <div className="mx-4 mt-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-md shadow-sm">
+        <div className="flex items-start">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          
+	  <div>
+            <h3 className="font-semibold text-yellow-800 text-base mb-1">Development Notice</h3>
+            <p className="text-yellow-700 text-sm leading-relaxed">
+              This dashboard is currently in <span className="font-medium">active development</span>. Features may change or behave unexpectedly.
+            </p>
+            <p className="text-yellow-700 text-sm mt-2 font-medium">
+              Your feedback will be used to guide the ongoing development of the dashboard.
+            </p>
+          </div>
+        </div>
+      </div>
+      */}
+
       {isPopupOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-end justify-center pointer-events-none">
           <div
-            ref={sidebarRef}
-            className={`w-full pointer-events-auto bg-white shadow-2xl rounded-t-xl border-t border-gray-300 transition-all duration-300 ease-in-out transform ${sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
+               ref={sidebarRef}
+	       className={`w-full pointer-events-auto bg-white shadow-2xl rounded-t-xl border-t border-gray-300 transition-all duration-300 ease-in-out transform ${sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
               }`}
-          >
+              >
             {/* Improved Sidebar Header with better maximize/minimize button */}
             <div className="sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white rounded-t-xl">
+	
               <h3 className="text-2xl font-semibold text-gray-800 flex items-center">
                 <MdAddchart className="text-blue-500 mr-2" />
                 Add Dashboard Elements
               </h3>
+	      
+	        
               <div className="flex items-center space-x-3"> 
                 {/* Enhanced maximize/minimize button */}
                 <button
@@ -462,13 +520,13 @@ const PlaceHolder = ({ setRunTour }) => {
 
             {/* Sidebar Content */}
             <div className={`${sidebarMaximized ? 'h-[calc(80vh-64px)]' : 'h-[calc(40vh-64px)]'} transition-all duration-300`}>
-              <Sidebar />
-            </div>
-          </div>
+	      <Sidebar />
+            </div> 
+	  </div>
         </div>
       )}
     </div>
   );
 };
 
-export default PlaceHolder;
+export default Banner;
