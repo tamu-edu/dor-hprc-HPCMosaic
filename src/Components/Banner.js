@@ -1,18 +1,23 @@
+//Imports
 import React, { useState, useEffect, useRef } from "react";
-import Content from "./Content";
-import Sidebar from "./Sidebar";
+import { Menu, Transition } from '@headlessui/react';
+import Joyride, { STATUS, ACTIONS } from 'react-joyride';
 import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize } from "react-icons/md";
 import { Toaster, toast } from "react-hot-toast";
-import HPRCLogo from "./HPRCLogo";
-import config from "../../config.yml";
-import LayoutUtility from "./LayoutUtility";
-import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
 import { v4 as uuidv4 } from "uuid";
-import { useChatbotVisibility } from "../Components/ChatbotVisibilityContext";
-import Joyride, { STATUS, ACTIONS } from 'react-joyride';
-import HelpButton from "../Charts/HelpButton";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdAddChart } from "react-icons/md";
-import { Menu, Transition } from '@headlessui/react';
+
+//Component Imports
+import HPRCLogo from "./HPRCLogo";
+import Content from "./Content";
+import Sidebar from "./Sidebar";
+import LayoutUtility from "./LayoutUtility";
+import HelpButton from "../Charts/HelpButton";
+import BannerBackground from "./BannerBackground";
+
+import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
+import { useChatbotVisibility } from "../Components/ChatbotVisibilityContext";
+import config from "../../config.yml";
 
 
 const Banner = ({ setRunTour }) => {
@@ -30,7 +35,7 @@ const Banner = ({ setRunTour }) => {
   const [loadingLayouts, setLoadingLayouts] = useState(true);
 
   const { hideChatbot, showChatbot } = useChatbotVisibility();
-  
+
   // Tour steps configuration
   const tourSteps = [
     {
@@ -304,15 +309,12 @@ const Banner = ({ setRunTour }) => {
       <Toaster position="top-right" />
 
       {/* Header */}
-      <div
-        className="w-full rounded-md border-b border-gray-300 shadow-sm"
-	style={{
-          backgroundImage: `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 200 50'><defs><pattern id='dots' x='0' y='0' width='4' height='4' patternUnits='userSpaceOnUse'><circle cx='1' cy='1' r='1' fill='white' /></pattern></defs><rect width='200' height='50' fill='%23500000'/><rect width='200' height='50' fill='url(%23dots)' opacity='0.2'/></svg>")`,
-          backgroundRepeat: 'repeat'
-        }}
-        >
+      <BannerBackground>
         <div className="flex justify-between w-full items-center space-x-3 pr-3">
-	  <HPRCLogo />
+	  
+	  <div className="bg-white px-4 py-2 rounded-l-md">
+	    <HPRCLogo />
+	  </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white">
 	    {`${clusterName.toUpperCase()} Dashboard`}
           </h1>
@@ -415,7 +417,7 @@ const Banner = ({ setRunTour }) => {
 	    */}
          </div>
 	</div>
-      </div>
+      </BannerBackground>
 
       <LayoutUtility
         layouts={layouts}

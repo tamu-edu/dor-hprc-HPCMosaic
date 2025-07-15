@@ -14,6 +14,13 @@ const ClusterInfo = () => {
   const [loading, setLoading] = useState(true);
   const baseUrl = config.production.dashboard_url;
 
+  // Custom Tooltip Component
+  const CustomTooltip = ({ content }) => (
+    <div className="bg-gray-800 text-white text-sm p-2 rounded-md shadow-lg z-50">
+      {content}
+    </div>
+  );
+
   useEffect(() => {
     fetch(`${baseUrl}/api/sinfo`)
       .then((response) => {
@@ -89,7 +96,7 @@ const ClusterInfo = () => {
                     )
                   ),
                   backgroundColor: "#EF4444",
-                  stack: "cores",
+                  barThickness: 10,
                 },
                 {
                   label: "Available Cores (%)",
@@ -100,7 +107,7 @@ const ClusterInfo = () => {
                     )
                   ),
                   backgroundColor: "#FCA5A5",
-                  stack: "cores",
+                  barThickness: 10,
                 },
                 {
                   label: "Used Nodes (%)",
@@ -111,7 +118,7 @@ const ClusterInfo = () => {
                     )
                   ),
                   backgroundColor: "#4F46E5",
-                  stack: "nodes",
+                  barThickness: 10,
                 },
                 {
                   label: "Available Nodes (%)",
@@ -122,7 +129,7 @@ const ClusterInfo = () => {
                     )
                   ),
                   backgroundColor: "#E0E7FF",
-                  stack: "nodes",
+                  barThickness: 10,
                 },
               ],
             }}
@@ -139,7 +146,8 @@ const ClusterInfo = () => {
                     callback: (value) => `${value}%`,
                   },
                 },
-                y: { stacked: true },
+                y: { stacked: true
+		},
               },
             }}
           />
@@ -155,8 +163,13 @@ const ClusterInfo = () => {
                   </Tippy>
                 </th>
                 <th className="border border-gray-300 px-4 py-2">
-                  <Tippy content="CPU cores and nodes available vs. used in this queue.">
-                    <span className="cursor-help">Resources ⓘ</span>
+                  <Tippy content="CPU cores available vs. used in this queue.">
+                    <span className="cursor-help">Core Usage ⓘ</span>
+                  </Tippy>
+	        </th>
+	        <th className="border border-gray-300 px-4 py-2">
+                  <Tippy content="Nodes available vs. used in this queue.">
+                    <span className="cursor-help">Node Usage ⓘ</span>
                   </Tippy>
                 </th>
                 <th className="border border-gray-300 px-4 py-2">
@@ -193,19 +206,34 @@ const ClusterInfo = () => {
                     <td className="border border-gray-300 px-4 py-2">
                       {queue.queue}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      CPU: {cpuUsed}/{cpuTotal}{" "}
-                      <Tippy content={`Used: ${cpuUsed}, Total: ${cpuTotal}`}>
-                        <span className={getColor(cpuPercentage)}>
-                          ({cpuPercentage}%)
-                        </span>
+	           
+		    <td className="border border-gray-300 px-4 py-4">
+		      {cpuUsed}/{cpuTotal}{" "}	
+                      <Tippy content={<CustomTooltip content={`Used: ${cpuUsed} / Total: ${cpuTotal}`} />} placement="top">
+                        <div className="gap-x-4 items-center cursor-help">
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                            <div
+                              className={`h-2.5 rounded-full ${cpuPercentage >= 75 ? 'bg-red-600' : cpuPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                              style={{ width: `${Math.min(100, cpuPercentage)}%` }}
+                            ></div>
+                          </div>
+                          <p className={`${getColor(cpuPercentage)} text-sm mt-1`}>{cpuPercentage}%</p>
+                        </div>
                       </Tippy>
-                      <br />
-                      Nodes: {nodesUsed}/{nodesTotal}{" "}
-                      <Tippy content={`Used: ${nodesUsed}, Total: ${nodesTotal}`}>
-                        <span className={getColor(nodesPercentage)}>
-                          ({nodesPercentage}%)
-                        </span>
+                    </td>
+
+	            <td className="border border-gray-300 px-4 py-4">
+		      {nodesUsed}/{nodesTotal}{" "}
+                      <Tippy content={<CustomTooltip content={`Used: ${nodesUsed} / Total: ${nodesTotal}`} />} placement="top">
+                        <div className="gap-x-4 items-center cursor-help">
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                            <div
+                              className={`h-2.5 rounded-full ${nodesPercentage >= 75 ? 'bg-red-600' : nodesPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                              style={{ width: `${Math.min(100, nodesPercentage)}%` }}
+                            ></div>
+                          </div>
+                          <p className={`${getColor(nodesPercentage)} text-sm mt-1`}>{nodesPercentage}%</p>
+                        </div>
                       </Tippy>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">

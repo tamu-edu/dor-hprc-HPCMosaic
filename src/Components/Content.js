@@ -213,8 +213,6 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     setRow(newRow);
     setLayout(newLayout);
     setLayoutData(newRow);
-    
-    console.log("Removed index");
 
     toast.info(`Removed ${deletedName}`, {
       position: "top-right",
@@ -308,7 +306,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
         preventCollision={false}
         useCSSTransforms={true}
         autoSize={true}
-	className="bg-gradient-to-b from-transparent via-[#500000] to-transparent py-8 rounded-lg"
+	className="bg-gradient-to-b from-transparent via-[#500000] to-transparent rounded-lg"
         draggableCancel=".non-draggable"
       >
         {/* Render actual grid items */}
@@ -322,7 +320,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
             >
               {/* Clean, elegant remove button */}
               <button
-                onClick={() => {removeElement(index); console.log("Removed index " + index);}}
+                onClick={() => removeElement(index) }
                 className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
                 title="Remove this element"
               >
