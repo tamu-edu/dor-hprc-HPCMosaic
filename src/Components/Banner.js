@@ -312,9 +312,12 @@ const Banner = ({ setRunTour }) => {
       <BannerBackground>
         <div className="flex justify-between w-full items-center space-x-3 pr-3">
 	  
-	  <div className="bg-white px-4 py-2 rounded-l-md">
-	    <HPRCLogo />
-	  </div>
+          {/*Logo*/}
+	  <div className="hidden md:flex bg-white px-2 md:px-4 py-1 md:py-2 rounded-l-md">
+            <HPRCLogo className="w-6 md:w-8 lg:w-10 h-6 md:h-8 lg:h-10" />
+          </div>
+
+	  {/*Dashboard Name*/}
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white">
 	    {`${clusterName.toUpperCase()} Dashboard`}
           </h1>
@@ -324,10 +327,10 @@ const Banner = ({ setRunTour }) => {
 
             {/* Settings Dropdown - Contains Add Element, Layout, Feedback */}
             <Menu as="div" className="relative inline-block text-left">
-	      <Menu.Button className="flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors">
-	        <MdSettings className="text-2l mr-2 text-gray-500" />
-	        <span className="font-semibold text-gray-700">Settings</span>
-	      </Menu.Button>
+              <Menu.Button className="flex items-center justify-center md:justify-start px-2 sm:px-3 md:px-5 py-1 sm:py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors">
+                <MdSettings className="text-lg sm:text-xl md:text-2xl md:mr-2 text-gray-500" />
+                <span className="hidden md:inline font-semibold text-gray-700 text-sm sm:text-base">Settings</span>
+              </Menu.Button>
 
 	      <Transition
 	        enter="transition duration-100 ease-out"
@@ -337,18 +340,21 @@ const Banner = ({ setRunTour }) => {
 	        leaveFrom="transform scale-100 opacity-100"
 	        leaveTo="transform scale-95 opacity-0"
 	      >
-	
+
                 <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none z-50">
-                  <div className="py-1">
+	          <div className="py-1">
+
 	            {/*Add Element Menu Option*/}
 	            <Menu.Item>
-                      {({ active }) => (
-                        <button onClick={openPopup} className={`${active ? 'bg-gray-100' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700`}>
-                          <MdAddchart className="text-lg mr-2" />
-                          Add Dashboard Element
-                        </button>
-		      )}
+	              {({ active }) => (
+			<button onClick={openPopup}
+			  className={`${active ? 'bg-gray-100' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700`}
+			>
+			  <MdAddchart className="text-lg mr-2" />
+			  Add Dashboard Element
+		        </button> )}
 	            </Menu.Item>
+
 
  	            {/*Layout Utility*/}
 	            <Menu.Item>
@@ -389,7 +395,6 @@ const Banner = ({ setRunTour }) => {
                   backgroundColor: 'white',
                   color: '#374151',
                   border: '1px solid #D1D5DB',
-                  padding: '8px 20px',
                   borderRadius: '0.5rem',
                   cursor: 'pointer',
                   display: 'flex',
@@ -398,11 +403,11 @@ const Banner = ({ setRunTour }) => {
                   width: 'auto',
                 }}
                 buttonText={
-                  <div className="flex items-center">
-                    <MdOutlineQuestionAnswer className="text-3xl mr-2 text-gray-500" />
-                    <span className="font-semibold text-gray-700">Request Help</span>
-                  </div>
-                }
+                  <div className="flex items-center justify-center md:justify-start">
+                    <MdOutlineQuestionAnswer className="text-lg sm:text-xl md:text-2xl md:mr-2 text-gray-500" />
+                    <span className="hidden md:inline font-semibold text-gray-700 text-sm sm:text-base">Request Help</span>
+	          </div>
+		}
               />
             </div>
 

@@ -328,7 +328,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
               </button>
               
               {/* Component content */}
-              <div className="h-full w-full p-8">{renderChart(ele)}</div>
+              <div className="h-full w-full p-0">{renderChart(ele)}</div>
             </div>
           );
         })}

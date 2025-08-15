@@ -5,6 +5,8 @@ import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default tooltip styling
 import ElementDescriptions from "../Components/ElementDescriptions";
 import QuotaButton from "../Charts/QuotaButton"; // Import QuotaButton component
+import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
+
 
 const QuotaInfo = () => {
   const [quotaData, setQuotaData] = useState([]);
@@ -156,17 +158,22 @@ const QuotaInfo = () => {
             return (
               <tr key={index} className={`${quota.additional_info ? "bg-yellow-100" : ""} group relative`}>
                 <td className="border border-gray-300 px-4 py-2" title={quota.additional_info || ""}>
-                  {quota.disk}
+                  {generate_file_explorer_path_for_disk(quota.disk)}
                 </td>
                 <td className="border border-gray-300 px-4 py-4">
                   <Tippy content={<CustomTooltip content={`Used: ${quota.disk_usage} / Total: ${quota.disk_limit}`} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
                       <p>{quota.disk_usage}/{quota.disk_limit}</p>
                       <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                        <div 
-                          className={`h-2.5 rounded-full ${diskPercentage >= 75 ? 'bg-red-600' : diskPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                          style={{ width: `${Math.min(100, diskPercentage)}%` }}
-                        ></div>
+                        
+
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                          <div 
+                            className={`h-2.5 rounded-full ${diskPercentage >= 75 ? 'bg-red-600' : diskPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`} 
+                            style={{ width: `${Math.min(100, diskPercentage)}%` }}
+                          ></div>
+                        </div>
+                         
                       </div>
                       <p className={`${getColor(diskPercentage)} text-sm mt-1`}>{diskPercentage}%</p>
                     </div>
@@ -176,7 +183,7 @@ const QuotaInfo = () => {
                   <Tippy content={<CustomTooltip content={`Used: ${quota.file_usage} / Total: ${quota.file_limit}`} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
                       <p>{quota.file_usage}/{quota.file_limit}</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
                         <div 
                           className={`h-2.5 rounded-full ${filePercentage >= 75 ? 'bg-red-600' : filePercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
                           style={{ width: `${Math.min(100, filePercentage)}%` }}

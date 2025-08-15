@@ -12,7 +12,7 @@
       ]
    },
 
-   "memberQestions": {
+   "memberQuestions": {
       "type": "collapsibleColContainer",
       "title": "Managing group members",
       "condition" : "groupRequest.madd || groupRequest.mremove",
@@ -20,7 +20,7 @@
 
           "memeberNote": {
             "type": "staticText",
-            "value": "In this section you can add or remove members of your group. NOTE: only the owner or delegate of this group can preform this action. Ir you are not the owner or a delegate, do not contionue this action.",
+            "value": "In this section you can add or remove members of your group. NOTE: only the owner or delegate of this group can preform this action. If you are not the owner or a delegate, do not continue this action.",
             "isHeading": false
          },
 
@@ -59,7 +59,7 @@
 
          "newGHroupNote": {
             "type": "staticText",
-            "value": "In this section you can provide all information we need to create a (Linux) group. For the name of the group, you cannot use spaces or any special characters, aside from _ and -. We also recommend to provide a descriptive name for the group.",
+            "value": "In this section you can provide all information we need to create a (Linux) group. For the name of the group, you cannot use spaces or any special characters, aside from _ and -. We also recommend providing a descriptive name for the group.",
             "isHeading": false
          },
 
@@ -88,7 +88,7 @@
 
          "newGHroupNote": {
             "type": "staticText",            
-            "value": "In this secction you can request access to a group. This is typically done to gain access to restricted software or gsin access to a specific group directory. HPRC staff will evaluate the request and ir needed, contact the owner of the group. Please make sure you have a legitimate reason to request access ",
+            "value": "In this section you can request access to a group. This is typically done to gain access to restricted software or to a specific group directory. HPRC staff will evaluate the request and if needed, contact the owner of the group. Please make sure you have a legitimate reason to request access ",
             "isHeading": false
          },
 

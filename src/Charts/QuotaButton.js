@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PopupForm from '../composer/PopupForm';
 import quotaRequestSchema from '../composer/schemas/quotaRequest.json';
 import config from "../../config.yml";
@@ -6,7 +6,17 @@ import config from "../../config.yml";
 const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null }) => {
   const baseUrl = config.production.dashboard_url;
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (formData) => {
+
+    if (isSubmitting) {
+      console.log('Quota submission processing, ignoring duplicate click');
+      return false;
+    }
+
+
+    setIsSubmitting(true);
     console.log('Form submitted:', formData);
     
     try {
@@ -90,6 +100,8 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
       
       // Return false to indicate failure
       return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -124,6 +136,7 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
       buttonText={disk ? "Request" : "Request Quota Increase"}
       schema={quotaRequestSchema}
       onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
       title={disk ? `Quota Increase for ${disk}` : "Quota Increase Request"}
       disclaimerText={disclaimerText}
       defaultValues={defaultValues}

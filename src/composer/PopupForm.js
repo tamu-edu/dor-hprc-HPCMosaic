@@ -2,7 +2,7 @@ import React, { useState, memo, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ComposerWrapper from './ComposerWrapper';
 
-const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage }) => {
+const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting }) => {
   const modalRef = useRef(null);
 
   const handleClickOutside = useCallback((event) => {
@@ -50,6 +50,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
       }}>
         <button
           onClick={onClose}
+	  disabled={isSubmitting}
           style={{
             position: 'absolute',
             top: '12px',
@@ -57,8 +58,8 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             background: 'none',
             border: 'none',
             fontSize: '24px',
-            cursor: 'pointer',
-            color: '#666',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+            color: isSubmitting ? '#ccc' : '#666',
             padding: '4px 12px',
             zIndex: 1
           }}
@@ -101,6 +102,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             schema={schema}
             defaultValues={defaultValues}
             onSubmit={onSubmit}
+	    isSubmitting={isSubmitting}
             onClose={onClose}
             title={title}
             className="popup-form"
@@ -120,6 +122,7 @@ const PopupForm = ({
   schema,
   defaultValues = {},
   onSubmit,
+  isSubmitting = false,
   title = "Form",
   disclaimerText,
   errorMessage
@@ -166,6 +169,7 @@ const PopupForm = ({
           schema={schema}
           defaultValues={defaultValues}
           onSubmit={handleSubmit}
+	  isSubmitting={isSubmitting}
           onClose={handleClose}
           title={title}
           disclaimerText={disclaimerText}

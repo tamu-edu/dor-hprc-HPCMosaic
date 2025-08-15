@@ -93,7 +93,9 @@ const EnhancedChatbotComponent = () => {
     return null; // Don't render if not visible
   }
   
-  return <ChatbotComponent />;
+  //Removed chatbot for now, doesn't work
+  return null;
+  /*return <ChatbotComponent />;*/
 };
 
 const root = createRoot(document.getElementById("root"));

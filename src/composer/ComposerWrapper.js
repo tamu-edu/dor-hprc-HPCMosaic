@@ -12,7 +12,8 @@ const ComposerWrapper = ({
   apiEndpoint,
   onFileChange,
   className = "",
-  defaultValues = {}
+  defaultValues = {},
+  isSubmitting = false
 }) => {
   const [error, setError] = useState(null);
   const [globalFiles, setGlobalFiles] = useState([]);
@@ -36,6 +37,12 @@ const ComposerWrapper = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isSubmitting) {
+      console.log('Form submission already in progess');
+      return;
+    }
+
     if (!formRef.current) return;
     const formData = new FormData(formRef.current);
     globalFiles.forEach((file) => {
@@ -90,8 +97,20 @@ const ComposerWrapper = ({
           </form>
           <div className="form-footer">
             <div className="button-group">
-              <button type="submit" onClick={handleSubmit} className="btn btn-primary">Submit</button>
-              {onClose && (
+              <button
+	        type="submit"
+	        onClick={handleSubmit}
+	        className="btn btn-primary"
+	        disabled={isSubmitting}
+	        style={{
+		  opacity: isSubmitting ? 0.6 : 1,
+		  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+		}}
+	      >
+	        {isSubmitting ? 'Submitting...' : 'Submit'}
+	      </button>
+              
+	      {onClose && (
                 <button type="button" onClick={handleClose} className="btn btn-secondary">
                   Close
                 </button>

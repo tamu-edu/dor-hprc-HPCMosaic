@@ -6,6 +6,8 @@ import "tippy.js/dist/tippy.css"; // Import Tippy styles
 import ElementDescriptions from "../Components/ElementDescriptions";
 import GroupButton from "../Charts/GroupButton"; // Import GroupButton component
 
+import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
+
 const UserGroups = () => {
   const [groups, setGroups] = useState([]);
   const [quotas, setQuotas] = useState([]);
@@ -117,7 +119,7 @@ const UserGroups = () => {
               return matchingQuotas.map((quota, quotaIndex) => (
                 <tr key={`${index}-${quotaIndex}`} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="py-3 px-4 font-medium text-gray-900">{group}</td>
-                  <td className="py-3 px-4">{quota.disk}</td>
+                  <td className="py-3 px-4">{generate_file_explorer_path_for_disk(quota.disk)}</td>
                 </tr>
               ));
             })}

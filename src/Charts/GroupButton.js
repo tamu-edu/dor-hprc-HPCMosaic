@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PopupForm from '../composer/PopupForm';
 import groupRequestSchema from '../composer/schemas/groupRequest.json';
 import config from "../../config.yml";
 
 const GroupButton = () => {
   const baseUrl = config.production.dashboard_url;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (formData) => {
+    if (isSubmitting) return false;
+
+    setIsSubmitting(true);
     console.log('Group form submitted:', formData);
   
     try {
@@ -75,6 +79,8 @@ const GroupButton = () => {
   
       // Return false to indicate failure
       return false;
+    } finally {
+       setIsSubmitting(false);
     }
   };
   
@@ -91,6 +97,7 @@ const GroupButton = () => {
       buttonText="Group Management"
       schema={groupRequestSchema}
       onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
       title="Group Request"
       disclaimerText={disclaimerText}
       buttonStyle={{

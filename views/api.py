@@ -57,6 +57,38 @@ def get_group_directory_info(group_name):
         "owner": owner
     }
 
+def get_user_email(username):
+    """
+    Convert local userid to real institutional email using mapping file
+    Format: u.username:real_email:first_name:last_name
+    """
+
+    try:
+        mapping_file = "/usr/local/etc/email_mapping.access.login"
+        
+        if os.path.exists(mapping_file):
+            with open(mapping_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+
+                    if line and not line.startswith('#'):
+                        parts = line.split(':')
+
+                        if len(parts) >= 4: #To ensure all four fields
+                            local_user = parts[0].strip()
+                            real_email = parts[1].strip()
+                            first_name = parts[2].strip()
+                            last_name = parts[3].strip()
+
+                            if local_user == username:
+                                print(f"Found email mapping: {username} -> {real_email}")
+                                return real_email
+        print(f"Warning: No email mapping found for {username}")
+        return f"{username}@tamu.edu"
+    except Exception as e:
+        print(f"Error reading email mapping: {e}")
+        return f"{username}@tamu.edu"
+
 def clean_number(value):
     """
     Strips non-numeric characters (like 'TB', 'GB', etc.) and converts to float.
@@ -78,6 +110,14 @@ hprcbot_route = production.get('hprcbot_route')
 
 api = Blueprint('api', __name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+@api.route('/test-email')
+def test_get_user_email():
+    try:
+        email = "u.sv309862"
+        return f"Email for {u.sv309862}: {email}"
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @api.route('/sinfo', methods=['GET'])
 def get_sinfo():
@@ -296,26 +336,28 @@ def delete_env(envToDelete):
 @api.route('/get_py_versions', methods=['GET'])
 def get_py_versions():
     try:
-        captureCommand = "/sw/local/bin/toolchains | grep Python > captured-output.txt"
-        removeCommand = "rm captured-output.txt"
+        output_file = "/tmp/captured-output.txt"
+        captureCommand = f"/sw/local/bin/toolchains | grep Python > {output_file}"
+        removeCommand = f"rm {output_file}"
         subprocess.run(captureCommand, shell=True)
         versions = {}
-        with open("captured-output.txt", "r") as file:
+        with open("/tmp/captured-output.txt", "r") as file:
             next(file)
             # Grabbing the Python version and mapping it to corresponding GCC version
+        #    return jsonify({"error": str(e), "debug": "hi"}), 500
             for line in file:
                 words = line.split()
-                if words[6] in versions:
-                    break
-                else:
-                    versions[words[6]] = words[2]
+                if len(words) < 7:
+                    continue
+                py_version = words[6]
+                if py_version not in versions:
+                    versions[py_version] = words[2]
         subprocess.run(removeCommand, shell=True)
         return jsonify(versions), 200
     except FileNotFoundError as e:
-        return jsonify({"error": "There was a file error while getting the Python versions; 'captured-output.txt' file was not found"}), 500
+        return jsonify({"error": "There was a file error while getting the Python versions; 'captured-output.txt' file was"}), 500
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while fetching Python versions: {str(e)}"}), 500
-
 @api.route('/create_venv', methods=['POST'])
 def create_venv():
     try:
@@ -324,13 +366,15 @@ def create_venv():
         description = data.get('description')
         pyVersion = data.get('pyVersion')
         gccversion = data.get('GCCversion')
-        
         if not envName or not gccversion or not pyVersion:
             return jsonify({"error": "Missing required parameters from the form submission"}), 400
-    
         # When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
-        createVenvCommand = f"source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{description}'"
-        
+        #createVenvCommand = f"ssh alogin2 source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{descriptio
+        createVenvCommand = (
+                f"ssh alogin2 'bash -l -c \"source /etc/profile && "
+                f"module load {gccversion} {pyVersion} && "
+                f"/sw/local/bin/create_venv {envName} -d \\\"{description}\\\"\"'"
+        )
         result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
         if result.returncode != 0:
             return jsonify({"error": f"There was an error while creating the virtual environment: {result.stdout}"}), 500
@@ -790,7 +834,7 @@ What is your long-term storage plan for your data after the quota increase expir
                 'has_previous': has_previous,
                 'request_until': expiration_date,
                 'account_number': account_number if buyin_status == 'yes' else '',
-                'email': f"{user}@tamu.edu"
+                'email': get_user_email(user)
             }
 
             logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
@@ -817,7 +861,7 @@ What is your long-term storage plan for your data after the quota increase expir
 
             msg = MIMEText(body)
             msg['Subject'] = subject
-            msg['From'] = f"{user}@tamu.edu"
+            msg['From'] = get_user_email(user)
             msg['To'] = request_email
 
             smtp_server = "smtp.tamu.edu"
@@ -868,7 +912,7 @@ def request_group():
         comments = request.form.get('comments', '')
 
         user = os.environ.get('USER', 'unknown')
-        email = f"{user}@tamu.edu"
+        email = get_user_email(user)
 
         logging.info(f"Group request received from {user}, type: {group_request_type}")
 
@@ -936,7 +980,7 @@ def request_help():
     try:
         logging.info("🔥 HELP REQUEST RECEIVED 🔥")
         user = os.environ.get('USER', 'unknown')
-        email = f"{user}@tamu.edu"
+        email = get_user_email(user)
 
         # Raw form fields
         help_request_type = request.form.get("helpRequest", "").strip()
@@ -947,7 +991,7 @@ def request_help():
         params = {
             "request_type": "Help",
             "user": user,
-            "email": email,
+            "email": get_user_email(user),
             "cluster_name": cluster_name,
             "help_topic": help_request_type,
             "issue_description": "",
@@ -1021,7 +1065,7 @@ def request_software():
     try:
         logging.info("🧪 SOFTWARE REQUEST RECEIVED 🧪")
         user = os.environ.get('USER', 'unknown')
-        email = f"{user}@tamu.edu"
+        email = get_user_email(user)
 
         software_name = request.form.get("softwareName", "").strip()
         software_version = request.form.get("softwareVersion", "").strip()
@@ -1072,7 +1116,7 @@ def request_account_purchase():
     try:
         logging.info("🧾 ACCOUNT PURCHASE REQUEST RECEIVED 🧾")
         user = os.environ.get('USER', 'unknown')
-        email = f"{user}@tamu.edu"
+        email = get_user_email(user)
 
         what = request.form.get("purchaseWhat", "").strip()
         who = request.form.get("purchaseWho", "").strip()

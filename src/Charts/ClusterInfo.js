@@ -60,195 +60,92 @@ const ClusterInfo = () => {
           </Tippy>
         </h2>
       </div>
-
-      <div className="mb-4">
-        <button
-          className={`px-4 py-2 mr-2 rounded ${
-            view === "table" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
-          onClick={() => setView("table")}
-        >
-          Table View
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${
-            view === "chart" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
-          onClick={() => setView("chart")}
-        >
-          Chart View
-        </button>
-      </div>
-
-      {view === "chart" ? (
-        <div className="w-full h-full overflow-auto flex-grow">
-          <h3 className="text-xl font-semibold mb-4">Core & Node Utilization</h3>
-          <Bar
-            data={{
-              labels: data.map((queue) => queue.queue),
-              datasets: [
-                {
-                  label: "Used Cores (%)",
-                  data: data.map((queue) =>
-                    calculatePercentage(
-                      parseInt(queue.CPU_total, 10) - parseInt(queue.CPU_avail, 10),
-                      parseInt(queue.CPU_total, 10)
-                    )
-                  ),
-                  backgroundColor: "#EF4444",
-                  barThickness: 10,
-                },
-                {
-                  label: "Available Cores (%)",
-                  data: data.map((queue) =>
-                    calculatePercentage(
-                      parseInt(queue.CPU_avail, 10),
-                      parseInt(queue.CPU_total, 10)
-                    )
-                  ),
-                  backgroundColor: "#FCA5A5",
-                  barThickness: 10,
-                },
-                {
-                  label: "Used Nodes (%)",
-                  data: data.map((queue) =>
-                    calculatePercentage(
-                      parseInt(queue.nodes_total, 10) - parseInt(queue.nodes_avail, 10),
-                      parseInt(queue.nodes_total, 10)
-                    )
-                  ),
-                  backgroundColor: "#4F46E5",
-                  barThickness: 10,
-                },
-                {
-                  label: "Available Nodes (%)",
-                  data: data.map((queue) =>
-                    calculatePercentage(
-                      parseInt(queue.nodes_avail, 10),
-                      parseInt(queue.nodes_total, 10)
-                    )
-                  ),
-                  backgroundColor: "#E0E7FF",
-                  barThickness: 10,
-                },
-              ],
-            }}
-            options={{
-              indexAxis: "y",
-              responsive: true,
-              plugins: {
-                legend: { display: true, position: "top" },
-              },
-              scales: {
-                x: {
-                  stacked: true,
-                  ticks: {
-                    callback: (value) => `${value}%`,
-                  },
-                },
-                y: { stacked: true
-		},
-              },
-            }}
-          />
-        </div>
-      ) : (
-        <div className="overflow-auto w-full h-full flex-grow">
-          <table className="table-auto w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2">
-                  <Tippy content="HPC queues define groups of nodes with specific job scheduling policies.">
-                    <span className="cursor-help">Queue ⓘ</span>
-                  </Tippy>
-                </th>
-                <th className="border border-gray-300 px-4 py-2">
-                  <Tippy content="CPU cores available vs. used in this queue.">
-                    <span className="cursor-help">Core Usage ⓘ</span>
-                  </Tippy>
+        
+      <div className="overflow-auto w-full h-full flex-grow">
+        <table className="table-auto w-full border-collapse border border-gray-300">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="border border-gray-300 px-4 py-2">
+                <Tippy content="HPC queues define groups of nodes with specific job scheduling policies.">
+                  <span className="cursor-help">Queue ⓘ</span>
+                </Tippy>
+              </th>
+              <th className="border border-gray-300 px-4 py-2">
+                <Tippy content="CPU cores available vs. used in this queue.">
+                  <span className="cursor-help">Core Usage (%) ⓘ</span>
+                </Tippy>
 	        </th>
 	        <th className="border border-gray-300 px-4 py-2">
-                  <Tippy content="Nodes available vs. used in this queue.">
-                    <span className="cursor-help">Node Usage ⓘ</span>
-                  </Tippy>
-                </th>
-                <th className="border border-gray-300 px-4 py-2">
-                  <Tippy content="Range of CPU cores or nodes a job can request in this queue. Example: '1-32' means jobs can request between 1 and 32 cores.">
-                    <span className="cursor-help">Job Size ⓘ</span>
-                  </Tippy>
-                </th>
-                <th className="border border-gray-300 px-4 py-2">
-                  <Tippy content="The maximum time a job can run in this queue.">
-                    <span className="cursor-help">Time Limit ⓘ</span>
-                  </Tippy>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((queue, index) => {
-                const cpuUsed =
-                  parseInt(queue.CPU_total, 10) -
-                  parseInt(queue.CPU_avail, 10);
-                const cpuTotal = parseInt(queue.CPU_total, 10);
-                const cpuPercentage = calculatePercentage(cpuUsed, cpuTotal);
+                <Tippy content="Nodes available vs. used in this queue.">
+                  <span className="cursor-help">Node Usage (%)  ⓘ</span>
+                </Tippy>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((queue, index) => {
+              const cpuUsed =
+                parseInt(queue.CPU_total, 10) -
+                parseInt(queue.CPU_avail, 10);
+              const cpuTotal = parseInt(queue.CPU_total, 10);
+              const cpuPercentage = calculatePercentage(cpuUsed, cpuTotal);
 
-                const nodesUsed =
-                  parseInt(queue.nodes_total, 10) -
-                  parseInt(queue.nodes_avail, 10);
-                const nodesTotal = parseInt(queue.nodes_total, 10);
-                const nodesPercentage = calculatePercentage(
-                  nodesUsed,
-                  nodesTotal
-                );
+              const nodesUsed =
+                parseInt(queue.nodes_total, 10) -
+                parseInt(queue.nodes_avail, 10);
+              const nodesTotal = parseInt(queue.nodes_total, 10);
+              const nodesPercentage = calculatePercentage(
+                nodesUsed,
+                nodesTotal
+              );
 
-                return (
-                  <tr key={index}>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {queue.queue}
-                    </td>
+              return (
+                <tr key={index}>
+                  <td className="border border-gray-300 px-4 py-2">
+		    <Tippy content={
+	              <CustomTooltip content={
+			<>
+                 	 Can request {queue.job_size} nodes/cores.<br />
+			 Up to {queue.time_limit} runtime limit.
+			</>
+		      } />} placement="top">
+                      <div>
+		        {queue.queue}
+		      </div>
+		    </Tippy>
+                  </td>
 	           
-		    <td className="border border-gray-300 px-4 py-4">
-		      {cpuUsed}/{cpuTotal}{" "}	
-                      <Tippy content={<CustomTooltip content={`Used: ${cpuUsed} / Total: ${cpuTotal}`} />} placement="top">
-                        <div className="gap-x-4 items-center cursor-help">
-                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                            <div
-                              className={`h-2.5 rounded-full ${cpuPercentage >= 75 ? 'bg-red-600' : cpuPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                              style={{ width: `${Math.min(100, cpuPercentage)}%` }}
-                            ></div>
-                          </div>
-                          <p className={`${getColor(cpuPercentage)} text-sm mt-1`}>{cpuPercentage}%</p>
+		    <td className="border border-gray-300 px-4 py-4">	
+                    <Tippy content={<CustomTooltip content={`Used: ${cpuUsed} / Total: ${cpuTotal} (${cpuPercentage}%)`} />} placement="top">
+                      <div className="gap-x-4 items-center cursor-help">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                          <div
+                            className={`h-2.5 rounded-full ${cpuPercentage >= 75 ? 'bg-red-600' : cpuPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                            style={{ width: `${Math.min(100, cpuPercentage)}%` }}
+                          ></div>
                         </div>
-                      </Tippy>
-                    </td>
+                      </div>
+                    </Tippy>
+                  </td>
 
 	            <td className="border border-gray-300 px-4 py-4">
-		      {nodesUsed}/{nodesTotal}{" "}
-                      <Tippy content={<CustomTooltip content={`Used: ${nodesUsed} / Total: ${nodesTotal}`} />} placement="top">
-                        <div className="gap-x-4 items-center cursor-help">
-                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                            <div
-                              className={`h-2.5 rounded-full ${nodesPercentage >= 75 ? 'bg-red-600' : nodesPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                              style={{ width: `${Math.min(100, nodesPercentage)}%` }}
-                            ></div>
-                          </div>
-                          <p className={`${getColor(nodesPercentage)} text-sm mt-1`}>{nodesPercentage}%</p>
+                    <Tippy content={<CustomTooltip content={`Used: ${nodesUsed} / Total: ${nodesTotal} (${nodesPercentage}%)`} />} placement="top">
+                      <div className="gap-x-4 items-center cursor-help">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                          <div
+                            className={`h-2.5 rounded-full ${nodesPercentage >= 75 ? 'bg-red-600' : nodesPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                            style={{ width: `${Math.min(100, nodesPercentage)}%` }}
+                          ></div>
                         </div>
-                      </Tippy>
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {queue.job_size}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {queue.time_limit}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                      </div>
+                    </Tippy>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

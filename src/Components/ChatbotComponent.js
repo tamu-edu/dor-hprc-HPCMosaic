@@ -38,7 +38,7 @@ const ChatbotComponent = () => {
 
       {/* Chatbot popup (always mounted, hidden when not visible) */}
       <div
-        className={`fixed bottom-24 right-4 bg-gray-100 border border-gray-300 rounded-xl shadow-2xl overflow-hidden transition-all transform ${
+        className={`fixed bottom-24 right-4 bg-gray-500 border border-gray-300 rounded-xl shadow-2xl overflow-hidden transition-all transform ${
           visible ? "block" : "hidden"
         }`}
       >
@@ -50,7 +50,7 @@ const ChatbotComponent = () => {
         </div>
 
         {/*Base layout */}
-        <div className="p-0 h-[600px] w-[700px] max-w-full max-h-full flex flex-col">
+        <div className="p-0 h-[400px] w-[500px] max-w-full max-h-full flex flex-col">
           {/* Custom overrides */}
           <style>
             {`

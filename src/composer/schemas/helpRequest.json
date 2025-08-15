@@ -20,7 +20,7 @@
 
          "softwareNote": {
             "type": "staticText",
-            "value": "Software reqeusts are evaluated by HPRC staff.",
+            "value": "Software requests are evaluated by HPRC staff.",
             "isHeading": false
          },
    
@@ -76,14 +76,14 @@
             "type": "textarea",
             "label": "Additional information",
             "name": "softwareInfo",
-            "help": "Enter any relevant info that might help installing the software. If this is licensed  software rpovide license information."
+            "help": "Enter any relevant info that might help installing the software. If this is a licensed software provide license information."
          }   
       }  
    },
 
    "jobQestions": {
       "type": "collapsibleColContainer",
-      "title": "Job Related Qestions",
+      "title": "Job Related Questions",
       "condition" : "helpRequest.jobs",
       "elements": {
 
@@ -120,7 +120,7 @@
 
    "accountQestions": {
       "type": "collapsibleColContainer",
-      "title": "Account Related Qestions",
+      "title": "Account Related Questions",
       "condition" : "helpRequest.accounts",
       "elements": {
 
@@ -145,14 +145,14 @@
 
          "accountAddNote": {
             "type": "staticText",
-            "value": "Provide the account number and the name of the user you want to add to the  project account.",
+            "value": "Provide the account number and the name of the user you want to add to the project account.",
             "isHeading": false,
             "condition" : "accountType.addAccount"
          },
 
          "accountAddNote": {
             "type": "staticText",
-            "value": "Provide the account number to sue, the name of the user to transfer the SUs to and the number of SUs.",
+            "value": "Provide the account number, the name of the user to transfer the SUs to and the number of SUs.",
             "isHeading": false,
             "condition" : "accountType.transferSU"
          },
@@ -191,15 +191,15 @@
 
    "OtherQestions": {
       "type": "collapsibleColContainer",
-      "title": "Other Qestions",
+      "title": "Other Questions",
       "condition" : "helpRequest.other",
       "elements": {
 
          "otherDesciption": {
             "type": "textarea",
-            "label": "Describe your issue. Provide as much detsil as possible",
+            "label": "Describe your issue. Provide as much detail as possible",
             "name": "otherDescription",
-            "help": "Describe your issue. Provide as much detsil as possible"
+            "help": "Describe your issue. Provide as much detail as possible"
          }
       }
    }

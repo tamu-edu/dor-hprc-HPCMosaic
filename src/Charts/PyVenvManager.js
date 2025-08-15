@@ -132,6 +132,7 @@ const PyVenvManager = () => {
 							<td className="border border-gray-300 px-4 py-2">{env.python_version}</td>
 							<td className="border border-gray-300 px-4 py-2">{env.GCCcore_version}</td>
 							<td className="border border-gray-300 px-4 py-2">{env.description}</td>
+							<td className="border border-gray-300 px-4 py-2">{env.toolchain}</td>
 							<td className="border border-gray-300 px-4 py-2"> 
 								<button className="bg-maroon text-white px-2 py-1 rounded hover:bg-red-700"
 								onClick={() => deleteHandler(env.name)} disabled={deletingEnv === env.name}>

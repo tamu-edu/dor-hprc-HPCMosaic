@@ -40,7 +40,7 @@
       "elements": {
          "noBuyinNote": {            
             "type": "staticText",            
-            "value": "\n\n\n\n\n<p>Only PIs can request quota increases for more than 10TB, longer than 6 months, or buy in quota. Please ask your PI to make the request.\n\n",
+            "value": "\n\n\n\n\nOnly PIs can request quota increases for more than 10TB, longer than 6 months, or buy in quota. Please ask your PI to make the request.\n\n",
             "isHeading": true
           }
       }

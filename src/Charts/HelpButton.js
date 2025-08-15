@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState }  from 'react';
 import PopupForm from '../composer/PopupForm';
 import helpRequestSchema from '../composer/schemas/helpRequest.json';
 import config from "../../config.yml";
@@ -6,9 +6,15 @@ import config from "../../config.yml";
 const HelpButton = ({ buttonText = "Help Request", buttonStyle = {} }) => {
   const baseUrl = config.production.dashboard_url;
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (formData) => {
+    if (isSubmitting) return false;
+    setIsSubmitting(true);
+
     console.log('Help form submitted:', formData);
   
+    
     try {
       let dataToSubmit;
   
@@ -85,6 +91,9 @@ const HelpButton = ({ buttonText = "Help Request", buttonStyle = {} }) => {
       alert("There was an error submitting your help request. Please try again later.");
       return false;
     }
+    finally {
+      setIsSubmitting(false);
+    }
   };
   
   
@@ -96,6 +105,7 @@ const HelpButton = ({ buttonText = "Help Request", buttonStyle = {} }) => {
       buttonText={buttonText}
       schema={helpRequestSchema}
       onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
       title="Help Request"
       disclaimerText={disclaimerText}
       buttonStyle={buttonStyle}
