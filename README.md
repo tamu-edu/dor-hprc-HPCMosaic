@@ -3,14 +3,14 @@ This is a [Flask](http://flask.pocoo.org/) app for [the Passenger application se
 The app stack consists of Flask, React, and Tailwind CSS.
 
 ##How to clone with submodules
-git clone https://github.com/victoriaemily/dor-hprc-web-tamudashboard.git
+git clone https://github.com/tamu-edu/dor-hprc-HPCMosaic.git
 git submodule init
 git submodule update
 
 ## How to setup
-To setup the build environment, create a new sandbox app and follow the instructions outlined in the base dashboard repository tosetup your config and build env on the OOD Portal.
+To setup the build environment, create a new sandbox app and follow the instructions outlined in the base dashboard repository to setup your config and build env on the OOD Portal.
 
-But this should be dynamic enough to work on your setup.Then you should be able to simply run:
+But this should be dynamic enough to work on your setup. Then you should be able to simply run:
 
 bash setup.sh
 
