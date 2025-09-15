@@ -1,10 +1,11 @@
 import React from 'react'
+import logo from '../images/Cluster_Logo.png'
 
-const HPRCLogo = () => {
+const ClusterLogo = () => {
   return  (
     <div>
       <img
-	src="https://i.imgur.com/l4aly6k.png"
+	src={logo}
 	alt="ACES Logo"
 	className="hidden md:block max-w-[6rem] w-full h-auto p-2"
       />
@@ -12,4 +13,4 @@ const HPRCLogo = () => {
   );     
 };
 
-export default HPRCLogo
+export default ClusterLogo

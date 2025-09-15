@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdAddChart } from "react-icons/md";
 
 //Component Imports
-import HPRCLogo from "./HPRCLogo";
+import ClusterLogo from "./ClusterLogo";
 import Content from "./Content";
 import Sidebar from "./Sidebar";
 import LayoutUtility from "./LayoutUtility";
@@ -314,7 +314,7 @@ const Banner = ({ setRunTour }) => {
 	  
           {/*Logo*/}
 	  <div className="hidden md:flex bg-white px-2 md:px-4 py-1 md:py-2 rounded-l-md">
-            <HPRCLogo className="w-6 md:w-8 lg:w-10 h-6 md:h-8 lg:h-10" />
+            <ClusterLogo className="w-6 md:w-8 lg:w-10 h-6 md:h-8 lg:h-10" />
           </div>
 
 	  {/*Dashboard Name*/}
