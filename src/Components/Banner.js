@@ -318,19 +318,19 @@ const Banner = ({ setRunTour }) => {
           </div>
 
 	  {/*Dashboard Name*/}
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white">
-	    {`${clusterName.toUpperCase()} Dashboard`}
-          </h1>
+	  <div className="text-center">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white">
+              {`${clusterName.toUpperCase()} Dashboard`}
+            </h1>
+          </div>
 
-
-          <div className="flex items-center space-x-3">
-
+          <div className="flex items-center space-x-2 md:space-x-3">
             {/* Settings Dropdown - Contains Add Element, Layout, Feedback */}
             <Menu as="div" className="relative inline-block text-left">
-              <Menu.Button className="flex items-center justify-center md:justify-start px-2 sm:px-3 md:px-5 py-1 sm:py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-colors">
-                <MdSettings className="text-lg sm:text-xl md:text-2xl md:mr-2 text-gray-500" />
-                <span className="hidden md:inline font-semibold text-gray-700 text-sm sm:text-base">Settings</span>
-              </Menu.Button>
+              <Menu.Button className="flex items-center justify-center md:justify-start px-3 py-2 md:px-4 md:py-2 bg-white border border-gray-300 rounded-lg shadow hover:bg-gray-100 transition-all duration-200 min-w-[48px] md:min-w-auto">
+                <MdSettings className="text-xl text-gray-500 md:mr-2 flex-shrink-0" />
+                <span className="hidden md:inline font-semibold text-gray-700 text-base whitespace-nowrap">Settings</span>
+              </Menu.Button>  
 
 	      <Transition
 	        enter="transition duration-100 ease-out"
@@ -400,16 +400,22 @@ const Banner = ({ setRunTour }) => {
                   display: 'flex',
                   alignItems: 'center',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                  width: 'auto',
+                  padding: '0.5rem 0.75rem',
+                  transition: 'all 0.2s ease-in-out',
+                  minWidth: '48px',
+                  '@media (min-width: 768px)': {
+                    padding: '0.5rem 1rem',
+                    minWidth: 'auto'
+                  }
                 }}
                 buttonText={
                   <div className="flex items-center justify-center md:justify-start">
-                    <MdOutlineQuestionAnswer className="text-lg sm:text-xl md:text-2xl md:mr-2 text-gray-500" />
-                    <span className="hidden md:inline font-semibold text-gray-700 text-sm sm:text-base">Request Help</span>
+                    <MdOutlineQuestionAnswer className="text-xl text-gray-500 md:mr-2 flex-shrink-0" />
+                    <span className="hidden md:inline font-semibold text-gray-700 text-base whitespace-nowrap">Request Help</span>
 	          </div>
 		}
-              />
-            </div>
+	      />
+            </div>  
 
             {/* Start Tour Button */}
 	    {/*<button

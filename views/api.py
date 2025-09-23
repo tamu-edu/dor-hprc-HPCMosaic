@@ -102,7 +102,7 @@ def clean_number(value):
     return None
 
 # Create variables for easy access
-cluster_name = 'Aces'
+cluster_name = production.get('cluster_name')
 dashboard_url = production.get('dashboard_url')
 request_email = production.get('request_email')
 help_email = production.get('help_email')
@@ -110,14 +110,6 @@ hprcbot_route = production.get('hprcbot_route')
 
 api = Blueprint('api', __name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-@api.route('/test-email')
-def test_get_user_email():
-    try:
-        email = "u.sv309862"
-        return f"Email for {u.sv309862}: {email}"
-    except Exception as e:
-        return f"Error: {str(e)}"
 
 @api.route('/sinfo', methods=['GET'])
 def get_sinfo():
