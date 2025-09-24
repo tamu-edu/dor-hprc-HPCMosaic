@@ -1,4 +1,4 @@
-name: ${CLUSTERNAME} Dashboard (${APPNAME} branch)
+name: ${CLUSTERNAME} Dashboard (HPCMosaic)
 description: ${CLUSTERNAME} utilities
 icon: fa://columns
 category: Dashboard
