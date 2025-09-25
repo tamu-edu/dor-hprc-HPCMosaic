@@ -19,6 +19,8 @@ And have the venv created, dependencies set up, etc.
 ## To have changes propogate to dashboard
 > npm run build 
 
+Note that this is specifically for frontend changes. If backend changes are made, you will further have to go to the online portal, navigate to the help dropdown and click the 'Restart Web Server' option for the changes to propogate immediately.
+
 ## To have changes propogate every time frontend is modified
 >npm run build-watch
 

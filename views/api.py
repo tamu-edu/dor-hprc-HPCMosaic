@@ -829,7 +829,7 @@ What is your long-term storage plan for your data after the quota increase expir
                 'email': get_user_email(user)
             }
 
-            #logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
+            logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
             response = requests.post(f"{hprcbot_route}/HPRCapp/OOD", json=params, timeout=5)
 
             if response.text == "OK":
@@ -837,15 +837,9 @@ What is your long-term storage plan for your data after the quota increase expir
                     "message": "Your quota request has been submitted successfully via HPRC Bot.",
                     "status": "bot_success"
                 }), 200
-            elif response.status_code == 200:
-                print(f"HPRC Bot returned status {response.status_code}: {response.text}")
-                return jsonify({
-                    "message": "Your quota request has been submitted successfully via HPRC Bot.",
-                    "status": "bot_success"
-                }), 200
             else:
-                print(f"HPRC Bot returned status {response.status_code}: {response.text}")
-                raise Exception(f"HPRC Bot returned status {response.status_code}: {response.text}")
+                print(f"HPRC Bot returned: {response.text}")
+                raise Exception(f"HPRC Bot returned: {response.text}")
 
         except Exception as bot_error:
             print(f"HPRC Bot submission failed: {bot_error}")

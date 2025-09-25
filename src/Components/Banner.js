@@ -314,14 +314,17 @@ const Banner = ({ setRunTour }) => {
 	  
           {/*Logo*/}
 	  <div className="hidden md:flex bg-white px-2 md:px-4 py-1 md:py-2 rounded-l-md">
-            <ClusterLogo className="w-6 md:w-8 lg:w-10 h-6 md:h-8 lg:h-10" />
+	    <ClusterLogo className="w-6 md:w-8 lg:w-10 h-6 md:h-8 lg:h-10" />
           </div>
 
 	  {/*Dashboard Name*/}
-	  <div className="text-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white">
-              {`${clusterName.toUpperCase()} Dashboard`}
+          <div className="text-center flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
+              {clusterName.toUpperCase()} DASHBOARD
             </h1>
+            <p className="text-sm md:text-base text-white/80 font-medium tracking-wider uppercase">
+              Texas A&M University
+            </p>
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-3">
@@ -390,7 +393,7 @@ const Banner = ({ setRunTour }) => {
 
             {/* Help Button - Using HelpButton component directly */}
             <div className="request-help-container">
-              <HelpButton
+	      <HelpButton
                 buttonStyle={{
                   backgroundColor: 'white',
                   color: '#374151',
@@ -411,7 +414,7 @@ const Banner = ({ setRunTour }) => {
                 buttonText={
                   <div className="flex items-center justify-center md:justify-start">
                     <MdOutlineQuestionAnswer className="text-xl text-gray-500 md:mr-2 flex-shrink-0" />
-                    <span className="hidden md:inline font-semibold text-gray-700 text-base whitespace-nowrap">Request Help</span>
+                    <span className="hidden md:inline font-semibold text-gray-700 text-base whitespace-nowrap">Get Help</span>
 	          </div>
 		}
 	      />
