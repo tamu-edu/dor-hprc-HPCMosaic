@@ -975,6 +975,10 @@ def request_help():
 
         # Raw form fields
         help_request_type = request.form.get("helpRequest", "").strip()
+        # This is for the acknowledgement form
+        direct_help_topic = request.form.get("help_topic", "").strip()
+        direct_issue_description = request.form.get("issue_description", "").strip()
+
 
         logging.info(f"Received help request type: {help_request_type} from {user}")
 
@@ -984,7 +988,7 @@ def request_help():
             "user": user,
             "email": get_user_email(user),
             "cluster_name": cluster_name,
-            "help_topic": help_request_type,
+            "help_topic": help_request_type or direct_help_topic,
             "issue_description": "",
             "error_message": "",
             "job_file_path": "",
@@ -1029,6 +1033,10 @@ def request_help():
         # Other Help
         elif help_request_type == "other":
             params["issue_description"] = request.form.get("otherDescription", "")
+
+        if direct_help_topic == "Other" and direct_issue_description:
+            params["issue_description"] = direct_issue_description
+
 
         logging.info(f"Sending Help request to HPRC Bot: {params}")
 
