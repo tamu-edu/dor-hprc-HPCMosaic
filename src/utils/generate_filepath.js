@@ -1,7 +1,7 @@
 import React from "react";
 
 export function generate_file_explorer_path_for_disk(disk_path) {
-  const fullUrl = `https://portal-aces.hprc.tamu.edu/pun/sys/dashboard/files/fs${disk_path}`;
+  const fullUrl = `/pun/sys/dashboard/files/fs${disk_path}`;
 
   return (
     <a
