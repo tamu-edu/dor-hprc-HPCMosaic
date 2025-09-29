@@ -1,7 +1,7 @@
 {
-  "name": "duy_flask",
+  "name": "HPCMosaic",
   "version": "1.0.0",
-  "description": "This is a [Flask](http://flask.pocoo.org/) hello world example app for [the Passenger application server](https://www.phusionpassenger.com/) that has been modified to work with [OnDemand](https://openondemand.org/).",
+  "description": "This is a [Flask](http://flask.pocoo.org/) High Resource Computing Dashboard app for [the Passenger application server](https://www.phusionpassenger.com/) that has been modified to work with [OnDemand](https://openondemand.org/).",
   "main": "webpack.config.js",
   "dependencies": {
     "@babel/preset-env": "^7.25.4",
@@ -58,13 +58,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tamu-edu/dor-hprc-web-tamudashboard-jobwizzard.git"
+    "url": "git+https://github.com/tamu-edu/dor-hprc-HPCMosaic.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tamu-edu/dor-hprc-web-tamudashboard-jobwizzard/issues"
+    "url": "https://github.com/tamu-edu/dor-hprc-HPCMosaic/issues"
   },
-  "homepage": "https://github.com/tamu-edu/dor-hprc-web-tamudashboard-jobwizzard#readme"
+  "homepage": "https://github.com/tamu-edu/dor-hprc-HPCMosaic/blob/main/README.md"
 }
