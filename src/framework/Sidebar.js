@@ -11,7 +11,7 @@ const Sidebar = () => {
     system: true,
     user: true
   });
-  
+
   // Categorize components for better organization
   const componentCategories = {
     "Node Utilization": "system",
@@ -19,20 +19,21 @@ const Sidebar = () => {
     "Quota Info": "system",
     "User Groups": "user",
     "Accounts": "user",
-    "User Jobs": "user"
+    "User Jobs": "user",
+    "AcknowledgementForm": "user"
   };
-  
+
   const list = Object.keys(CardConfig);
-  
+
   // Filter elements based on search and category filters
   const filteredList = list.filter(name => {
-    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          CardConfig[name].title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          CardConfig[name].description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const category = componentCategories[name] || "analytics";
     const matchesCategory = categories.all || categories[category];
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -57,7 +58,7 @@ const Sidebar = () => {
       });
     }
   };
-  
+
   return (
     <div className="flex flex-col h-full">
       {/* Search and filter toolbar */}
@@ -75,18 +76,18 @@ const Sidebar = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           {/* View toggle: Grid vs List */}
           <div className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md">
-            <button 
-              onClick={() => setViewMode("grid")} 
+            <button
+              onClick={() => setViewMode("grid")}
               className={`p-2 rounded-l-md ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-500"}`}
               title="Grid view"
             >
               <MdGridView className="text-xl" />
             </button>
-            <button 
-              onClick={() => setViewMode("list")} 
+            <button
+              onClick={() => setViewMode("list")}
               className={`p-2 rounded-r-md ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-500"}`}
               title="List view"
             >
@@ -94,7 +95,7 @@ const Sidebar = () => {
             </button>
           </div>
         </div>
-        
+
         {/* Category filters */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-gray-600 mr-1 flex items-center">
