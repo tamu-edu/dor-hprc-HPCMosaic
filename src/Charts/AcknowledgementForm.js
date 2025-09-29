@@ -50,7 +50,13 @@ const AcknowledgementForm = () => {
       helpRequestData.append('cluster_name', config.production.cluster_name || 'default');
       helpRequestData.append('help_topic', 'Other');
 
-      const issueDescription = `DOI: ${doi || 'N/A'}\nAdditional Info: ${additionalInfo || 'N/A'}`;
+      let issueDescription = '';
+      if (additionalInfo) {
+        issueDescription = additionalInfo;
+      } else if (doi) {
+        issueDescription = `DOI: ${doi}`;
+      }
+
       helpRequestData.append('issue_description', issueDescription);
       helpRequestData.append('request_type', 'Help');
 
