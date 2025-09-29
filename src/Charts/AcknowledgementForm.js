@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PopupForm from '../composer/PopupForm';
 import acknowledgementRequestSchema from '../composer/schemas/acknowledgementRequest.json';
 import config from "../../config.yml";
@@ -10,6 +10,18 @@ const AcknowledgementForm = () => {
   const baseUrl = config.production.dashboard_url;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [userData, setUserData] = useState({ user: 'unknown', email: '' });
+
+  useEffect(() => {
+    fetch(`${baseUrl}/api/user-data`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.user) {
+          setUserData(data);
+        }
+      })
+      .catch(error => console.error('Error fetching user data:', error));
+  }, [baseUrl]);
 
   const handleSubmit = async (formData) => {
     // Validate that at least one field is filled
@@ -24,48 +36,44 @@ const AcknowledgementForm = () => {
     setErrorMessage("");
 
     if (isSubmitting) {
-      console.log('Acknowledgement submission processing, ignoring duplicate click');
+      console.log('Submission processing, ignoring duplicate click');
       return false;
     }
 
     setIsSubmitting(true);
-    console.log('Acknowledgement submitted:', formData);
 
     try {
-      let dataToSubmit;
+      const helpRequestData = new FormData();
+      helpRequestData.append('user', userData.user);
+      helpRequestData.append('email', userData.email);
+      helpRequestData.append('request_time', new Date().toISOString());
+      helpRequestData.append('cluster_name', config.production.cluster_name || 'default');
+      helpRequestData.append('help_topic', 'Other');
 
-      // If formData is already a FormData object
-      if (formData instanceof FormData) {
-        dataToSubmit = formData;
-      } else {
-        // Convert to FormData
-        dataToSubmit = new FormData();
-        Object.keys(formData).forEach(key => {
-          dataToSubmit.append(key, formData[key]);
-        });
-      }
+      const issueDescription = `DOI: ${doi || 'N/A'}\nAdditional Info: ${additionalInfo || 'N/A'}`;
+      helpRequestData.append('issue_description', issueDescription);
+      helpRequestData.append('request_type', 'Help');
 
-      // Add timestamp
-      dataToSubmit.append('timestamp', new Date().toISOString());
-
-      const response = await fetch(`${baseUrl}/api/submit_acknowledgement`, {
+      const response = await fetch(`${baseUrl}/api/help`, {
         method: 'POST',
-        body: dataToSubmit
+        body: helpRequestData,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit acknowledgement');
+        const errorResult = await response.json().catch(() => ({ error: 'Submission failed with no specific error message.' }));
+        throw new Error(errorResult.error || 'Failed to submit help request');
       }
 
       const result = await response.json();
-      console.log('Acknowledgement submitted successfully:', result);
+      console.log('Help request submitted successfully:', result);
 
-      // Show success message or handle response
-      alert('Acknowledgement submitted successfully!');
+      alert('Help request submitted successfully!');
+      return true;
 
     } catch (error) {
-      console.error('Error submitting acknowledgement:', error);
-      setErrorMessage('Failed to submit acknowledgement. Please try again.');
+      console.error('Error submitting help request:', error);
+      setErrorMessage('Failed to submit help request. Please try again.');
+      // We re-throw the error to make sure the PopupForm knows about the failure.
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -82,7 +90,7 @@ const AcknowledgementForm = () => {
 
       <div className="mb-4">
         <p className="text-gray-600 mb-4">
-          Submit acknowledgements for papers that used HPRC resources. You must provide either a DOI or additional information.
+          Submit acknowledgements for papers that used HPRC resources. You must provide either a DOI or additional information. This will create a help ticket.
         </p>
 
         <PopupForm
@@ -100,8 +108,8 @@ const AcknowledgementForm = () => {
           schema={acknowledgementRequestSchema}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
-          title="Submit Acknowledgement"
-          errorMessage={errorMessage}
+          title="Acknowledgement Form"
+          errorMessage={errorMessage || "Please complete the required fields."}
         />
       </div>
     </div>
