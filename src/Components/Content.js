@@ -19,6 +19,7 @@ import UserGroups from "../Charts/UserGroups";
 import Accounts from "../Charts/Accounts";
 import Composer from "../Charts/Composer";
 import QuotaButton from "../Charts/QuotaButton";
+import AcknowledgementForm from "../Charts/AcknowledgementForm";
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -39,6 +40,7 @@ const getMinSize = (componentName) => {
     "Composer": { minW: 2, minH: 2 },
     "Chatbot": { minW: 4, minH: 8 },
     "Quota Button": { minW: 2, minH: 2 },
+    "AcknowledgementForm": { minW: 3, minH: 6 },
   };
 
   return componentMinSizes[componentName] || defaultMin;
@@ -51,6 +53,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
     { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
+    { name: "AcknowledgementForm", i: uuidv4(), x: 5, y: 25, w: 5, h: 12 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
   ];
@@ -66,8 +69,8 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
   // Ensure the initial layout is set correctly
   const [row, setRow] = useState(layoutData?.length > 0 ? layoutData : defaultLayout);
   const [layout, setLayout] = useState(
-    layoutData?.length > 0 
-    ? layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })) 
+    layoutData?.length > 0
+    ? layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name }))
     : []
   );
 
@@ -93,18 +96,18 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
   // Calculate grid position based on mouse position
   const calculateGridPosition = (clientX, clientY) => {
     if (!gridRef.current) return { x: 0, y: 0 };
-    
+
     const gridRect = gridRef.current.getBoundingClientRect();
     const relX = clientX - gridRect.left;
     const relY = clientY - gridRect.top;
-    
+
     // Convert pixel position to grid position
     const cols = 10; // Grid column count
     const rowHeight = 20; // Grid row height
-    
+
     const gridX = Math.floor((relX / gridRect.width) * cols);
     const gridY = Math.floor(relY / rowHeight);
-    
+
     return { x: Math.max(0, Math.min(gridX, cols - 4)), y: Math.max(0, gridY) };
   };
 
@@ -112,11 +115,11 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
   const addPlaceholderToLayout = (pos, item) => {
     // Get component-specific minimum sizes
     const { minW, minH } = getMinSize(item.name);
-    
+
     // Use appropriate sizes for placeholder
     const w = Math.max(4, minW);
     const h = Math.max(10, minH);
-    
+
     setPlaceholderSize({ w, h });
     setPlaceholderPos(pos);
     setShowPlaceholder(true);
@@ -165,7 +168,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     hover: (item, monitor) => {
       setCurrentDragItem(item);
       setIsDraggingOver(true);
-      
+
       const clientOffset = monitor.getClientOffset();
       if (clientOffset) {
         const gridPos = calculateGridPosition(clientOffset.x, clientOffset.y);
@@ -175,7 +178,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     drop: (item, monitor) => {
       setShowPlaceholder(false);
       setIsDraggingOver(false);
-      
+
       // Add the new element at the placeholder position
       addNewElement(item, placeholderPos);
     },
@@ -228,14 +231,14 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     // Preserve the name when updating layout
     const updatedRow = row.map((item) => {
         const newItem = newLayout.find((l) => l.i === item.i);
-        return newItem 
-            ? { 
-                ...item, 
-                x: newItem.x, 
-                y: newItem.y, 
-                w: newItem.w, 
-                h: newItem.h 
-              } 
+        return newItem
+            ? {
+                ...item,
+                x: newItem.x,
+                y: newItem.y,
+                w: newItem.w,
+                h: newItem.h
+              }
             : item;
     });
 
@@ -264,13 +267,15 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
         return <UserGroups />;
       case "Accounts":
         return <Accounts />;
+      case "AcknowledgementForm":
+        return <AcknowledgementForm />;
       default:
         return <div className="text-center text-red-500">Unknown Chart</div>;
     }
   };
 
   // Create a combined layout that includes both regular items and the placeholder
-  const combinedLayout = showPlaceholder 
+  const combinedLayout = showPlaceholder
     ? [...layout, {
         i: 'placeholder',
         x: placeholderPos.x,
@@ -282,11 +287,11 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     : layout;
 
   return (
-    <div 
+    <div
       ref={(node) => {
         drop(node);
         gridRef.current = node;
-      }} 
+      }}
       className={`max-w-full h-auto p-4 relative ${isOver ? "bg-blue-50" : ""}`}
     >
       {/* Toast Notification Container */}
@@ -326,13 +331,13 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
               >
                 <span className="text-sm">✕</span>
               </button>
-              
+
               {/* Component content */}
               <div className="h-full w-full p-0">{renderChart(ele)}</div>
             </div>
           );
         })}
-        
+
         {/* Render placeholder item */}
         {showPlaceholder && (
           <div

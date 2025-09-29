@@ -1,0 +1,17 @@
+{
+  "doi": {
+    "type": "text",
+    "label": "DOI (Digital Object Identifier)",
+    "name": "doi",
+    "help": "Enter the DOI of the paper you want to acknowledge (optional)",
+    "value": ""
+  },
+  "additionalInfo": {
+    "type": "textarea",
+    "label": "Additional Information",
+    "name": "additionalInfo",
+    "help": "Enter any additional information you want to include in the acknowledgement (optional)",
+    "value": "",
+    "rows": 4
+  }
+}
