@@ -87,16 +87,17 @@ const AcknowledgementForm = () => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
-      <h2 className="text-2xl font-semibold mb-4">
+    <div className="p-2 bg-white rounded-lg overflow-auto w-full h-full">
+      <h2 className="text-lg font-semibold mb-2">
         <Tippy content={ElementDescriptions["Acknowledgement Form"]}>
           <span className="cursor-help">Acknowledgement Form ⓘ</span>
         </Tippy>
       </h2>
 
-      <div className="mb-4">
-        <p className="text-gray-600 mb-4">
-          Submit acknowledgements for papers that used HPRC resources. You must provide either a DOI or additional information. This will create a help ticket.
+      <div className="mb-2">
+        <p className="text-gray-600 text-sm mb-2">
+          Please acknowledge HPRC when you showcase research or publish a paper that has benefited from Texas A&M HPRC resources.
+          For standard acknowledgment examples and a listing of publications acknowledging HPRC, click <a href="https://hprc.tamu.edu/research/citations.html"></a>.  Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
         </p>
 
         <PopupForm
@@ -105,10 +106,10 @@ const AcknowledgementForm = () => {
             backgroundColor: '#500000',
             color: 'white',
             border: 'none',
-            padding: '12px 24px',
-            borderRadius: '6px',
+            padding: '8px 16px',
+            borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '16px',
+            fontSize: '14px',
             fontWeight: '500'
           }}
           schema={acknowledgementRequestSchema}
