@@ -97,8 +97,8 @@ const AcknowledgementForm = () => {
   return (
     <div className="p-2 bg-white rounded-lg overflow-auto w-full h-full">
       <h2 className="text-lg font-semibold mb-2">
-        <Tippy content={ElementDescriptions["Acknowledgement Form"]}>
-          <span className="cursor-help">Acknowledgement Form ⓘ</span>
+        <Tippy content={ElementDescriptions["Acknowledgement Form for Papers using HPRC Resources"]}>
+          <span className="cursor-help">Acknowledging HPRC ⓘ</span>
         </Tippy>
       </h2>
 
@@ -109,25 +109,26 @@ const AcknowledgementForm = () => {
         <p className="text-gray-600 text-sm mb-2">
           For standard acknowledgment examples and a listing of publications acknowledging HPRC, click <a href="https://hprc.tamu.edu/research/citations.html">here</a>.  Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
         </p>
-
-        <PopupForm
-          buttonText="Submit Acknowledgement"
-          buttonStyle={{
-            backgroundColor: '#500000',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}
-          schema={acknowledgementRequestSchema}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          title="Acknowledgement Form"
-          errorMessage={errorMessage || "Please complete the required fields."}
-        />
+        <div className="flex justify-center">
+          <PopupForm
+            buttonText="Submit Acknowledgement"
+            buttonStyle={{
+              backgroundColor: '#500000',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+            schema={acknowledgementRequestSchema}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            title="Acknowledgement Form"
+            errorMessage={errorMessage || "Please complete the required fields."}
+          />
+        </div>
       </div>
     </div>
   );
