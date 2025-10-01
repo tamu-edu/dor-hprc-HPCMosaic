@@ -29,7 +29,10 @@ const AcknowledgementForm = () => {
     const additionalInfo = formData.get ? formData.get('additionalInfo') : formData.additionalInfo;
 
     if ((!doi || doi.trim() === '') && (!additionalInfo || additionalInfo.trim() === '')) {
-      setErrorMessage("Please fill in at least one field (DOI or Additional Information).");
+      const errorMsg = "Please fill in at least one field (DOI or Additional Information).";
+      setErrorMessage(errorMsg);
+      // Show alert to ensure user sees the error
+      alert(errorMsg);
       return false;
     }
 
@@ -51,9 +54,14 @@ const AcknowledgementForm = () => {
       helpRequestData.append('help_topic', 'Other');
 
       let issueDescription = '';
-      if (additionalInfo) {
+      if (doi && additionalInfo) {
+        // Both fields filled - format with DOI first, then additional info on next line
+        issueDescription = `DOI: ${doi}\n${additionalInfo}`;
+      } else if (additionalInfo) {
+        // Only additional info filled
         issueDescription = additionalInfo;
       } else if (doi) {
+        // Only DOI filled
         issueDescription = `DOI: ${doi}`;
       }
 
@@ -99,29 +107,27 @@ const AcknowledgementForm = () => {
           Please acknowledge HPRC when you showcase research or publish a paper that has benefited from Texas A&M HPRC resources.
         </p>
         <p className="text-gray-600 text-sm mb-2">
-          For standard acknowledgment examples and a listing of publications acknowledging HPRC, click <a style={{ color: '#500000' }} href="https://hprc.tamu.edu/research/citations.html">here</a>. Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
+          For standard acknowledgment examples and a listing of publications acknowledging HPRC, click <a href="https://hprc.tamu.edu/research/citations.html">here</a>.  Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
         </p>
 
-        <div className="flex justify-center">
-          <PopupForm
-            buttonText="Submit Acknowledgement"
-            buttonStyle={{
-              backgroundColor: '#500000',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
-            schema={acknowledgementRequestSchema}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            title="Acknowledgement Form"
-            errorMessage={errorMessage || "Please complete the required fields."}
-          />
-        </div>
+        <PopupForm
+          buttonText="Submit Acknowledgement"
+          buttonStyle={{
+            backgroundColor: '#500000',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}
+          schema={acknowledgementRequestSchema}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          title="Acknowledgement Form"
+          errorMessage={errorMessage || "Please complete the required fields."}
+        />
       </div>
     </div>
   );
