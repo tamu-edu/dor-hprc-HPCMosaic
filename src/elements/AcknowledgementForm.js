@@ -107,7 +107,7 @@ const AcknowledgementForm = () => {
           Please acknowledge HPRC when you showcase research or publish a paper that has benefited from Texas A&M HPRC resources.
         </p>
         <p className="text-gray-600 text-sm mb-2">
-          For standard acknowledgment examples and a listing of publications acknowledging HPRC, click <a href="https://hprc.tamu.edu/research/citations.html">here</a>.  Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
+          For standard acknowledgment examples and a listing of publications acknowledging HPRC, click <a style={{ color: '#500000' }} href="https://hprc.tamu.edu/research/citations.html">here</a>.  Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
         </p>
         <div className="flex justify-center">
           <PopupForm
