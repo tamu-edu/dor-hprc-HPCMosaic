@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import Spinner from "../Components/Spinner";
 import config from "../../config.yml";
+import Spinner from "../Components/Spinner";
 import ElementDescriptions from "../Components/ElementDescriptions";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
 import Tippy from "@tippyjs/react";
+import { generate_file_explorer_path_for_jobs } from '../utils/generate_filepath';
 
 const UserJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -65,7 +66,9 @@ const UserJobs = () => {
           <tbody className="text-gray-800 text-sm">
             {jobs.map((job) => (
               <tr key={job.job_id} className="border-b border-gray-200">
-                <td className="py-3 px-4">{job.job_id}</td>
+                <td className="py-3 px-4">
+                    {generate_file_explorer_path_for_jobs(job)}
+                </td>
                 <td className={`py-3 px-4 ${job.state === "R" ? "text-green-600" : "text-yellow-600"}`}>
                   {job.state === "R" ? "Running" : "Pending"}
                 </td>
