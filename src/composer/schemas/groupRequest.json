@@ -13,7 +13,7 @@
    },
 
    "memberQuestions": {
-      "type": "CollapsibleColContainer",
+      "type": "collapsibleColContainer",
       "title": "Managing group members",
       "condition" : "groupRequest.madd || groupRequest.mremove",
       "elements": {
