@@ -491,16 +491,19 @@ def parse_scontrol_output(output):
         "UserId": "user_group",
         "Account": "user_account",
         "JobState": "state",
+        "Reason": "reason",
+        "ExitCode": "exit_code",
+        "RunTime": "time_elapsed",
+        "TimeLimit": "time_requested",
+        "StartTime": "start_time",
+        "EndTime": "end_time",
         "Partition": "partition",
         "NodeList": "nodelist",
         "NumNodes": "node_count",
         "NumCPUs": "cores",
-        "WorkDir": "submit_dir",
+        "NumTasks": "task_count",
         "Command": "submit_line",
-        "StartTime": "start_time",
-        "EndTime": "end_time",
-        "TimeLimit": "time_limit",
-        "RunTime": "time_elapsed",
+        "WorkDir": "submit_dir",
     }
 
     for token in tokens:
@@ -623,11 +626,14 @@ def get_user_jobs():
                     encoding="utf-8",
                 ).stdout
                 job_details_parsed = parse_scontrol_output(myjob_command)["job_details"]
-                
+        
                 jobs.append({
                     "job_id": job_id,
                     "state": state,
+                    "cpus": job_details_parsed.get("cores"),
                     "nodes": nodes,
+                    "time_requested": job_details_parsed.get("time_requested"),
+                    "time_elapsed": job_details_parsed.get("time_elapsed"),
                     "submit_dir": job_details_parsed.get("submit_dir"),
                 })
             
