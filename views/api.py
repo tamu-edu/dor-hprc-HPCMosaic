@@ -65,7 +65,7 @@ def get_user_email(username):
 
     try:
         mapping_file = "/usr/local/etc/email_mapping.access.login"
-        
+
         if os.path.exists(mapping_file):
             with open(mapping_file, 'r') as f:
                 for line in f:
@@ -303,7 +303,7 @@ def get_envs():
         if not os.path.exists(metadataPath):
             return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment", "code": f"NO_METADATA"}), 500
         with open(metadataPath,'r') as file:
-            metadata = json.load(file)  
+            metadata = json.load(file)
             return metadata, 200
     except json.JSONDecodeError as e:
         return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
@@ -373,7 +373,7 @@ def create_venv():
         return jsonify({"message": f"{envName} was successfully created!"}), 200
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
-        
+
 @api.route('/projectinfo', methods=['GET'])
 def get_projectinfo():
     """Retrieve project information and allow querying for job history or pending jobs."""
@@ -433,7 +433,7 @@ def parse_project_accounts(output):
     """Parses output from `myproject` to extract project account details."""
     lines = output.split("\n")
     start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
-    
+
     if start_index == -1 or len(lines) <= start_index + 2:
         return {"error": "Unexpected output format from myproject"}
 
@@ -487,7 +487,7 @@ def parse_job_history(output):
 
     # Find the start of the data table
     start_index = next((i for i, line in enumerate(lines) if "JobID" in line and "SubmitTime" in line), -1)
-    
+
     if start_index == -1 or len(lines) <= start_index + 1:
         return {"error": "Unexpected output format from myproject"}
 
@@ -520,7 +520,7 @@ def set_default_account():
             return jsonify({"error": "Missing account number"}), 400
 
         command = f"/sw/local/bin/myproject -d {account_no}"
-        
+
         # Log command execution
         logging.info(f"Setting default account with command: {command}")
         print(f"Executing command: {command}")
@@ -975,6 +975,10 @@ def request_help():
 
         # Raw form fields
         help_request_type = request.form.get("helpRequest", "").strip()
+        # This is for the acknowledgement form
+        direct_help_topic = request.form.get("help_topic", "").strip()
+        direct_issue_description = request.form.get("issue_description", "").strip()
+
 
         logging.info(f"Received help request type: {help_request_type} from {user}")
 
@@ -984,7 +988,7 @@ def request_help():
             "user": user,
             "email": get_user_email(user),
             "cluster_name": cluster_name,
-            "help_topic": help_request_type,
+            "help_topic": help_request_type or direct_help_topic,
             "issue_description": "",
             "error_message": "",
             "job_file_path": "",
@@ -1029,6 +1033,10 @@ def request_help():
         # Other Help
         elif help_request_type == "other":
             params["issue_description"] = request.form.get("otherDescription", "")
+
+        if direct_help_topic == "Other" and direct_issue_description:
+            params["issue_description"] = direct_issue_description
+
 
         logging.info(f"Sending Help request to HPRC Bot: {params}")
 
@@ -1150,5 +1158,49 @@ def request_account_purchase():
         logging.error(f"Error processing account request: {str(e)}")
         return jsonify({
             "error": f"Failed to process your account purchase request: {str(e)}",
+            "status": "failed"
+        }), 500
+
+@api.route('/submit_acknowledgement', methods=['POST'])
+def submit_acknowledgement():
+    try:
+        logging.info("📝 ACKNOWLEDGEMENT SUBMITTED 📝")
+        user = os.environ.get('USER', 'unknown')
+        email = get_user_email(user)
+
+        doi = request.form.get("doi", "").strip()
+        additional_info = request.form.get("additionalInfo", "").strip()
+        timestamp = request.form.get("timestamp", "").strip()
+
+        # Validate that at least one field is provided
+        if not doi and not additional_info:
+            return jsonify({"error": "At least one field (DOI or Additional Information) must be provided"}), 400
+
+        params = {
+            "request_type": "Acknowledgement",
+            "user": user,
+            "email": email,
+            "cluster_name": cluster_name,
+            "doi": doi,
+            "additional_info": additional_info,
+            "timestamp": timestamp
+        }
+
+        logging.info(f"Sending acknowledgement to HPRC Bot: {params}")
+        response = requests.post(f"{hprcbot_route}/HPRCapp/OOD", json=params, timeout=15)
+
+        if response.status_code == 200:
+            logging.info("Acknowledgement successfully submitted to HPRC Bot")
+            return jsonify({
+                "message": "Your acknowledgement has been submitted successfully.",
+                "status": "bot_success"
+            }), 200
+        else:
+            raise Exception(f"HPRC Bot returned non-200: {response.status_code}")
+
+    except Exception as e:
+        logging.error(f"Error processing acknowledgement: {str(e)}")
+        return jsonify({
+            "error": f"Failed to process your acknowledgement: {str(e)}",
             "status": "failed"
         }), 500
