@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Spinner from "../Components/Spinner";
 import config from "../../config.yml";
-import ElementDescriptions from "../Components/ElementDescriptions";
+import Spinner from "../framework/Spinner";
+import ElementDescriptions from "../framework/ElementDescriptions";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
 import Tippy from "@tippyjs/react";
 

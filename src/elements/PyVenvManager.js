@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import config from '../../config.yml';
 import CreateVenvForm from "./CreateVenvForm.js"
-import Spinner from "../Components/Spinner.js"
+import Spinner from "../framework/Spinner.js"
 
 const PyVenvManager = () => {
   

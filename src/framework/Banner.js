@@ -12,11 +12,11 @@ import ClusterLogo from "./ClusterLogo";
 import Content from "./Content";
 import Sidebar from "./Sidebar";
 import LayoutUtility from "./LayoutUtility";
-import HelpButton from "../Charts/HelpButton";
+import HelpButton from "../elements/HelpButton";
 import BannerBackground from "./BannerBackground";
 
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
-import { useChatbotVisibility } from "../Components/ChatbotVisibilityContext";
+import { useChatbotVisibility } from "./ChatbotVisibilityContext";
 import config from "../../config.yml";
 
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import config from "../../config.yml";
-import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
-import ElementDescriptions from "../Components/ElementDescriptions";
+import ElementDescriptions from "../framework/ElementDescriptions";
+import Spinner from "../framework/Spinner";
 
 const ProjectInfo = () => {
   const [projects, setProjects] = useState([]);

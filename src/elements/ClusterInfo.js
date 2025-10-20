@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import "chart.js/auto";
 import config from "../../config.yml";
-import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Import Tippy styles
-import ElementDescriptions from "../Components/ElementDescriptions";
+import ElementDescriptions from "../framework/ElementDescriptions";
+import Spinner from "../framework/Spinner";
 
 const ClusterInfo = () => {
   const [data, setData] = useState([]);

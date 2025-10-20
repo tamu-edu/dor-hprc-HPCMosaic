@@ -10,15 +10,15 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Import components
-import PyVenvManager from "../Charts/PyVenvManager";
-import ClusterInfo from "../Charts/ClusterInfo";
-import UserJobs from "../Charts/UserJobs";
-import Chatbot from "../Charts/Chatbot";
-import QuotaInfo from "../Charts/QuotaInfo";
-import UserGroups from "../Charts/UserGroups";
-import Accounts from "../Charts/Accounts";
-import Composer from "../Charts/Composer";
-import QuotaButton from "../Charts/QuotaButton";
+import PyVenvManager from "../elements/PyVenvManager";
+import ClusterInfo from "../elements/ClusterInfo";
+import UserJobs from "../elements/UserJobs";
+import Chatbot from "../elements/Chatbot";
+import QuotaInfo from "../elements/QuotaInfo";
+import UserGroups from "../elements/UserGroups";
+import Accounts from "../elements/Accounts";
+import Composer from "../elements/Composer";
+import QuotaButton from "../elements/QuotaButton";
 
 const ReactGridLayout = WidthProvider(RGL);
 

@@ -7,13 +7,13 @@
       "options": [
          { "value": "madd", "label": "Add member" },
          { "value": "mremove", "label": "Remove member" },
-         { "value": "cgroup", "label": "Create new Group" },
-         { "value": "rgroup", "label": "Request  group access" }
+         { "value": "cgroup", "label": "Create new group" },
+         { "value": "rgroup", "label": "Request group access" }
       ]
    },
 
    "memberQuestions": {
-      "type": "CollapsibleColContainer",
+      "type": "collapsibleColContainer",
       "title": "Managing group members",
       "condition" : "groupRequest.madd || groupRequest.mremove",
       "elements": {
@@ -97,6 +97,13 @@
            "label": "Provide group name you request access to",
            "name": "groupName",
            "help": "Provide group name you request access to"
+         },
+
+	 "justification": {
+           "type": "textarea",
+           "label": "Explain why you are requesting access to this group (e.g., project storage, shared software, collaboration, etc.)",
+           "name": "comments",
+           "help": "Explain the purpose of this group request. Include details such as: What the group will be used for (e.g., project data storage, shared software, collaboration). Why you should have access (e.g., relevant license, PI approval, related research work)"
          }
 
       } 

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import config from "../../config.yml";
-import Spinner from "../Components/Spinner";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default tooltip styling
-import ElementDescriptions from "../Components/ElementDescriptions";
-import QuotaButton from "../Charts/QuotaButton"; // Import QuotaButton component
+import ElementDescriptions from "../framework/ElementDescriptions";
+import Spinner from "../framework/Spinner";
+import QuotaButton from "./QuotaButton"; // Import QuotaButton component
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
-
 
 const QuotaInfo = () => {
   const [quotaData, setQuotaData] = useState([]);

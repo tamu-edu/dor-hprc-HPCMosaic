@@ -1,16 +1,16 @@
 import React from "react";
 import { AiOutlineCluster, AiOutlineDatabase, AiOutlineUser, AiOutlineCode, AiOutlinePieChart, AiOutlineProject } from "react-icons/ai";
 import Card from "./Card";
-import ClusterInfo from "../Charts/ClusterInfo";
-import PyVenvManager from "../Charts/PyVenvManager";
-import QuotaInfo from "../Charts/QuotaInfo";
-import UserGroups from "../Charts/UserGroups";
-import Accounts from "../Charts/Accounts";
-import UserJobs from "../Charts/UserJobs";
-import QuotaButton from '../Charts/QuotaButton';
-import Composer from '../Charts/Composer';
+import ClusterInfo from "../elements/ClusterInfo";
+import PyVenvManager from "../elements/PyVenvManager";
+import QuotaInfo from "../elements/QuotaInfo";
+import UserGroups from "../elements/UserGroups";
+import Accounts from "../elements/Accounts";
+import UserJobs from "../elements/UserJobs";
+import QuotaButton from '../elements/QuotaButton';
+import Composer from '../elements/Composer';
 import ElementDescriptions from "./ElementDescriptions"; // Import descriptions
-import Chatbot from '../Charts/Chatbot';
+import Chatbot from '../elements/Chatbot';
 
 const CardConfig = {
     "Node Utilization": {
