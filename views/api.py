@@ -832,9 +832,9 @@ What is your long-term storage plan for your data after the quota increase expir
             logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
             response = requests.post(f"{hprcbot_route}/HPRCapp/OOD", json=params, timeout=5)
 
-            if response.text == "OK":
+            if response.status_code == 200 or response.text == "OK":
                 return jsonify({
-                    "message": "Your quota request has been submitted successfully via HPRC Bot.",
+                    "message": f"Your quota request has been submitted successfully via HPRC Bot.",
                     "status": "bot_success"
                 }), 200
             else:

@@ -63,7 +63,7 @@ const UserGroups = () => {
   }
 
   return (
-    <div className="p-4 bg-white w-full h-full flex flex-col">
+    <div className="p-4 bg-white w-full flex flex-col">
       {/* Header section with title and action button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
@@ -74,7 +74,7 @@ const UserGroups = () => {
           </h2>
         </div>
         
-        {/* Group Request Button */}
+        {/* Request Group Access Button */}
         <div className="flex items-center">
           <div className="group-request-action">
             <GroupButton />
@@ -82,8 +82,23 @@ const UserGroups = () => {
         </div>
       </div>
 
+      <hr className="border-gray-300 mb-4" />
+
+      {/*User's Groups*/}
       <div className="overflow-auto w-full h-full flex-grow">
-        <table className="table-auto w-full border-collapse border border-gray-300 rounded-lg shadow-sm">
+        <div className="flex flex-wrap gap-3">
+          {groups.map((group, index) => (
+            <div
+              key={index}
+              className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-center hover:bg-blue-100 transition-colors duration-200"
+            >
+              <span className="font-medium text-blue-900">{group}</span>
+            </div>
+          ))}
+        </div>
+        
+	  {/*
+	<table className="table-auto w-full border-collapse border border-gray-300 rounded-lg shadow-sm">
           <thead>
             <tr className="bg-gray-200 text-gray-700">
               <th className="border border-gray-300 px-4 py-2">
@@ -132,6 +147,7 @@ const UserGroups = () => {
             )}
           </tbody>
         </table>
+	*/}
       </div>
       
       {/* Additional note at the bottom */}

@@ -54,7 +54,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
     { name: "AcknowledgementForm", i: uuidv4(), x: 5, y: 25, w: 5, h: 12 },
-    { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
+    { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 12 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
   ];
 
