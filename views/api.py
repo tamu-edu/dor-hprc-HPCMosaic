@@ -834,7 +834,7 @@ What is your long-term storage plan for your data after the quota increase expir
 
             if response.status_code == 200 or response.text == "OK":
                 return jsonify({
-                    "message": f"Your quota request has been submitted successfully via HPRC Bot. {response.status_code} {response.text}",
+                    "message": f"Your quota request has been submitted successfully via HPRC Bot.",
                     "status": "bot_success"
                 }), 200
             else:
