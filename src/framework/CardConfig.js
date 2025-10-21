@@ -10,8 +10,12 @@ import UserJobs from "../elements/UserJobs";
 import QuotaButton from '../elements/QuotaButton';
 import Composer from '../elements/Composer';
 import ElementDescriptions from "./ElementDescriptions"; // Import descriptions
+<<<<<<< HEAD:src/framework/CardConfig.js
 import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
+=======
+import AcknowledgementForm from '../Charts/AcknowledgementForm';
+>>>>>>> be730ebe7a8ffef4b4e626332bba9f127b0eb7d9:src/Components/CardConfig.js
 // ... other imports
 
 const CardConfig = {

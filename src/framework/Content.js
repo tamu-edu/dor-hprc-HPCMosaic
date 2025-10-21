@@ -10,6 +10,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Import components
+<<<<<<< HEAD:src/framework/Content.js
 import PyVenvManager from "../elements/PyVenvManager";
 import ClusterInfo from "../elements/ClusterInfo";
 import UserJobs from "../elements/UserJobs";
@@ -20,6 +21,18 @@ import Accounts from "../elements/Accounts";
 import Composer from "../elements/Composer";
 import QuotaButton from "../elements/QuotaButton";
 import AcknowledgementForm from "../elements/AcknowledgementForm";
+=======
+import PyVenvManager from "../Charts/PyVenvManager";
+import ClusterInfo from "../Charts/ClusterInfo";
+import UserJobs from "../Charts/UserJobs";
+import Chatbot from "../Charts/Chatbot";
+import QuotaInfo from "../Charts/QuotaInfo";
+import UserGroups from "../Charts/UserGroups";
+import Accounts from "../Charts/Accounts";
+import Composer from "../Charts/Composer";
+import QuotaButton from "../Charts/QuotaButton";
+import AcknowledgementForm from "../Charts/AcknowledgementForm";
+>>>>>>> be730ebe7a8ffef4b4e626332bba9f127b0eb7d9:src/Components/Content.js
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -53,6 +66,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
     { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
     { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
+    { name: "AcknowledgementForm", i: uuidv4(), x: 5, y: 25, w: 5, h: 12 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 12 },
     { name: "AcknowledgementForm", i: uuidv4(), x: 5, y: 25, w: 5, h: 12 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
