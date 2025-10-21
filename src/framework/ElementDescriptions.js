@@ -5,6 +5,7 @@ const ElementDescriptions = {
     "User Groups": "Lists user groups and their associated storage paths.",
     Accounts: "Provides information on user accounts and their roles.",
     "User Jobs": "Displays currently running and queued jobs for the user.",
+    "Acknowledgement Form": "Submit acknowledgements for papers that used HPRC resources.",
 };
 
 export default ElementDescriptions;
