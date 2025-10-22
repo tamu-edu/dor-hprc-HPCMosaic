@@ -1,7 +1,7 @@
 {
   "doi": {
     "type": "text",
-    "label": "DOI (Digital Object Identifier) (if available)",
+    "label": "Digital Object Identifier (DOI), if available",
     "name": "doi",
     "help": "Enter the DOI of the paper you want to acknowledge if available (optional)",
     "value": ""
