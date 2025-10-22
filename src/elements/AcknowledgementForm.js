@@ -4,7 +4,7 @@ import acknowledgementRequestSchema from '../composer/schemas/acknowledgementReq
 import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
-import ElementDescriptions from "../Components/ElementDescriptions";
+import ElementDescriptions from "../framework/ElementDescriptions";
 
 const AcknowledgementForm = () => {
   const baseUrl = config.production.dashboard_url;
