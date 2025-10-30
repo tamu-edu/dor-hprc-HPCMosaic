@@ -1,4 +1,4 @@
-name: ${CLUSTERNAME} Dashboard (HPCMosaic)
+name: ${CLUSTERNAME} Dashboard (HPCMosaic${ENV_SUFFIX})
 description: ${CLUSTERNAME} utilities
 icon: fa://columns
 category: Dashboard
