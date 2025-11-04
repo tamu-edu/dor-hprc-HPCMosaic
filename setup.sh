@@ -2,19 +2,39 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+#Get and set submodules
+# Initialize git submodules if they exist
+if [ -f .gitmodules ]; then
+    echo "Initializing git submodules..."
+    git submodule init
+    git submodule update
+fi
+
 # Set CLUSTERNAME
 if [[ -z "${CLUSTERNAME:-}" ]]; then
-    read -p "Enter cluster name: " CLUSTERNAME
-    if [[ -z "$CLUSTERNAME" ]]; then
-	echo "Error: Cluster name cannot be empty" >&2
-	exit 1
+    if [[ -t 0 ]]; then
+        # Interactive terminal - prompt user
+        read -p "Enter cluster name: " CLUSTERNAME
+        if [[ -z "$CLUSTERNAME" ]]; then
+            echo "Invalid/missing input, defaulting to DEFAULTCLUSTER" >&2
+            CLUSTERNAME="DEFAULTCLUSTER"
+        fi
+    else
+        # Non-interactive (OOD portal) - use default
+        echo "No CLUSTERNAME set, using default: DEFAULTCLUSTER"
+        CLUSTERNAME="DEFAULTCLUSTER"
     fi
 fi
 
 # Decide env type
-echo "Is this a dev or production environment?"
-read -p "Enter 'dev' or 'prod': " ENV_TYPE
-ENV_TYPE=${ENV_TYPE}
+if [[ -t 0 ]]; then
+    # Interactive - prompt user
+    echo "Is this a dev or production environment?"
+    read -p "Enter 'dev' or 'prod': " ENV_TYPE
+else
+    # Non-interactive - use default
+    ENV_TYPE=""
+fi
 
 if [[ "$ENV_TYPE"  == "dev" ]]; then
     export ENV_SUFFIX="-dev"

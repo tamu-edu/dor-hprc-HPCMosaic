@@ -4,13 +4,14 @@ import Spinner from "../framework/Spinner";
 import ElementDescriptions from "../framework/ElementDescriptions";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
 import Tippy from "@tippyjs/react";
+import { get_base_url } from "../utils/api_config.js"
 
 const UserJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCanceling, setIsCanceling] = useState(null);
-  const baseUrl = config.production.dashboard_url;
+  const baseUrl = get_base_url();
 
   // Fetch jobs for the current user
   useEffect(() => {

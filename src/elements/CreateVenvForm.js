@@ -10,10 +10,10 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 	const [envName, setEnvName] = useState(null);
 	const [waitingForCreation, setWaitingForCreation] = useState(false);
 
-	const devUrl = config.production.dashboard_url;
+	const devUrl = config.development.dashboard_url;
 	//   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
-	  const prodUrl = config.production.dashboard_url;
-	  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
+	const prodUrl = config.production.dashboard_url;
+	const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
 	
 	const fetchPyVersions = async () => {
 		try {

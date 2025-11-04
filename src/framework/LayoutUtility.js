@@ -3,6 +3,7 @@ import { MdViewQuilt, MdArrowDropDown, MdDelete, MdEdit, MdRefresh, MdCheck } fr
 import config from "../../config.yml";
 import { toast } from "react-hot-toast";
 import { fetchLayouts as fetchLayoutsUtil, deleteLayout as deleteLayoutUtil } from './layoutUtils';
+import { get_base_url } from "../utils/api_config.js" 
 
 const LayoutUtility = ({
   layouts, 
@@ -18,7 +19,7 @@ const LayoutUtility = ({
     const [activeLayout, setActiveLayout] = useState(null);
     const [actionInProgress, setActionInProgress] = useState(null);
     const [localLayouts, setLocalLayouts] = useState(layouts);
-    const baseUrl = config.production.dashboard_url;
+    const baseUrl = get_base_url();
 
     // Update local layouts when parent layouts change
     useEffect(() => {

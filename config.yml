@@ -1,6 +1,6 @@
 development: &common_settings
-  cluster_name: "Aces"
-  dashboard_url: "http://127.0.0.1:5000"
+  cluster_name: "DEFAULTCLUSTER"
+  dashboard_url: "/pun/dev/dor-hprc-HPCMosaic-dev"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"
   home_page: "https://hprc.tamu.edu"

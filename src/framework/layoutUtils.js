@@ -1,7 +1,8 @@
 import axios from 'axios';
 import config from "../../config.yml";
+import { get_base_url } from "../utils/api_config.js"
 
-const baseUrl = config.production.dashboard_url + '/api';
+const baseUrl = get_base_url() + '/api';
 
 export const saveLayout = async (layoutName, layoutData) => {
     try {

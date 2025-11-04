@@ -6,13 +6,14 @@ import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Import Tippy styles
 import ElementDescriptions from "../framework/ElementDescriptions";
 import Spinner from "../framework/Spinner";
+import { get_base_url } from "../utils/api_config.js"
 
 const ClusterInfo = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [view, setView] = useState("chart");
   const [loading, setLoading] = useState(true);
-  const baseUrl = config.production.dashboard_url;
+  const baseUrl = get_base_url();
 
   // Custom Tooltip Component
   const CustomTooltip = ({ content }) => (
