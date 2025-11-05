@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import config from '../../config.yml';
 import CreateVenvForm from "./CreateVenvForm.js"
 import Spinner from "../framework/Spinner.js"
+import { get_base_url } from "../utils/api_config.js"
 
 const PyVenvManager = () => {
   
@@ -11,10 +12,9 @@ const PyVenvManager = () => {
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deletingEnv, setDeletingEnv] = useState(null);
 
-	const devUrl = config.development.dashboard_url;
-	//   const prodUrl = `${window.location.origin}/pun/sys/dor-hprc-web-tamudashboard-reu-branch`;
-	const prodUrl = config.production.dashboard_url;
-	const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
+	//const devUrl = config.production.dashboard_url;
+	//const prodUrl = config.production.dashboard_url;
+	const curUrl = get_base_url();
 
   const fetchEnvs = async () => {
 	try {
