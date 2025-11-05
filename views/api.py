@@ -642,7 +642,8 @@ def get_user_jobs():
         return jsonify({"error": str(e)}), 500
 
 # API to cancel a job
-@api.route("/cancel_job/<job_id>", methods=["DELETE"])
+@api.route("/cancel_job/<job_id>", methods=["POST"])
+@api.route("/cancel_job/<job_id>/", methods=["POST"])
 def cancel_job(job_id):
     try:
         result = subprocess.run(

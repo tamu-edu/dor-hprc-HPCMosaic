@@ -80,7 +80,7 @@ const UserJobs = () => {
   // Cancel a job
   const cancelJob = (jobId) => {
     setIsCanceling(jobId);
-    fetch(`/cancel_job/${jobId}`, { method: "DELETE" })
+    fetch(`${baseUrl}/api/cancel_job/${jobId}`, { method: "POST" })
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
