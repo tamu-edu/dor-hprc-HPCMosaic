@@ -629,6 +629,7 @@ def get_user_jobs():
         
                 jobs.append({
                     "job_id": job_id,
+                    "job_name": job_details_parsed.get("job_name"),
                     "state": state,
                     "cpus": job_details_parsed.get("cores"),
                     "nodes": nodes,

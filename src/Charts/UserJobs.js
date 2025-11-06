@@ -5,6 +5,7 @@ import ElementDescriptions from "../Components/ElementDescriptions";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
 import Tippy from "@tippyjs/react";
 import { generate_file_explorer_path_for_jobs } from '../utils/generate_filepath';
+//import JobExtendButton from "../Charts/JobExtendButton"; // Import JobExtendButton component
 
 const UserJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -110,6 +111,7 @@ const UserJobs = () => {
           <thead>
             <tr className="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
               <th className="border border-gray-300 px-4 py-2">Job ID</th>
+              <th className="border border-gray-300 px-4 py-2">Job Name</th>
               <th className="border border-gray-300 px-4 py-2">State</th>
               <th className="border border-gray-300 px-4 py-2">CPUs</th>
               <th className="border border-gray-300 px-4 py-2">Nodes</th>
@@ -122,6 +124,9 @@ const UserJobs = () => {
               <tr key={job.job_id} className="border-b border-gray-200">
                 <td className="py-3 px-4">
                     {generate_file_explorer_path_for_jobs(job)}
+                </td>
+                <td className="py-3 px-4">
+                    {job.job_name}
                 </td>
                 <td className={`py-3 px-4 ${job.state === "R" ? "text-green-600" : "text-yellow-600"}`}>
                   {job.state === "R" ? "Running" : "Pending"}
@@ -158,17 +163,22 @@ const UserJobs = () => {
                     </p>
                 </td>
                 <td className="py-3 px-4"> 
-                  <button
-                    onClick={() => cancelJob(job.job_id)}
-                    className={`px-3 py-1 rounded ${
-                      isCanceling === job.job_id
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-red-500 hover:bg-red-600 text-white"
-                    }`}
-                    disabled={isCanceling === job.job_id}
-                  >
-                    {isCanceling === job.job_id ? "Canceling..." : "Cancel Job"}
-                  </button>
+                    {/* <div> */}
+                      <button
+                        onClick={() => cancelJob(job.job_id)}
+                        className={`px-3 py-1 rounded ${
+                          isCanceling === job.job_id
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-red-500 hover:bg-red-600 text-white"
+                        }`}
+                        disabled={isCanceling === job.job_id}
+                      >
+                        {isCanceling === job.job_id ? "Canceling..." : "Cancel Job"}
+                      </button>
+                    {/* </div> */}
+                    {/* <div> */}
+                      {/* <JobExtendButton /> */}
+                    {/* </div> */}
                 </td>
               </tr>
             ))}
