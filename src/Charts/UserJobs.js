@@ -95,7 +95,7 @@ const UserJobs = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-4 bg-white rounded-lg overflow-auto">
+    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
       {/* Title with Tooltip */}
       <div className="flex items-center">
         <h2 className="text-2xl font-semibold mb-4">
