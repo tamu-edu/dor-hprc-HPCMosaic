@@ -454,7 +454,6 @@ def parse_project_accounts(output):
 
     return {"projects": project_data}
 
-
 def parse_pending_jobs(output):
     """Parses output from `myproject -p <account>` to extract pending jobs."""
     lines = output.split("\n")
@@ -473,7 +472,47 @@ def parse_pending_jobs(output):
                 })
 
     return {"pending_jobs": job_data}
+    
+def parse_scontrol_output(output):
+    """Parses output from `scontrol show job <jobid>` to extract job details."""
+    job_info = {}
 
+    # Flatten all lines into space-separated tokens
+    tokens = []
+    for line in output.split("\n"):
+        line = line.strip()
+        if line:
+            tokens.extend(line.split())
+
+    # Map scontrol keys to our desired dictionary keys
+    key_map = {
+        "JobId": "job_id",
+        "JobName": "job_name",
+        "UserId": "user_group",
+        "Account": "user_account",
+        "JobState": "state",
+        "Reason": "reason",
+        "ExitCode": "exit_code",
+        "RunTime": "time_elapsed",
+        "TimeLimit": "time_requested",
+        "StartTime": "start_time",
+        "EndTime": "end_time",
+        "Partition": "partition",
+        "NodeList": "nodelist",
+        "NumNodes": "node_count",
+        "NumCPUs": "cores",
+        "NumTasks": "task_count",
+        "Command": "submit_line",
+        "WorkDir": "submit_dir",
+    }
+
+    for token in tokens:
+        if "=" in token:
+            key, value = token.split("=", 1)
+            if key in key_map:
+                job_info[key_map[key]] = value
+
+    return {"job_details": job_info}
 
 def parse_job_history(output):
     """Parses output from `myproject -j <account>` to extract job history."""
@@ -563,33 +602,49 @@ def run_command(command):
 @api.route("/jobs", methods=["GET"])
 def get_user_jobs():
     try:
+        jobs = []
+        
+        #get active jobs (squeue)
         result = subprocess.run(
             ["squeue", "-u", os.getenv("USER"), "--format=%i %t %D"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8"
         )
-
-        if result.returncode != 0:
-            raise RuntimeError(result.stderr.strip())
-
-        jobs = []
-        lines = result.stdout.strip().split("\n")[1:]  # Skip header
+        lines = result.stdout.strip().split("\n")[1:]
+        
         for line in lines:
             parts = line.split()
             if len(parts) == 3:
+                job_id, state, nodes = parts
+                
+                #running 'scontrol show job <jobid>' to get a single job info
+                myjob_command = subprocess.run(
+                    ["scontrol", "show", "job", job_id], 
+                    stdout = subprocess.PIPE, 
+                    stderr = subprocess.PIPE,
+                    encoding="utf-8",
+                ).stdout
+                job_details_parsed = parse_scontrol_output(myjob_command)["job_details"]
+        
                 jobs.append({
-                    "job_id": parts[0],
-                    "state": parts[1],
-                    "nodes": parts[2],
+                    "job_id": job_id,
+                    "job_name": job_details_parsed.get("job_name"),
+                    "state": state,
+                    "cpus": job_details_parsed.get("cores"),
+                    "nodes": nodes,
+                    "time_requested": job_details_parsed.get("time_requested"),
+                    "time_elapsed": job_details_parsed.get("time_elapsed"),
+                    "submit_dir": job_details_parsed.get("submit_dir"),
                 })
-
-        return jsonify({"jobs": jobs}), 200
+            
+        return jsonify({ "jobs": jobs }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 # API to cancel a job
-@api.route("/cancel_job/<job_id>", methods=["DELETE"])
+@api.route("/cancel_job/<job_id>", methods=["POST"])
+@api.route("/cancel_job/<job_id>/", methods=["POST"])
 def cancel_job(job_id):
     try:
         result = subprocess.run(
