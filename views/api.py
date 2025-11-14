@@ -111,6 +111,16 @@ hprcbot_route = production.get('hprcbot_route')
 api = Blueprint('api', __name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+@api.route('/user-data', methods=['GET'])
+def get_user_data():
+    try:
+        user = os.environ.get('USER', 'unknown')
+        email = get_user_email(user)
+        return jsonify({"user": user, "email": email}), 200
+    except Exception as e:
+        logging.error(f"Failed to fetch user data: {e}")
+        return jsonify({"error": "Unable to fetch user data"}), 500
+
 @api.route('/sinfo', methods=['GET'])
 def get_sinfo():
     try:
