@@ -301,10 +301,11 @@ def get_envs():
     try:
         # Check if the metadata file exists first, rather than catching in an exception. It is a common case; exceptions should be used for unexpected edge cases, hence the name
         if not os.path.exists(metadataPath):
-            return jsonify({"error": f"There was no metadata file found; user likely has not yet used 'create_venv' to make a virtual environment", "code": f"NO_METADATA"}), 500
+            return jsonify({"environments": []}), 200
         with open(metadataPath,'r') as file:
             metadata = json.load(file)
-            return metadata, 200
+            #return metadata, 200
+            return jsonify(metadata), 200
     except json.JSONDecodeError as e:
         return jsonify({"error": f"The metadata file is corrupted or not in JSON format: {str(e)}"}), 500
     except Exception as e:
@@ -350,6 +351,7 @@ def get_py_versions():
         return jsonify({"error": "There was a file error while getting the Python versions; 'captured-output.txt' file was"}), 500
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while fetching Python versions: {str(e)}"}), 500
+
 @api.route('/create_venv', methods=['POST'])
 def create_venv():
     try:
@@ -363,13 +365,14 @@ def create_venv():
         # When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
         #createVenvCommand = f"ssh alogin2 source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{descriptio
         createVenvCommand = (
-                f"ssh alogin2 'bash -l -c \"source /etc/profile && "
+                #f"ssh -O StrictJostKeyChecking=no -o UserKnownHostsFile=/dev/null alogin2 'bash -l -c \"source /etc/profile && "
+                f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null alogin2 'bash -l -c \"source /etc/profile && "
                 f"module load {gccversion} {pyVersion} && "
                 f"/sw/local/bin/create_venv {envName} -d \\\"{description}\\\"\"'"
         )
         result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
         if result.returncode != 0:
-            return jsonify({"error": f"There was an error while creating the virtual environment: {result.stdout}"}), 500
+            return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
         return jsonify({"message": f"{envName} was successfully created!"}), 200
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500

@@ -14,7 +14,8 @@ const PyVenvManager = () => {
 
 	//const devUrl = config.production.dashboard_url;
 	//const prodUrl = config.production.dashboard_url;
-	const curUrl = get_base_url();
+	//const curUrl = get_base_url();
+	const curUrl = config.production.dashboard_url;
 
   const fetchEnvs = async () => {
 	try {

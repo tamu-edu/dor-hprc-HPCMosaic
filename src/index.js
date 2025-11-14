@@ -94,8 +94,8 @@ const EnhancedChatbotComponent = () => {
   }
   
   //Removed chatbot for now, doesn't work
-  return null;
-  /*return <ChatbotComponent />;*/
+  //return null;
+  return <ChatbotComponent />;
 };
 
 const root = createRoot(document.getElementById("root"));

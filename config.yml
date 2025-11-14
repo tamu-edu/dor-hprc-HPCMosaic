@@ -1,5 +1,5 @@
 development: &common_settings
-  cluster_name: "DEFAULTCLUSTER"
+  cluster_name: "Aces"
   dashboard_url: "/pun/dev/dor-hprc-HPCMosaic-dev"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"
