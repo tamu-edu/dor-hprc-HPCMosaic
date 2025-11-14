@@ -1,6 +1,6 @@
 development: &common_settings
   cluster_name: "${CLUSTERNAME}"
-  dashboard_url: "/pun/dev/${APPNAME}"
+  dashboard_url: "http://127.0.0.1:5000"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"
   home_page: "https://hprc.tamu.edu"
@@ -13,7 +13,7 @@ development: &common_settings
 
 production:
   <<: *common_settings
-  dashboard_url: "/pun/dev/${APPNAME}"
+  dashboard_url: "/pun/sys/${APPNAME}"
   request_email: "help@hprc.tamu.edu"
-  driver_scripts_path: "/var/www/ood/apps/dev/${APPNAME}/machine_driver_scripts"
+  driver_scripts_path: "/var/www/ood/apps/sys/${APPNAME}/machine_driver_scripts"
   help_email: "help@hprc.tamu.edu"
