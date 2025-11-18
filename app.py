@@ -12,9 +12,9 @@ app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 def detect_env():
     path = os.getcwd()
-    if "dev" in path:
-        return "production"
-    elif "sys" in path:
+    if "/dev/" in path:
+        return "development"
+    elif "/sys/" in path:
         return "production"
     else:
         return "unknown"

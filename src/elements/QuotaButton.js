@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import PopupForm from '../composer/PopupForm';
 import quotaRequestSchema from '../composer/schemas/quotaRequest.json';
 import config from "../../config.yml";
+import { get_base_url } from "../utils/api_config.js"
 
 const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null }) => {
-  const baseUrl = config.production.dashboard_url;
+  const baseUrl = get_base_url();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 

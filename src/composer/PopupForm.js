@@ -28,6 +28,39 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
+  //Prevent mouse interactions with background content while model is open
+  useEffect(() => {
+    const rootElement = document.getElementById('root');
+    const bodyElement = document.body;
+
+    //Store original sysles
+    const OGRootPointerEvents = rootElement ?.style.pointerEvents || '';
+    const OGRootUserSelect = rootElement?.style.userSelect || '';
+    const OGBodyOverflow = bodyElement.style.overflow || '';
+    
+    //Apply blockign
+    if (rootElement) {
+    	rootElement.style.pointerEvents = 'none';
+    	rootElement.style.userSelect = 'none';
+    }
+    bodyElement.style.overflow = 'hidden';
+
+    //Prevent drag events
+    const preventDrag = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    //Restore on unmount
+    return () => {
+      if (rootElement) {
+        rootElement.style.pointerEvents = OGRootPointerEvents;
+        rootElement.style.userSelect = OGRootUserSelect;
+      }
+      bodyElement.style.overflow = OGBodyOverflow;
+    };
+  }, []);
+
   return createPortal(
     <div style={{
       position: 'fixed',

@@ -12,7 +12,6 @@ import Composer from '../elements/Composer';
 import ElementDescriptions from "./ElementDescriptions"; // Import descriptions
 import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
-// ... other imports
 
 const CardConfig = {
     "Node Utilization": {

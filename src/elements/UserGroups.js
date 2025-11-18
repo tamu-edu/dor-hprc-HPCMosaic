@@ -7,13 +7,14 @@ import ElementDescriptions from "../framework/ElementDescriptions";
 import GroupButton from "./GroupButton"; // Import GroupButton component
 
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
+import { get_base_url } from "../utils/api_config.js"
 
 const UserGroups = () => {
   const [groups, setGroups] = useState([]);
   const [quotas, setQuotas] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const baseUrl = config.production.dashboard_url;
+  const baseUrl = get_base_url();
   
   // Fetch user groups
   useEffect(() => {

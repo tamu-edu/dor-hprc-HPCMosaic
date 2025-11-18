@@ -5,6 +5,7 @@ import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 import ElementDescriptions from "../framework/ElementDescriptions";
+import { get_base_url } from "../utils/api_config.js"
 
 const AcknowledgementForm = () => {
   const baseUrl = config.production.dashboard_url;

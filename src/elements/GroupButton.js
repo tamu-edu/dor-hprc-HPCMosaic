@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import PopupForm from '../composer/PopupForm';
 import groupRequestSchema from '../composer/schemas/groupRequest.json';
 import config from "../../config.yml";
+import { get_base_url } from "../utils/api_config.js"
 
 const GroupButton = () => {
-  const baseUrl = config.production.dashboard_url;
+  const baseUrl = get_base_url();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (formData) => {
