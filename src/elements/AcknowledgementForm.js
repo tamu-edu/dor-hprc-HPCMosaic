@@ -8,7 +8,9 @@ import ElementDescriptions from "../framework/ElementDescriptions";
 import { get_base_url } from "../utils/api_config.js"
 
 const AcknowledgementForm = () => {
-  const baseUrl = get_base_url();
+  const baseUrl = config.production.dashboard_url;
+  const clusterName = (config.production.cluster_name || '').toLowerCase();
+  const usesAccessAcknowledgement = ["aces", "launch"].includes(clusterName);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [userData, setUserData] = useState({ user: 'unknown', email: '' });
@@ -108,7 +110,23 @@ const AcknowledgementForm = () => {
           Please acknowledge HPRC when you showcase research or publish a paper that has benefited from Texas A&M HPRC resources.
         </p>
         <p className="text-gray-600 text-sm mb-2">
-          For standard acknowledgment examples and a listing of publications acknowledging HPRC, click <a style={{ color: '#500000' }} href="https://hprc.tamu.edu/research/citations.html">here</a>.  Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
+          {usesAccessAcknowledgement ? (
+            <>
+              For standard acknowledgement examples acknowledging ACCESS, click{' '}
+              <a style={{ color: '#500000' }} href="https://access-ci.org/about/acknowledging-access/" target="_blank" rel="noopener noreferrer">
+                https://access-ci.org/about/acknowledging-access/
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              For standard acknowledgment examples and a listing of publications acknowledging HPRC, click{' '}
+              <a style={{ color: '#500000' }} href="https://hprc.tamu.edu/research/citations.html" target="_blank" rel="noopener noreferrer">
+                here
+              </a>
+              . Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
+            </>
+          )}
         </p>
         <div className="flex justify-center">
           <PopupForm
