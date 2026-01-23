@@ -100,7 +100,7 @@ const QuotaInfo = () => {
   const highestUsage = findHighestUsage();
 
   return (
-    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
+    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full flex flex-col">
       {/* Header section with title and action button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
@@ -211,7 +211,7 @@ const QuotaInfo = () => {
       {additionalText && <p className="mt-4 text-gray-700 italic text-left">{additionalText}</p>}
       
       {/* Additional note at the bottom */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
+      <div className="mt-4 pt-3 border-t border-gray-200 flex-shrink-0">
         <p className="text-sm text-gray-600">
           Need more storage space? Click "Request" next to a specific disk to request an increase for that disk.
         </p>

@@ -26,9 +26,9 @@
 
          "groupName": {
             "type": "text",
-            "label": "Provide group name (no special characters aside from _ and -",
+            "label": "Enter a group name (max 14 characters). You may use letters, numbers, underscores (_), periods (.), and hyphens (-)",
             "name": "groupName",
-            "help": "Provide group name (no special characters aside from _ and -"
+            "help": "Enter a group name (max 14 characters). You may use letters, numbers, underscores (_), periods (.), and hyphens (-)"
           },
    
          "groupAdd": {

@@ -2,10 +2,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import Joyride, { STATUS, ACTIONS } from 'react-joyride';
-import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize } from "react-icons/md";
+import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen } from "react-icons/md";
 import { Toaster, toast } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdAddChart } from "react-icons/md";
+
+//Context Imports
+import { LayoutLockProvider } from '../context/LayoutLockContext';
 
 //Component Imports
 import ClusterLogo from "./ClusterLogo";
@@ -33,6 +36,7 @@ const Banner = ({ setRunTour }) => {
   const clusterName = config.development.cluster_name;
   const [userData, setUserData] = useState({});
   const [loadingLayouts, setLoadingLayouts] = useState(true);
+  const [layoutLocked, setLayoutLocked] = useState(false);
 
   const { hideChatbot, showChatbot } = useChatbotVisibility();
 
@@ -310,7 +314,7 @@ const Banner = ({ setRunTour }) => {
 
       {/* Header */}
       <BannerBackground>
-        <div className="flex justify-between w-full items-center space-x-3 pr-3">
+        <div className="flex justify-between w-full items-center space-x-3 pr-1">
 	  
           {/*Logo*/}
 	  <div className="hidden md:flex bg-white px-2 md:px-4 py-1 md:py-2 rounded-l-md">
@@ -445,16 +449,19 @@ const Banner = ({ setRunTour }) => {
         setIsOpen={setLayoutUtilityOpen}
       />
 
-      {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col mt-6 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mx-4">
-          <Content
-            change={(data) => changeHandler(0, data)}
-            layoutData={layoutData} setLayoutData={setLayoutData}
-            getLatestLayout={(fn) => (getLatestLayoutRef.current = fn)}
-          />
+      <LayoutLockProvider layoutLocked={layoutLocked} setLayoutLocked={setLayoutLocked}>
+        {/* Main Content Area */}
+        <div className={`flex-1 flex flex-col mt-5 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
+	    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mx-1">
+              <Content
+                change={(data) => changeHandler(0, data)}
+                layoutData={layoutData} setLayoutData={setLayoutData}
+                getLatestLayout={(fn) => (getLatestLayoutRef.current = fn)}
+	        layoutLocked={layoutLocked}
+              />
+            </div>
         </div>
-      </div>
+      </LayoutLockProvider>
 
       {/* Development Disclaimer */}
       {/*
@@ -541,6 +548,24 @@ const Banner = ({ setRunTour }) => {
 	  </div>
         </div>
       )}
+      
+      <button
+        onClick={() => {
+	  setLayoutLocked(!layoutLocked);
+	}}
+	className={`fixed bottom-4 left-4 w-12 h-12 rounded-full shadow-lg flex items-center items-center justify-center transition-all duration-200 z-500 ${
+	  layoutLocked
+	    ? 'bg-yellow-400 hover: bg-yellow-500 text-yello-800'
+	    : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
+	}`}
+	title={layoutLocked ? 'Unlock Layout' : 'Lock Layout'}
+      >
+        {layoutLocked ? (
+	  <MdLock className="text-xl" />
+	) : (
+	  <MdLockOpen className="text-xl" />
+	)}
+      </button>
     </div>
   );
 };

@@ -2,7 +2,7 @@
       
    "isLongRequest": {
       "type": "radioGroup",
-      "label": "Is this request more than 10TB or for longer than 6 months?*",
+      "label": "Is this request more than 10TB or for longer than 6 months?",
       "name": "isLongRequest",
       "options": [
          { "value": "No", "label": "No" },
@@ -13,7 +13,7 @@
    
    "isPIRequest": {
       "type": "radioGroup",
-      "label": "Are you a principal investigator (PI)",
+      "label": "Are you a principal investigator (PI)?",
       "name": "isPIRequest",
       "condition" : "isLongRequest.Yes",
       "options": [
@@ -25,7 +25,7 @@
    
    "isBuyRequest": {
       "type": "radioGroup",
-      "label": "Do you want to buy in quota",
+      "label": "Do you want to buy-in quota?",
       "name": "isBuyRequest",
       "condition" : "isPIRequest.Yes",
       "options": [
@@ -52,12 +52,12 @@
       "title": "Questions for buy-in request",
       "condition" : "isBuyRequest.Yes",
       "elements": {
-
-
+          
          "buyinNote": {
             "type": "staticText",
-            "value": "TAMU HPRC can provide dedicated storage in longer term for a cost. For more information and current rates please check: https://hprc.tamu.edu/kb/Helpful-Pages/Storage/",
-            "isHeading": false
+            "value": "TAMU HPRC can provide dedicated storage in longer term for a cost. For more information and current rates please check: <a href=\"https://hprc.tamu.edu/kb/Helpful-Pages/Storage/\" style=\"color: blue;\" target=\"blank\">the knowledgebase.</a>",
+            "isHeading": false,
+	    "allowHtml": true 
           },
 
          "expirationDate": {
@@ -93,7 +93,7 @@
 
           "requestType": {
       	    "type": "radioGroup",
-            "label": "Request Type*",
+            "label": "Request Type",
             "name": "requestType",
             "options": [
          	{ "value": "New Request", "label": "New Request" },
@@ -106,16 +106,18 @@
       "elements": {
          "currentQuota": {
             "type": "unit",
-            "label": "Current Quota*",
+            "label": "Current Quota",
             "name": "currentQuota",
             "value": "1",
-            "units": [{ "label": "TB", "value": "TB" }]
+            "units": [{ "label": "TB", "value": "TB" }],
+	    "required": true
          },
          "newQuota": {
             "type": "unit",
-            "label": "New Quota*",
+            "label": "New Quota",
             "name": "newQuota",
-            "units": [{ "label": "TB", "value": "TB" }]
+            "units": [{ "label": "TB", "value": "TB" }],
+	    "required": true
          }
       }
    },
@@ -125,14 +127,16 @@
       "elements": {
          "currentFileLimit": {
             "type": "text",
-            "label": "Current File Limit*",
+            "label": "Current File Limit",
             "name": "currentFileLimit",
-            "value": "250000"
+            "value": "250000",
+	    "required": true
          },
          "newFileLimit": {
             "type": "text",
-            "label": "New File Limit*",
-            "name": "newFileLimit"
+            "label": "New File Limit",
+            "name": "newFileLimit",
+	    "required": true
          }
         }
    },
@@ -143,35 +147,39 @@
 
       "piAwareness": {
         "type": "textarea",
-        "label": "Is your PI aware of this request*",
+        "label": "Is your PI aware of this request",
         "name": "piAwareness",
-        "help": "Please provide details of PI's awareness and approval"
+        "help": "Please provide details of PI's awareness and approval",
+	"required": true
       },
       "storedData": {
         "type": "textarea",
-
-        "label": "What data is stored with the requested quota?*",
+        "label": "What data is stored with the requested quota?",
         "name": "storedData",
-        "help": "Describe the type and nature of data to be stored"
+        "help": "Describe the type and nature of data to be stored",
+	"required": true
       },
       "researchDescription": {
         "type": "textarea",
-        "label": "Briefly describe the research project that will be supported by the requested storage?*",
+        "label": "Briefly describe the research project that will be supported by the requested storage?",
         "name": "researchDescription",
-        "help": "Briefly describe the research project that will be supported by the requested storage"
+        "help": "Briefly describe the research project that will be supported by the requested storage",
+	"required": true
       },
 
       "jobSize": {
         "type": "textarea",
-        "label": "What is the input/output size of the job?*",
+        "label": "What is the input/output size of the job?",
         "name": "jobSize",
-        "help": "What is the input/output size of the job?"
+        "help": "What is the input/output size of the job?",
+	"required": true
       },
       "storagePlan": {
         "type": "textarea",
-        "label": "What is your long-term storage plan for your data after the quota increase expires?*",
+        "label": "What is your long-term storage plan for your data after the quota increase expires?",
         "name": "storagePlan",
-        "help": "What is your long-term storage plan for your data after the quota increase expires?"
+        "help": "What is your long-term storage plan for your data after the quota increase expires?",
+	"required": true
       },
       "comment": {
         "type": "textarea",

@@ -14,7 +14,7 @@ const LayoutUtility = ({
   fetchLayouts: parentFetchLayouts, // renamed to avoid confusion
   setLayouts, // add this prop to directly update layouts in parent
   isOpen,
-  setIsOpen
+  setIsOpen,
 }) => {
     const [activeLayout, setActiveLayout] = useState(null);
     const [actionInProgress, setActionInProgress] = useState(null);
@@ -232,6 +232,18 @@ const LayoutUtility = ({
 
     const handleRefreshLayouts = async () => {
         await refreshLayouts();
+    };
+
+    // Function to control the element movement locking mechanism
+    const handleToggleLock = () => {
+    	const newLockState = !layoutLocked;
+	
+	setLayoutLocked(newLockState);
+	
+        if (newLockState)
+          toast.success('Layout locked - elements cannot be moved or modified', {icon: '🔒', duration: 2000});
+	else
+          toast.success('Layout unlocked - elements can be edited', {icon: '🔓', duration: 2000});
     };
 
     // Determine the text to display on the main button

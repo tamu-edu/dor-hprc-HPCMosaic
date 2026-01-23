@@ -26,26 +26,55 @@ const UserJobs = () => {
       .finally(() => setLoading(false));
   }, []);
   
-  // Convert SLURM time format () to string
+  // Auto-increment elapsed time for running jobs every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setJobs(prevJobs =>
+        prevJobs.map(job => {
+          if (job.state === "R") { // only increment running jobs
+            return {
+              ...job,
+              time_elapsed: incrementTime(job.time_elapsed)
+            };
+          }
+          return job;
+        })
+      );
+    }, 1000); // every second
+
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Increment SLURM-style time string by 1 second
+  const incrementTime = (timeStr) => {
+    if (!timeStr) return "0:00:01";
+
+    let [daysPart, timePart] = timeStr.includes("-") ? timeStr.split("-") : [null, timeStr];
+    let [h, m, s] = timePart.split(":").map(Number);
+
+    s += 1;
+    if (s >= 60) { s = 0; m += 1; }
+    if (m >= 60) { m = 0; h += 1; }
+    if (daysPart && h >= 24) { h = 0; daysPart = parseInt(daysPart) + 1; }
+
+    const newTime = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return daysPart ? `${daysPart}-${newTime}` : newTime;
+  };
+
+  // Format SLURM time for display
   const formatTime = (timeStr) => {
     if (!timeStr) return "N/A";
-    
-    // Split day component if listed
-    const [dayPart, timePart] = timeStr.includes("-")
-        ? timeStr.split("-")
-        : [null, timeStr];
-        
+    const [dayPart, timePart] = timeStr.includes("-") ? timeStr.split("-") : [null, timeStr];
     const [hours, minutes, seconds] = timePart.split(":").map(Number);
     const days = dayPart ? parseInt(dayPart, 10) : Math.floor(hours / 24);
     const remainingHours = dayPart ? hours : hours % 24;
-    
+
     const parts = [];
-    
     if (days > 0) parts.push(`${days}d`);
     if (remainingHours > 0 || parts.length > 0) parts.push(`${remainingHours}h`);
     if (minutes > 0 || parts.length > 0) parts.push(`${minutes}m`);
     parts.push(`${seconds}s`);
-    
+
     return parts.join(" ");
   };
   
@@ -112,10 +141,11 @@ const UserJobs = () => {
             <tr className="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
               <th className="border border-gray-300 px-4 py-2">Job ID</th>
               <th className="border border-gray-300 px-4 py-2">Job Name</th>
+              <th className="border border-gray-300 px-4 py-2">Location</th>
               <th className="border border-gray-300 px-4 py-2">State</th>
               <th className="border border-gray-300 px-4 py-2">CPUs</th>
               <th className="border border-gray-300 px-4 py-2">Nodes</th>
-              <th className="border border-gray-300 px-4 py-2">Walltime (Time elapsed / Time requested)</th>
+              <th className="border border-gray-300 px-4 py-2">Time Elapsed</th>
               <th className="border border-gray-300 px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -123,10 +153,13 @@ const UserJobs = () => {
             {jobs.map((job) => (
               <tr key={job.job_id} className="border-b border-gray-200">
                 <td className="py-3 px-4">
-                    {generate_file_explorer_path_for_jobs(job)}
+                    {job.job_id}
                 </td>
                 <td className="py-3 px-4">
                     {job.job_name}
+                </td>
+                <td className="py-3 px-4">
+                    {generate_file_explorer_path_for_jobs(job)}
                 </td>
                 <td className={`py-3 px-4 ${job.state === "R" ? "text-green-600" : "text-yellow-600"}`}>
                   {job.state === "R" ? "Running" : "Pending"}

@@ -46,7 +46,7 @@ const getMinSize = (componentName) => {
   return componentMinSizes[componentName] || defaultMin;
 };
 
-const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
+const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
   // Default layout (used on first load)
   const defaultLayout = [
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
@@ -127,6 +127,15 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
 
   // Function to add a new element
   const addNewElement = (item, dropPosition) => {
+    if (layoutLocked) {
+      toast.error('Cannot add elements - layout is locked', {
+        autoClose: 2000,
+	position: "top-right",
+	hideProgressBar: true,
+      });
+      return;
+    }
+
     if (row.some((ele) => ele.name === item.name)) {
       toast.warn(`"${item.name}" is already added!`, {
         autoClose: 2000,
@@ -304,9 +313,9 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
         cols={10}
         rowHeight={20}
         isBounded={false}
-        isDroppable={true}
-        isResizable={true}
-        isDraggable={true}
+        isDroppable={!layoutLocked}
+        isResizable={!layoutLocked}
+        isDraggable={!layoutLocked}
         compactType="vertical"
         preventCollision={false}
         useCSSTransforms={true}
@@ -321,16 +330,25 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout }) => {
             <div
               key={ele.i}
               data-grid={{...ele, minW, minH}}
-              className="resizable-element bg-white rounded-md border border-gray-300 relative h-full w-full overflow-hidden"
+              className={`resizable-element bg-white rounded-md border border-gray-300 relative h-full w-full overflow-hidden ${
+		      layoutLocked
+	                ? 'border-2'
+                        : 'border-gray-300'
+	      }`}
+              style={{
+	        borderColor: layoutLocked ? '#500000' : undefined
+	      }}
             >
-              {/* Clean, elegant remove button */}
-              <button
-                onClick={() => removeElement(index) }
-                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
-                title="Remove this element"
-              >
-                <span className="text-sm">✕</span>
-              </button>
+              {/* Clean, elegant remove button - only show when not locked */}
+	      {!layoutLocked && (
+	        <button
+                  onClick={() => removeElement(index) }
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
+                  title="Remove this element"
+                >
+                  <span className="text-sm">✕</span>
+                </button>
+	      )}
 
               {/* Component content */}
               <div className="h-full w-full p-0">{renderChart(ele)}</div>

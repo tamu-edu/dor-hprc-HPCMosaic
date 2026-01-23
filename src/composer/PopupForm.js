@@ -1,6 +1,10 @@
+//Imports
 import React, { useState, memo, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ComposerWrapper from './ComposerWrapper';
+
+//Context Import
+import { useLayoutLock } from '../context/LayoutLockContext';
 
 const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting }) => {
   const modalRef = useRef(null);
@@ -11,6 +15,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
     }
   }, [onClose]);
 
+  //Mousehandler for clicking outside popup form
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -18,6 +23,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
     };
   }, [handleClickOutside]);
 
+  //Mousehandler for clicking escape
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
@@ -28,36 +34,34 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
-  //Prevent mouse interactions with background content while model is open
+  //LayoutLocked
+  const { layoutLocked, setLayoutLocked } = useLayoutLock();
+  const originalLockState = useRef(layoutLocked);
+
   useEffect(() => {
-    const rootElement = document.getElementById('root');
-    const bodyElement = document.body;
-
-    //Store original sysles
-    const OGRootPointerEvents = rootElement ?.style.pointerEvents || '';
-    const OGRootUserSelect = rootElement?.style.userSelect || '';
-    const OGBodyOverflow = bodyElement.style.overflow || '';
+    originalLockState.current = layoutLocked;
+    setLayoutLocked(true);
     
-    //Apply blockign
-    if (rootElement) {
-    	rootElement.style.pointerEvents = 'none';
-    	rootElement.style.userSelect = 'none';
-    }
-    bodyElement.style.overflow = 'hidden';
+    return () => {
+      setLayoutLocked(originalLockState.current);
+    };
+  }, []);
 
-    //Prevent drag events
+
+  useEffect(() => {
     const preventDrag = (e) => {
+      console.log('preventDrag called on:', e.type);
       e.preventDefault();
       e.stopPropagation();
     };
 
-    //Restore on unmount
+    document.addEventListener('dragstart', preventDrag);
+
+    document.addEventListener('drop', preventDrag);
+
     return () => {
-      if (rootElement) {
-        rootElement.style.pointerEvents = OGRootPointerEvents;
-        rootElement.style.userSelect = OGRootUserSelect;
-      }
-      bodyElement.style.overflow = OGBodyOverflow;
+      document.removeEventListener('dragstart', preventDrag);
+      document.removeEventListener('drop', preventDrag);
     };
   }, []);
 
@@ -69,7 +73,8 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1000
+      zIndex: 1000,
+      pointerEvents: 'auto'
     }}>
       <div ref={modalRef} style={{
         backgroundColor: 'white',
@@ -79,7 +84,8 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
         overflow: 'auto',
         position: 'relative',
         borderRadius: '4px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+	pointerEvents: 'auto'
       }}>
         <button
           onClick={onClose}
