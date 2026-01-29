@@ -1,22 +1,18 @@
-#An attempt at refactoring api.py to be less convoluted. WIP
-
 from flask import Blueprint, request, jsonify
-from sys import version as python_formatted_version
-from machine_driver_scripts.engine import Engine
-from collections import OrderedDict
 import json
+from sys import version as python_formatted_version
 import sqlite3
 import re
 import os
+from machine_driver_scripts.engine import Engine
+from collections import OrderedDict
 import subprocess
-import logging
+import logging  # Add this line at the top
+
 import datetime
 import requests
-import yaml
 
-# ===========================================================
-# VARIABLE SETUP
-# ===========================================================
+import yaml
 
 # Get the path to the config file
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,29 +23,7 @@ with open(config_path, 'r') as file:
     config_data = yaml.safe_load(file)
 
 # Get the production settings
-
 production = config_data.get('development', {})
-
-# Create variables for easy access
-cluster_name = production.get('cluster_name')
-dashboard_url = production.get('dashboard_url')
-request_email = production.get('request_email')
-help_email = production.get('help_email')
-hprcbot_route = production.get('hprcbot_route')
-
-api = Blueprint('api', __name__)
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-# ===========================================================
-# CENTRALIZED LOGGING
-# ===========================================================
-def setup_loggin():
-    return
-
-# ===========================================================
-# HELPER FUNCTIONS
-# ===========================================================
 
 def get_group_directory_info(group_name):
     directory_path = f"/scratch/group/{group_name}"
@@ -83,12 +57,12 @@ def get_group_directory_info(group_name):
         "owner": owner
     }
 
-
 def get_user_email(username):
     """
     Convert local userid to real institutional email using mapping file
     Format: u.username:real_email:first_name:last_name
     """
+
     try:
         mapping_file = "/usr/local/etc/email_mapping.access.login"
 
@@ -109,10 +83,8 @@ def get_user_email(username):
                             if local_user == username:
                                 print(f"Found email mapping: {username} -> {real_email}")
                                 return real_email
-
         print(f"Warning: No email mapping found for {username}")
         return f"{username}@tamu.edu"
-
     except Exception as e:
         print(f"Error reading email mapping: {e}")
         return f"{username}@tamu.edu"
@@ -129,157 +101,39 @@ def clean_number(value):
             return None
     return None
 
-def parse_project_accounts(output):
-    """Parses output from `myproject` to extract project account details."""
+# Create variables for easy access
+cluster_name = production.get('cluster_name')
+dashboard_url = production.get('dashboard_url')
+request_email = production.get('request_email')
+help_email = production.get('help_email')
+hprcbot_route = production.get('hprcbot_route')
 
-    lines = output.split("\n")
-    start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
+api = Blueprint('api', __name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-    if start_index == -1 or len(lines) <= start_index + 2:
-        return {"error": "Unexpected output format from myproject"}
-
-    project_data = []
-    for line in lines[start_index + 2:]:
-
-        if line.strip().startswith("|"):
-            fields = [field.strip() for field in line.split("|")[1:-1]]
-
-            if len(fields) == 7:  # Ensure correct number of fields
-                project_data.append({
-                    "account": fields[0],
-                    "fy": fields[1],
-                    "default": fields[2],
-                    "allocation": float(fields[3]) if fields[3].replace('.', '', 1).isdigit() else 0.0,
-                    "used_pending_sus": float(fields[4]) if fields[4].replace('.', '', 1).isdigit() else 0.0,
-                    "balance": float(fields[5]) if fields[5].replace('.', '', 1).isdigit() else 0.0,
-                    "pi": fields[6],
-                })
-
-    return {"projects": project_data}
-
-def parse_pending_jobs(output):
-    """Parses output from `myproject -p <account>` to extract pending jobs."""
-
-    lines = output.split("\n")
-    job_data = []
-
-    for line in lines[2:]:  # Skip header lines
-        if line.strip().startswith("|") and len(line.split("|")) >= 6:
-            fields = [field.strip() for field in line.split("|")[1:-1]]
-
-            if len(fields) == 5:  # Ensure correct number of fields
-
-                job_data.append({
-                    "job_id": fields[0],
-                    "state": fields[1],
-                    "cores": fields[2],
-                    "effective_cores": fields[3],
-                    "walltime_hours": fields[4],
-                })
-
-    return {"pending_jobs": job_data}
-
-def parse_scontrol_output(output):
-    """Parses output from `scontrol show job <jobid>` to extract job details."""
-    
-    job_info = {}
-
-    # Flatten all lines into space-separated tokens
-    tokens = []
-
-    for line in output.split("\n"):
-        line = line.strip()
-
-        if line:
-            tokens.extend(line.split())
-
-    # Map scontrol keys to our desired dictionary keys
-    key_map = {
-        "JobId": "job_id",
-        "JobName": "job_name",
-        "UserId": "user_group",
-        "Account": "user_account",
-        "JobState": "state",
-        "Reason": "reason",
-        "ExitCode": "exit_code",
-        "RunTime": "time_elapsed",
-        "TimeLimit": "time_requested",
-        "StartTime": "start_time",
-        "EndTime": "end_time",
-        "Partition": "partition",
-        "NodeList": "nodelist",
-        "NumNodes": "node_count",
-        "NumCPUs": "cores",
-        "NumTasks": "task_count",
-        "Command": "submit_line",
-        "WorkDir": "submit_dir",
-    }
-
-    for token in tokens:
-        if "=" in token:
-            key, value = token.split("=", 1)
-
-            if key in key_map:
-                job_info[key_map[key]] = value
-
-    return {"job_details": job_info}
-
-def parse_job_history(output):
-    """Parses output from `myproject -j <account>` to extract job history."""
-    
-    lines = output.split("\n")
-
-    # Log raw lines for debugging
-    logging.info(f"Parsing job history, raw lines: {lines[:10]}")  # Only show the first 10 lines
-    print(f"Parsing job history, raw lines: {lines[:10]}")
-    history_data = []
-
-    # Find the start of the data table
-    start_index = next((i for i, line in enumerate(lines) if "JobID" in line and "SubmitTime" in line), -1)
-
-    if start_index == -1 or len(lines) <= start_index + 1:
-        return {"error": "Unexpected output format from myproject"}
-
-    # Parse jobs from the output
-    for line in lines[start_index + 1:]:
-        fields = [field.strip() for field in line.split("|") if field.strip()]
-
-        if len(fields) >= 8:  # Ensure correct number of fields
-            history_data.append({
-                "job_id": fields[1],  # Job ID is the second column
-                "submit_time": fields[3],
-                "start_time": fields[4],
-                "end_time": fields[5],
-                "walltime": fields[6],
-                "total_slots": fields[7],
-                "used_sus": fields[8],
-            })
-
-    return {"job_history": history_data}
-
-def run_command(command):
-    """
-    Execute a shell command using subprocess and return the output.
-    """
-
+@api.route('/user-data', methods=['GET'])
+def get_user_data():
     try:
-        logging.info(f"Executing command: {command}")
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-
-        if result.returncode != 0:
-            error_msg = result.stderr.strip() or result.stdout.strip()
-            logging.error(f"Command failed: {error_msg}")
-
-            raise RuntimeError(error_msg)
-        return result.stdout.strip()
-
+        user = os.environ.get('USER', 'unknown')
+        email = get_user_email(user)
+        return jsonify({"user": user, "email": email}), 200
     except Exception as e:
-        logging.error(f"Unexpected error executing command: {str(e)}")
-        raise RuntimeError(str(e))
+        logging.error(f"Failed to fetch user data: {e}")
+        return jsonify({"error": "Unable to fetch user data"}), 500
 
-# ===========================================================
-# LAYOUT MODIFICATION API ROUTES
-# ===========================================================
+@api.route('/sinfo', methods=['GET'])
+def get_sinfo():
+    try:
+        result = subprocess.check_output("/sw/local/bin/retrieve_sinfo", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8")
+        print("Raw Output:", output)  # Debugging: print raw output
+        return jsonify(eval(output)), 200
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @api.route('/save_layout', methods=['POST'])
 def save_layout():
     try:
@@ -343,86 +197,6 @@ def load_layout():
             layout_data = json.load(f)
 
         return jsonify({"layout_name": layout_name, "layout_data": layout_data}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/delete_layout', methods=['DELETE'])
-
-def delete_layout():
-    """Delete a saved layout"""
-    try:
-
-        layout_name = request.json.get("layout_name")
-
-        if not layout_name:
-            return jsonify({"error": "Missing layout name"}), 400
-
-        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
-        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
-        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
-
-        if not os.path.exists(layout_file_path):
-            return jsonify({"error": f"Layout {layout_name} does not exist"}), 404
-
-        os.remove(layout_file_path)
-        return jsonify({"message": f"Layout {layout_name} deleted successfully"}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/rename_layout', methods=['POST'])
-
-def rename_layout():
-    """Rename a saved layout"""
-
-    try:
-        data = request.json
-        old_name = data.get("old_name")
-        new_name = data.get("new_name")
-
-        if not old_name or not new_name:
-            return jsonify({"error": "Missing old or new layout name"}), 400
-
-        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
-        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
-        old_path = os.path.join(layouts_dir, f"{old_name}.json")
-        new_path = os.path.join(layouts_dir, f"{new_name}.json")
-
-        if not os.path.exists(old_path):
-            return jsonify({"error": f"Layout {old_name} does not exist"}), 404
-
-        if os.path.exists(new_path):
-            return jsonify({"error": f"A layout named {new_name} already exists"}), 400
-
-        os.rename(old_path, new_path)
-        return jsonify({"message": f"Layout {old_name} renamed to {new_name} successfully"}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# ===========================================================
-# INFO RETRIEVAL API ROUTES
-# ===========================================================
-@api.route('/user-data', methods=['GET'])
-def get_user_data():
-    try:
-        user = os.environ.get('USER', 'unknown')
-        email = get_user_email(user)
-        return jsonify({"user": user, "email": email}), 200
-    except Exception as e:
-        logging.error(f"Failed to fetch user data: {e}")
-        return jsonify({"error": "Unable to fetch user data"}), 500
-
-@api.route('/sinfo', methods=['GET'])
-def get_sinfo():
-    try:
-        result = subprocess.check_output("/sw/local/bin/retrieve_sinfo", shell=True, stderr=subprocess.STDOUT)
-        output = result.decode("utf-8")
-        print("Raw Output:", output)  # Debugging: print raw output
-        return jsonify(eval(output)), 200
-    except subprocess.CalledProcessError as e:
-        error_message = e.output.decode("utf-8")
-        return jsonify({"error": f"Command failed: {error_message}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -528,66 +302,6 @@ def get_cpuavail():
         print(f"Unexpected error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@api.route('/projectinfo', methods=['GET'])
-def get_projectinfo():
-    """Retrieve project information and allow querying for job history or pending jobs."""
-
-    try:
-        account = request.args.get("account")  # Account number for filtering
-        job_history = request.args.get("job_history")  # Boolean flag for job history
-        pending_jobs = request.args.get("pending_jobs")  # Boolean flag for pending jobs
-
-        if pending_jobs and account:
-            command = f"/sw/local/bin/myproject -p {account}"
-        elif job_history and account:
-            command = f"/sw/local/bin/myproject -j {account}"
-        else:
-            command = "/sw/local/bin/myproject"
-
-        # Log and print the executed command
-        logging.info(f"Executing command: {command}")
-        print(f"Executing command: {command}")
-
-        # Run the command and capture output
-        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-        output = result.decode("utf-8").strip()
-
-        # Log and print the raw output
-        logging.info(f"Raw output from myproject:\n{output}")
-        print(f"Raw output from myproject:\n{output}")
-
-        # Include the executed command and raw output in the response
-        response_data = {
-            "executed_command": command,
-            "raw_output": output
-        }
-
-        # If querying pending jobs
-        if pending_jobs and account:
-            response_data["pending_jobs"] = parse_pending_jobs(output)
-            return jsonify(response_data), 200
-
-        # If querying job history
-        if job_history and account:
-            response_data["job_history"] = parse_job_history(output)
-            return jsonify(response_data), 200
-
-        # Otherwise, parse project accounts (default behavior)
-        response_data["projects"] = parse_project_accounts(output)
-        return jsonify(response_data), 200
-
-    except subprocess.CalledProcessError as e:
-        error_message = e.output.decode("utf-8")
-        logging.error(f"Command failed: {error_message}")
-        return jsonify({"error": f"Command failed: {error_message}"}), 500
-
-    except Exception as e:
-        logging.error(f"Unexpected error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-# ===========================================================
-# MODULAIR INTERACTION API ROUTES
-# ===========================================================
 @api.route('/get_env', methods=['GET'])
 def get_envs():
     envs = str(os.environ)
@@ -653,27 +367,211 @@ def create_venv():
         description = data.get('description')
         pyVersion = data.get('pyVersion')
         gccversion = data.get('GCCversion')
+        
         if not envName or not gccversion or not pyVersion:
             return jsonify({"error": "Missing required parameters from the form submission"}), 400
-        # When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
-        #createVenvCommand = f"ssh alogin2 source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{descriptio
+        
+        # Get current hostname
+        hostname_result = subprocess.run(['hostname', '-f'], capture_output=True, text=True)
+        current_host = hostname_result.stdout.strip()
+        
+        # Extract login node based on current cluster
+        if  'portal' in current_host:
+            login_node = 'alogin3.cluster'
+        else:
+            login_node = current_host
+
         createVenvCommand = (
-                #f"ssh -O StrictJostKeyChecking=no -o UserKnownHostsFile=/dev/null alogin2 'bash -l -c \"source /etc/profile && "
-                f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null alogin2 'bash -l -c \"source /etc/profile && "
+                f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {login_node} 'bash -l -c \"source /etc/profile && "
                 f"module load {gccversion} {pyVersion} && "
                 f"/sw/local/bin/create_venv {envName} -d \\\"{description}\\\"\"'"
         )
+        
         result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+    
         if result.returncode != 0:
-            return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
+            return jsonify({"error": f"There was an error while creating the virtual environment:\n{result.stderr}.\nHostname returned: {current_host}"}), 500
+        
         return jsonify({"message": f"{envName} was successfully created!"}), 200
+    
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
 
+@api.route('/projectinfo', methods=['GET'])
+def get_projectinfo():
+    """Retrieve project information and allow querying for job history or pending jobs."""
+    try:
+        account = request.args.get("account")  # Account number for filtering
+        job_history = request.args.get("job_history")  # Boolean flag for job history
+        pending_jobs = request.args.get("pending_jobs")  # Boolean flag for pending jobs
 
-# ===========================================================
-# JOB AND PROJECT INTERACTION API ROUTES
-# ===========================================================
+        if pending_jobs and account:
+            command = f"/sw/local/bin/myproject -p {account}"
+        elif job_history and account:
+            command = f"/sw/local/bin/myproject -j {account}"
+        else:
+            command = "/sw/local/bin/myproject"
+
+        # Log and print the executed command
+        logging.info(f"Executing command: {command}")
+        print(f"Executing command: {command}")
+
+        # Run the command and capture output
+        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8").strip()
+
+        # Log and print the raw output
+        logging.info(f"Raw output from myproject:\n{output}")
+        print(f"Raw output from myproject:\n{output}")
+
+        # Include the executed command and raw output in the response
+        response_data = {
+            "executed_command": command,
+            "raw_output": output
+        }
+
+        # If querying pending jobs
+        if pending_jobs and account:
+            response_data["pending_jobs"] = parse_pending_jobs(output)
+            return jsonify(response_data), 200
+
+        # If querying job history
+        if job_history and account:
+            response_data["job_history"] = parse_job_history(output)
+            return jsonify(response_data), 200
+
+        # Otherwise, parse project accounts (default behavior)
+        response_data["projects"] = parse_project_accounts(output)
+        return jsonify(response_data), 200
+
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        logging.error(f"Command failed: {error_message}")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+def parse_project_accounts(output):
+    """Parses output from `myproject` to extract project account details."""
+    lines = output.split("\n")
+    start_index = next((i for i, line in enumerate(lines) if "|  Account" in line), -1)
+
+    if start_index == -1 or len(lines) <= start_index + 2:
+        return {"error": "Unexpected output format from myproject"}
+
+    project_data = []
+    for line in lines[start_index + 2:]:
+        if line.strip().startswith("|"):
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 7:  # Ensure correct number of fields
+                project_data.append({
+                    "account": fields[0],
+                    "fy": fields[1],
+                    "default": fields[2],
+                    "allocation": float(fields[3]) if fields[3].replace('.', '', 1).isdigit() else 0.0,
+                    "used_pending_sus": float(fields[4]) if fields[4].replace('.', '', 1).isdigit() else 0.0,
+                    "balance": float(fields[5]) if fields[5].replace('.', '', 1).isdigit() else 0.0,
+                    "pi": fields[6],
+                })
+
+    return {"projects": project_data}
+
+
+def parse_pending_jobs(output):
+    """Parses output from `myproject -p <account>` to extract pending jobs."""
+    lines = output.split("\n")
+    job_data = []
+
+    for line in lines[2:]:  # Skip header lines
+        if line.strip().startswith("|") and len(line.split("|")) >= 6:
+            fields = [field.strip() for field in line.split("|")[1:-1]]
+            if len(fields) == 5:  # Ensure correct number of fields
+                job_data.append({
+                    "job_id": fields[0],
+                    "state": fields[1],
+                    "cores": fields[2],
+                    "effective_cores": fields[3],
+                    "walltime_hours": fields[4],
+                })
+
+    return {"pending_jobs": job_data}
+    
+    
+def parse_scontrol_output(output):
+    """Parses output from `scontrol show job <jobid>` to extract job details."""
+    job_info = {}
+
+    # Flatten all lines into space-separated tokens
+    tokens = []
+    for line in output.split("\n"):
+        line = line.strip()
+        if line:
+            tokens.extend(line.split())
+
+    # Map scontrol keys to our desired dictionary keys
+    key_map = {
+        "JobId": "job_id",
+        "JobName": "job_name",
+        "UserId": "user_group",
+        "Account": "user_account",
+        "JobState": "state",
+        "Reason": "reason",
+        "ExitCode": "exit_code",
+        "RunTime": "time_elapsed",
+        "TimeLimit": "time_requested",
+        "StartTime": "start_time",
+        "EndTime": "end_time",
+        "Partition": "partition",
+        "NodeList": "nodelist",
+        "NumNodes": "node_count",
+        "NumCPUs": "cores",
+        "NumTasks": "task_count",
+        "Command": "submit_line",
+        "WorkDir": "submit_dir",
+    }
+
+    for token in tokens:
+        if "=" in token:
+            key, value = token.split("=", 1)
+            if key in key_map:
+                job_info[key_map[key]] = value
+
+    return {"job_details": job_info}
+
+
+def parse_job_history(output):
+    """Parses output from `myproject -j <account>` to extract job history."""
+    lines = output.split("\n")
+
+    # Log raw lines for debugging
+    logging.info(f"Parsing job history, raw lines: {lines[:10]}")  # Only show the first 10 lines
+    print(f"Parsing job history, raw lines: {lines[:10]}")
+
+    history_data = []
+
+    # Find the start of the data table
+    start_index = next((i for i, line in enumerate(lines) if "JobID" in line and "SubmitTime" in line), -1)
+
+    if start_index == -1 or len(lines) <= start_index + 1:
+        return {"error": "Unexpected output format from myproject"}
+
+    # Parse jobs from the output
+    for line in lines[start_index + 1:]:
+        fields = [field.strip() for field in line.split("|") if field.strip()]
+        if len(fields) >= 8:  # Ensure correct number of fields
+            history_data.append({
+                "job_id": fields[1],  # Job ID is the second column
+                "submit_time": fields[3],
+                "start_time": fields[4],
+                "end_time": fields[5],
+                "walltime": fields[6],
+                "total_slots": fields[7],
+                "used_sus": fields[8],
+            })
+
+    return {"job_history": history_data}
+
 @api.route('/set_default_account', methods=['POST'])
 def set_default_account():
     """
@@ -706,6 +604,24 @@ def set_default_account():
     except Exception as e:
         logging.error(f"Unexpected error setting default account: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+def run_command(command):
+    """
+    Execute a shell command using subprocess and return the output.
+    """
+    try:
+        logging.info(f"Executing command: {command}")
+        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() or result.stdout.strip()
+            logging.error(f"Command failed: {error_msg}")
+            raise RuntimeError(error_msg)
+
+        return result.stdout.strip()
+    except Exception as e:
+        logging.error(f"Unexpected error executing command: {str(e)}")
+        raise RuntimeError(str(e))
 
 
 # API to fetch jobs for the current user ($USER)
@@ -810,16 +726,58 @@ def get_utilization():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ===========================================================
-# HPRC BOT REQUEST HELPER FUNCTIONS
-# ===========================================================
-#def handle_request_submission(request_type, request_obj, user=None):
+@api.route('/delete_layout', methods=['DELETE'])
+def delete_layout():
+    """Delete a saved layout"""
+    try:
+        layout_name = request.json.get("layout_name")
+        if not layout_name:
+            return jsonify({"error": "Missing layout name"}), 400
+
+        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
+
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
+        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+
+        if not os.path.exists(layout_file_path):
+            return jsonify({"error": f"Layout {layout_name} does not exist"}), 404
+
+        os.remove(layout_file_path)
+        return jsonify({"message": f"Layout {layout_name} deleted successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
+@api.route('/rename_layout', methods=['POST'])
+def rename_layout():
+    """Rename a saved layout"""
+    try:
+        data = request.json
+        old_name = data.get("old_name")
+        new_name = data.get("new_name")
 
-# ===========================================================
-# HPRC BOT REQUEST API ROUTES
-# ===========================================================
+        if not old_name or not new_name:
+            return jsonify({"error": "Missing old or new layout name"}), 400
+
+        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
+
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
+        old_path = os.path.join(layouts_dir, f"{old_name}.json")
+        new_path = os.path.join(layouts_dir, f"{new_name}.json")
+
+        if not os.path.exists(old_path):
+            return jsonify({"error": f"Layout {old_name} does not exist"}), 404
+
+        if os.path.exists(new_path):
+            return jsonify({"error": f"A layout named {new_name} already exists"}), 400
+
+        os.rename(old_path, new_path)
+        return jsonify({"message": f"Layout {old_name} renamed to {new_name} successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @api.route('/quota', methods=['POST'])
 def request_quota():
     try:

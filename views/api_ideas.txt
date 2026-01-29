@@ -1,3 +1,0 @@
-This is a document for developers of this repository to write down ideas/fixes that are of current interest
-
-migrate environment retrieval functionality to a subprocess script call?`
