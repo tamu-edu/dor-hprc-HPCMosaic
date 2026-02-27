@@ -12,6 +12,7 @@ import Composer from '../elements/Composer';
 import ElementDescriptions from "./ElementDescriptions"; // Import descriptions
 import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
+import Announcement from '../elements/Announcement';
 
 const CardConfig = {
     "Node Utilization": {
@@ -85,6 +86,15 @@ const CardConfig = {
                 icon={<AiOutlineCode size={30} />} />
         )),
         chartComponent: AcknowledgementForm,
+    },
+    "Announcement": {
+        cardComponent: React.memo((props) => (
+            <Card {...props} name="Announcement" title="Announcement"
+                description={ElementDescriptions["Announcement"]}
+                icon={<AiOutlineProject size={30} />}
+            />
+        )),
+        chartComponent: Announcement,
     },
 };
 

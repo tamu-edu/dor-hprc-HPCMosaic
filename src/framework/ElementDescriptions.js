@@ -6,6 +6,7 @@ const ElementDescriptions = {
     Accounts: "Provides information on user accounts and their roles.",
     "User Jobs": "Displays currently running and queued jobs for the user.",
     "Acknowledgement Form": "Submit acknowledgements for papers that used HPRC resources.",
+    "Announcement": "Message of the Day",
 };
 
 export default ElementDescriptions;
