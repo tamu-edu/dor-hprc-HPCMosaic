@@ -29,26 +29,26 @@ const Announcement = () => {
   if (!announcement) return null;
 
   return (
-    <div className="p-4 bg-white rounded-lg w-full mb-4">
-      <div className="flex items-center">
-        <h2 className="text-2xl font-semibold mb-4">
-          <Tippy content="Message of the Day from System Administrators">
-            <span className="cursor-help">Announcement ⓘ</span>
-          </Tippy>
-        </h2>
+      <div className="w-full p-4 pb-20 bg-red-50 border-2 border-red-600 border-l-8 rounded-lg shadow-md mb-6">
+        <div className="flex items-center">
+          <h2 className="text-2xl font-bold text-red-800">
+            <Tippy content="Message of the Day from System Administrators">
+              <span className="cursor-help">Announcement</span>
+            </Tippy>
+          </h2>
+        </div>
+    
+        <h4 className="mt-3 text-red-900 whitespace-pre-wrap text-lg">
+          {announcement.message}
+        </h4>
+    
+        {announcement.updated_at && (
+          <h5 className="text-base text-red-700 mt-4">
+            Last updated: {announcement.updated_at}
+          </h5>
+        )}
       </div>
-
-      <p className="mt-2 text-gray-700 whitespace-pre-wrap">
-        {announcement.message}
-      </p>
-
-      {announcement.updated_at && (
-        <p className="text-xs text-gray-500 mt-3">
-          Last updated: {announcement.updated_at}
-        </p>
-      )}
-    </div>
-  );
+    );
 };
 
 export default Announcement;
