@@ -10,8 +10,8 @@ import sqlite3
 import re
 import os
 import subprocess
-import logging
-import datetime
+import logging  # Add this line at the top
+from datetime import datetime
 import requests
 import yaml
 
@@ -1315,3 +1315,24 @@ def submit_acknowledgement():
             "error": f"Failed to process your acknowledgement: {str(e)}",
             "status": "failed"
         }), 500
+        
+@api.route('/announcement', methods=['GET'])
+def get_announcement():
+    try:
+        # Example message of the day
+        announcement = {
+            "message": "Welcome to HPRC! Maintenance is scheduled for Saturday.",
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+        }
+
+        # Return JSON payload
+        return jsonify({"announcement": announcement}), 200
+
+    except Exception as e:
+        logging.error(f"Failed to fetch announcement: {e}")
+        return jsonify({"error": "Unable to fetch announcement"
+        }), 500
+        
+        
+        
+        
