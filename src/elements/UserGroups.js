@@ -64,11 +64,11 @@ const UserGroups = () => {
   }
 
   return (
-    <div className="p-4 bg-white w-full flex flex-col">
+    <div className="p-4 bg-white dark:bg-gray-800 w-full flex flex-col transition-colors duration-200">
       {/* Header section with title and action button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             <Tippy content={ElementDescriptions["User Groups"]}>
               <span className="cursor-help">User Groups ⓘ</span>
             </Tippy>
