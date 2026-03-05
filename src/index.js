@@ -8,6 +8,7 @@ import { createRoot } from "react-dom/client";
 import ChatbotComponent from "./framework/ChatbotComponent";
 import { Toaster } from "react-hot-toast";
 import { useChatbotVisibility, ChatbotVisibilityProvider } from "./framework/ChatbotVisibilityContext"; // Import the context provider
+import { ThemeProvider } from "./context/ThemeContext";
 
 const App = () => {
   const [runTour, setRunTour] = useState(false);
@@ -41,8 +42,9 @@ const App = () => {
   ];
   
   return (
-    <ChatbotVisibilityProvider> {/* Wrap the app with the provider */}
-      <div className="min-h-screen w-full">
+    <ThemeProvider>
+      <ChatbotVisibilityProvider> {/* Wrap the app with the provider */}
+        <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         <DndProvider backend={HTML5Backend}>
           <Joyride
             steps={steps}
@@ -74,14 +76,15 @@ const App = () => {
               }
             }}
           />
-          <div style={{ backgroundColor: '#f0f0f0'}} className="p-10 min-h-screen">
+          <div className="p-10 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
 	    <SandboxGrid setRunTour={setRunTour} />
             <Toaster position="bottom-right" reverseorder={false} toastOptions={{ duration: 30000 }} />
             <EnhancedChatbotComponent />
           </div>
         </DndProvider>
-      </div>
-    </ChatbotVisibilityProvider>
+        </div>
+      </ChatbotVisibilityProvider>
+    </ThemeProvider>
   );
 };
 
