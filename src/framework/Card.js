@@ -67,8 +67,8 @@ const Card = ({ name, title, description, icon }) => {
         ref={ref}
         className={`relative flex flex-col transition-all
           border rounded-lg shadow-sm overflow-hidden 
-          ${isDragging ? "opacity-50 border-blue-300 scale-95" : "border-gray-200 hover:border-blue-300 hover:shadow-md"}
-          cursor-grab active:cursor-grabbing bg-white`}
+          ${isDragging ? "opacity-50 border-blue-300 scale-95" : "border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:shadow-md"}
+          cursor-grab active:cursor-grabbing bg-white dark:bg-gray-800`}
         style={{ 
           width: "100%", 
           touchAction: "none",
@@ -76,23 +76,23 @@ const Card = ({ name, title, description, icon }) => {
         }}
       >
         {/* Card header */}
-        <div className="p-4 flex items-center space-x-3 border-b border-gray-100">
-          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+        <div className="p-4 flex items-center space-x-3 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300">
             {icon}
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">{title}</h3>
-            <div className="text-xs text-gray-500">Click and drag to dashboard</div>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Click and drag to dashboard</div>
           </div>
         </div>
         
         {/* Card description */}
-        <div className="p-4 text-sm text-gray-600 flex-grow">
+        <div className="p-4 text-sm text-gray-600 dark:text-gray-300 flex-grow">
           <p className="line-clamp-3">{description}</p>
         </div>
         
         {/* Add badge/tag to show category */}
-        <div className="absolute top-2 right-2 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+        <div className="absolute top-2 right-2 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
           {name.includes("User") ? "User" : 
            name.includes("Node") || name.includes("PyVenv") || name.includes("Quota") ? "System" : 
            "Analytics"}
