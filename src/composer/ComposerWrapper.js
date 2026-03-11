@@ -1,5 +1,7 @@
 import React, { useState, useRef, useContext, createContext, useMemo, useEffect } from "react";
 import Composer from "./schemaRendering/Composer";
+import RequiredFieldsModal from "./RequiredFieldsModal";
+import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import "./ComposerStyles.css";
 
 export const GlobalFilesContext = createContext();
@@ -17,6 +19,9 @@ const ComposerWrapper = ({
 }) => {
   const [error, setError] = useState(null);
   const [globalFiles, setGlobalFiles] = useState([]);
+  const [showRequiredFieldsModal, setShowRequiredFieldsModal] = useState(false);
+  const [missingRequiredFields, setMissingRequiredFields] = useState([]);
+  
   const formRef = useRef(null);
   const composerRef = useRef(null);
   const memoizedSchema = useMemo(() => schema, []);
@@ -37,17 +42,30 @@ const ComposerWrapper = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (isSubmitting) {
-      console.log('Form submission already in progess');
+      console.log('Form submission already in progress');
       return;
     }
 
+    // Validate required fields before submission
+    if (composerRef.current) {
+      const currentFields = composerRef.current.getFields();
+      const validation = validateRequiredFields(currentFields);
+      if (!validation.isValid) {
+        setMissingRequiredFields(validation.missingFields);
+        setShowRequiredFieldsModal(true);
+        return;
+      }
+    }
+
     if (!formRef.current) return;
+
     const formData = new FormData(formRef.current);
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
+
     try {
       await onSubmit(formData);
     } catch (err) {
@@ -58,10 +76,12 @@ const ComposerWrapper = ({
   const handleClose = async (e) => {
     e.preventDefault();
     if (!formRef.current || !onClose) return;
+
     const formData = new FormData(formRef.current);
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
+
     try {
       await onClose(formData);
     } catch (err) {
@@ -98,19 +118,18 @@ const ComposerWrapper = ({
           <div className="form-footer">
             <div className="button-group">
               <button
-	        type="submit"
-	        onClick={handleSubmit}
-	        className="btn btn-primary"
-	        disabled={isSubmitting}
-	        style={{
-		  opacity: isSubmitting ? 0.6 : 1,
-		  cursor: isSubmitting ? 'not-allowed' : 'pointer'
-		}}
-	      >
-	        {isSubmitting ? 'Submitting...' : 'Submit'}
-	      </button>
-              
-	      {onClose && (
+                type="submit"
+                onClick={handleSubmit}
+                className="btn btn-primary"
+                disabled={isSubmitting}
+                style={{
+                  opacity: isSubmitting ? 0.6 : 1,
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </button>
+              {onClose && (
                 <button type="button" onClick={handleClose} className="btn btn-secondary">
                   Close
                 </button>
@@ -119,6 +138,12 @@ const ComposerWrapper = ({
           </div>
         </div>
       </div>
+
+      <RequiredFieldsModal
+        isOpen={showRequiredFieldsModal}
+        onClose={() => setShowRequiredFieldsModal(false)}
+        missingFields={missingRequiredFields}
+      />
     </GlobalFilesContext.Provider>
   );
 };
