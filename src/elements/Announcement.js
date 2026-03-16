@@ -38,7 +38,7 @@ const Announcement = () => {
           </h2>
         </div>
     
-        <ul className="mt-3 list-disc pl-5 text-red-900 text-lg">
+        <ul className="mt-3 list-disc pl-5 text-red-900 dark:text-red-100 text-lg">
           {announcement.messages.map((msg, i) => (
             <li key={i} className="whitespace-pre-wrap">
               {msg}
