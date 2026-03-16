@@ -271,7 +271,7 @@ const Banner = ({ setRunTour }) => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-x-hidden">
       {/* Tour Component */}
       <Joyride
         steps={tourSteps}

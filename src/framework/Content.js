@@ -314,7 +314,6 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
       <ReactGridLayout
         layout={combinedLayout}
         onLayoutChange={onLayoutChange}
-        width={1200}
         cols={10}
         rowHeight={20}
         isBounded={false}
