@@ -35,7 +35,7 @@ export default function BannerBackground( { children } ) {
 
   return (
       <div
-        className="w-full h-32 rounded-md border-b border-gray-300 shadow-sm" 
+        className="w-full h-32 rounded-md border-b border-gray-300 dark:border-gray-800 shadow-sm" 
 	style={{
           backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(svgPattern)}")`,
 	  backgroundPosition: "center"
