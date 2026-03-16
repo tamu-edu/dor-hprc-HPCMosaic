@@ -95,19 +95,19 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 		<form onSubmit={handleSubmission} className='space-y-4 source /var/www/ood/apps/sys/dor-hprc-web-tamudashboard-reu/.venv/bin/activate'>
 			{!pyVersions && 
 				<div>
-					<p> Loading... </p>
+					<p className='text-gray-700 dark:text-gray-300'> Loading... </p>
 				</div>
 			}	
 			{pyVersions &&
 			<div>
-				<label htmlFor='pyVersion' className='block text-sm font-medium text-gray-700 non-draggable'>
+				<label htmlFor='pyVersion' className='block text-sm font-medium text-gray-700 dark:text-gray-300 non-draggable'>
 					Select Python Version
 				</label>
 				<select
 				id="pyVersion"
 				value={selectedPyVersion}
 				onChange={handlePyVersionSelect}
-				className="mt-1 block w-full border-gray-300 rounded-md shadow-sm non-draggable"
+				className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm non-draggable text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
 				>	
 				{Object.keys(pyVersions).map((version, index) => (
 					<option value={version} key={index}>
@@ -118,20 +118,20 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			</div>
 			}
 			<div>
-				<label htmlFor='envName' className='block text-sm font-medium text-gray-700'>
+				<label htmlFor='envName' className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
 					Virtual environment&apos;s name
 				</label>
 				<input type='text' id='envName' value={envName} placeholder='What would you like to name your environment?'
-				onChange={(e) => {setEnvName(e.target.value)}} className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
+				onChange={(e) => {setEnvName(e.target.value)}} className='mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400'/>
 			</div>
 			
 			<div>
-				<label htmlFor='description' className='block text-sm font-medium text-gray-700'>
+				<label htmlFor='description' className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
 					Description of virtual environment
 				</label>
 				<input type='text' id='description' value={description} placeholder='What will this virtual environment be used for? (optional)'
 				onChange={(e) => {setDescription(e.target.value)}} 
-				className='mt-1 block w-full border-gray-300 rounded-md shadow-sm'/>
+				className='mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400'/>
 			</div>
 
 			{!waitingForCreation &&
@@ -143,7 +143,7 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			}
 			{waitingForCreation &&
 			 <div>
-			 	<p> Creating Environment (this may take a while)...</p>
+			 	<p className='text-gray-700 dark:text-gray-300'> Creating Environment (this may take a while)...</p>
 			 </div>
 			}
 		</form>
