@@ -38,11 +38,29 @@
   margin: 1rem;
 }
 
+.dark .composer-wrapper .form-card {
+  background: #1f2937;
+}
+
 .composer-wrapper .form-header {
   flex-shrink: 0;
   padding: 1.5rem;
   background: white;
   border-bottom: 1px solid rgba(128, 0, 0, 0.1);
+}
+
+.dark .composer-wrapper .form-header {
+  background: #1f2937;
+  border-bottom: 1px solid #4b5563;
+  color: #f3f4f6;
+}
+
+.composer-wrapper .form-header h2 {
+  color: #1f2937;
+}
+
+.dark .composer-wrapper .form-header h2 {
+  color: #f3f4f6;
 }
 
 .composer-wrapper .form-content {
@@ -77,6 +95,12 @@
   background-color: white;
 }
 
+.dark .composer-wrapper .form-control {
+  border: 1px solid #4b5563;
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
 .composer-wrapper .form-control:focus {
   border-color: maroon;
   box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
@@ -95,6 +119,10 @@
   font-weight: 500;
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
+}
+
+.dark .composer-wrapper .form-label {
+  color: #d1d5db;
 }
 
 /* Form Groups */
@@ -120,6 +148,12 @@
   font-size: 0.95rem;
 }
 
+.dark .composer-wrapper .error-message {
+  background-color: #7f1d1d;
+  border: 1px solid #991b1b;
+  color: #fca5a5;
+}
+
 .composer-wrapper .error-message button {
   background: none;
   border: none;
@@ -141,6 +175,11 @@
   padding: 1.5rem;
   background: #fafafa;
   border-top: 1px solid rgba(128, 0, 0, 0.1);
+}
+
+.dark .composer-wrapper .form-footer {
+  background: #111827;
+  border-top: 1px solid #4b5563;
 }
 
 /* Buttons */
@@ -184,6 +223,17 @@
   border-color: maroon;
 }
 
+.dark .composer-wrapper .btn-secondary {
+  background-color: #374151;
+  color: #fca5a5;
+  border: 1px solid #4b5563;
+}
+
+.dark .composer-wrapper .btn-secondary:hover {
+  background-color: #4b5563;
+  border-color: #fca5a5;
+}
+
 /* Container sections */
 .composer-wrapper .container-section {
   background-color: #fafafa;
@@ -198,6 +248,15 @@
   font-weight: 600;
   margin-bottom: 1rem;
   font-size: 1.1rem;
+}
+
+.dark .composer-wrapper .container-section {
+  background-color: #111827;
+  border: 1px solid #4b5563;
+}
+
+.dark .composer-wrapper .container-title {
+  color: #fca5a5;
 }
 
 /* Responsive adjustments */
