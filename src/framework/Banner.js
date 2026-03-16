@@ -414,9 +414,9 @@ const Banner = ({ setRunTour }) => {
             <div className="request-help-container">
 	      <HelpButton
                 buttonStyle={{
-                  backgroundColor: 'white',
-                  color: '#374151',
-                  border: '1px solid #D1D5DB',
+                  backgroundColor: isDarkMode ? '#1F2937' : 'white',
+                  color: isDarkMode ? '#E5E7EB' : '#374151',
+                  border: isDarkMode ? '1px solid #4B5563' : '1px solid #D1D5DB',
                   borderRadius: '0.5rem',
                   cursor: 'pointer',
                   display: 'flex',
@@ -432,8 +432,8 @@ const Banner = ({ setRunTour }) => {
                 }}
                 buttonText={
                   <div className="flex items-center justify-center md:justify-start">
-                    <MdOutlineQuestionAnswer className="text-xl text-gray-500 md:mr-2 flex-shrink-0" />
-                    <span className="hidden md:inline font-semibold text-gray-700 text-base whitespace-nowrap">Get Help</span>
+                    <MdOutlineQuestionAnswer className="text-xl text-gray-500 dark:text-gray-300 md:mr-2 flex-shrink-0" />
+                    <span className="hidden md:inline font-semibold text-gray-700 dark:text-gray-200 text-base whitespace-nowrap">Get Help</span>
 	          </div>
 		}
 	      />
