@@ -1319,13 +1319,14 @@ def submit_acknowledgement():
 @api.route('/announcement', methods=['GET'])
 def get_announcement():
     try:
-        # Example message of the day
         announcement = {
-            "message": "Welcome to HPRC! Maintenance is scheduled for Saturday.",
+            "messages": [
+                "Welcome to HPRC!",
+                "Maintenance is scheduled for Saturday, March 6, through 8 PM CDT. ACES may be unavailable during this time."
+            ],
             "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
         }
 
-        # Return JSON payload
         return jsonify({"announcement": announcement}), 200
 
     except Exception as e:

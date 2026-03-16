@@ -33,14 +33,18 @@ const Announcement = () => {
         <div className="flex items-center">
           <h2 className="text-2xl font-bold text-red-800 dark:text-red-300">
             <Tippy content="Message of the Day from System Administrators">
-              <span className="cursor-help">Announcement</span>
+              <span className="cursor-help">Announcements</span>
             </Tippy>
           </h2>
         </div>
     
-        <h4 className="mt-3 text-red-900 dark:text-red-200 whitespace-pre-wrap text-lg">
-          {announcement.message}
-        </h4>
+        <ul className="mt-3 list-disc pl-5 text-red-900 text-lg">
+          {announcement.messages.map((msg, i) => (
+            <li key={i} className="whitespace-pre-wrap">
+              {msg}
+            </li>
+          ))}
+        </ul>
     
         {announcement.updated_at && (
           <h5 className="text-base text-red-700 dark:text-red-400 mt-4">
