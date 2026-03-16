@@ -124,34 +124,34 @@ const UserJobs = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg overflow-auto w-full h-full transition-colors duration-200">
       {/* Title with Tooltip */}
       <div className="flex items-center">
-        <h2 className="text-2xl font-semibold mb-4">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
           <Tippy content={ElementDescriptions["User Jobs"]}>
             <span className="cursor-help">Your Jobs ⓘ</span>
           </Tippy>
         </h2>
       </div>
       {jobs.length === 0 ? (
-        <p className="text-gray-500">No active jobs.</p>
+        <p className="text-gray-500 dark:text-gray-300">No active jobs.</p>
       ) : (
-        <table className="table-auto w-full border-collapse border border-gray-300 rounded-lg shadow-sm">
+        <table className="table-auto w-full border-collapse border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm">
           <thead>
-            <tr className="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
-              <th className="border border-gray-300 px-4 py-2">Job ID</th>
-              <th className="border border-gray-300 px-4 py-2">Job Name</th>
-              <th className="border border-gray-300 px-4 py-2">Location</th>
-              <th className="border border-gray-300 px-4 py-2">State</th>
-              <th className="border border-gray-300 px-4 py-2">CPUs</th>
-              <th className="border border-gray-300 px-4 py-2">Nodes</th>
-              <th className="border border-gray-300 px-4 py-2">Time Elapsed</th>
-              <th className="border border-gray-300 px-4 py-2">Actions</th>
+            <tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 uppercase text-sm leading-normal">
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">Job ID</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">Job Name</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">Location</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">State</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">CPUs</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">Nodes</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">Time Elapsed</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody className="text-gray-800 text-sm">
             {jobs.map((job) => (
-              <tr key={job.job_id} className="border-b border-gray-200">
+              <tr key={job.job_id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
                 <td className="py-3 px-4">
                     {job.job_id}
                 </td>
@@ -171,10 +171,10 @@ const UserJobs = () => {
                     {job.nodes}
                 </td>
                 <td className="py-3 px-4">
-                    <div className="flex justify-between text-base font-medium text-gray-700 mb-1">
+                    <div className="flex justify-between text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
                       <span> ({formatTime(job.time_elapsed)}) / ({formatTime(job.time_requested)}) </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2 overflow-hidden">
                         {(() => {
                             const timePercentage = getElapsedPercentage(job.time_elapsed, job.time_requested);
                             return (

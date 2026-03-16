@@ -29,16 +29,16 @@ const Announcement = () => {
   if (!announcement) return null;
 
   return (
-      <div className="w-full p-4 pb-20 bg-red-50 border-2 border-red-600 border-l-8 rounded-lg shadow-md mb-6">
+      <div className="w-full p-4 pb-20 bg-red-50 dark:bg-red-900/20 border-2 border-red-600 dark:border-red-700 border-l-8 rounded-lg shadow-md mb-6">
         <div className="flex items-center">
-          <h2 className="text-2xl font-bold text-red-800">
+          <h2 className="text-2xl font-bold text-red-800 dark:text-red-300">
             <Tippy content="Message of the Day from System Administrators">
               <span className="cursor-help">Announcements</span>
             </Tippy>
           </h2>
         </div>
     
-        <ul className="mt-3 list-disc pl-5 text-red-900 text-lg">
+        <ul className="mt-3 list-disc pl-5 text-red-900 dark:text-red-100 text-lg">
           {announcement.messages.map((msg, i) => (
             <li key={i} className="whitespace-pre-wrap">
               {msg}
@@ -47,7 +47,7 @@ const Announcement = () => {
         </ul>
     
         {announcement.updated_at && (
-          <h5 className="text-base text-red-700 mt-4">
+          <h5 className="text-base text-red-700 dark:text-red-400 mt-4">
             Last updated: {announcement.updated_at}
           </h5>
         )}
