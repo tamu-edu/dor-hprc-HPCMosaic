@@ -101,7 +101,7 @@ const UserGroups = () => {
       
       {/* Additional note at the bottom */}
       <div className="mt-4 pt-3 border-t border-gray-200">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Need access to additional groups? Use the "Group Request" button above to submit a request.
         </p>
       </div>
