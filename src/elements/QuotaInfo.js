@@ -208,11 +208,11 @@ const QuotaInfo = () => {
         </tbody>
       </table>
       
-      {additionalText && <p className="mt-4 text-gray-700 italic text-left">{additionalText}</p>}
+      {additionalText && <p className="mt-4 text-gray-700 dark:text-gray-300 italic text-left">{additionalText}</p>}
       
       {/* Additional note at the bottom */}
-      <div className="mt-4 pt-3 border-t border-gray-200 flex-shrink-0">
-        <p className="text-sm text-gray-600">
+      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 flex-shrink-0">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Need more storage space? Click "Request" next to a specific disk to request an increase for that disk.
         </p>
       </div>
