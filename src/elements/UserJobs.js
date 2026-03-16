@@ -134,7 +134,7 @@ const UserJobs = () => {
         </h2>
       </div>
       {jobs.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No active jobs.</p>
+        <p className="text-gray-500 dark:text-gray-300">No active jobs.</p>
       ) : (
         <table className="table-auto w-full border-collapse border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm">
           <thead>
