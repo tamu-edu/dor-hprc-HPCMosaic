@@ -162,7 +162,7 @@ const PyVenvManager = () => {
 	  }
 	  {(envData == "NO ENVIRONMENTS" && !envKeys) && 
 	  <div className="overflow-auto w-full h-full flex flex-grow flex-col justify-center items-center">	
-		<h2 className="text-xl font-semibold mb-4"> No virtual environments to manage. </h2>
+		<h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100"> No virtual environments to manage. </h2>
 		<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
 			className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
 				<svg xmlns="http://www.ws.org/2000/svg"
