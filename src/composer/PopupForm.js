@@ -5,9 +5,11 @@ import ComposerWrapper from './ComposerWrapper';
 
 //Context Import
 import { useLayoutLock } from '../context/LayoutLockContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting }) => {
   const modalRef = useRef(null);
+  const { isDarkMode } = useTheme();
 
   const handleClickOutside = useCallback((event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -77,7 +79,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
       pointerEvents: 'auto'
     }}>
       <div ref={modalRef} style={{
-        backgroundColor: 'white',
+        backgroundColor: isDarkMode ? '#1f2937' : 'white',
         width: '90%',
         maxWidth: '800px',
         maxHeight: '90vh',
@@ -98,7 +100,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             border: 'none',
             fontSize: '24px',
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            color: isSubmitting ? '#ccc' : '#666',
+            color: isSubmitting ? (isDarkMode ? '#4b5563' : '#ccc') : (isDarkMode ? '#d1d5db' : '#666'),
             padding: '4px 12px',
             zIndex: 1
           }}
@@ -109,14 +111,14 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
         <div style={{ padding: '20px' }}>
           {disclaimerText && (
             <div style={{
-              borderBottom: '1px solid #e5e7eb',
+              borderBottom: isDarkMode ? '1px solid #4b5563' : '1px solid #e5e7eb',
               marginBottom: '24px',
               paddingBottom: '16px'
             }}>
               <div style={{
                 fontSize: '15px',
                 fontWeight: '500',
-                color: '#500000',
+                color: isDarkMode ? '#fca5a5' : '#500000',
                 marginBottom: '12px'
               }}>
                 Important Information
@@ -126,7 +128,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
                   display: 'flex',
                   gap: '8px',
                   marginBottom: '8px',
-                  color: '#500000',
+                  color: isDarkMode ? '#fca5a5' : '#500000',
                   fontSize: '14px',
                   lineHeight: '1.5'
                 }}>
@@ -146,6 +148,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             title={title}
             className="popup-form"
             errorMessage={errorMessage}
+            isDarkMode={isDarkMode}
           />
         </div>
       </div>

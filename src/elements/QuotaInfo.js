@@ -100,11 +100,11 @@ const QuotaInfo = () => {
   const highestUsage = findHighestUsage();
 
   return (
-    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full flex flex-col">
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg overflow-auto w-full h-full flex flex-col transition-colors duration-200">
       {/* Header section with title and action button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             <Tippy content={ElementDescriptions["Quota Info"]}>
               <span className="cursor-help">Quota Information ⓘ</span>
             </Tippy>
@@ -124,25 +124,25 @@ const QuotaInfo = () => {
         </div>
       </div>
       
-      <table className="table-auto w-full border-collapse border border-gray-300">
+      <table className="table-auto w-full border-collapse border border-gray-300 dark:border-gray-600">
         <thead>
-          <tr className="bg-gray-200">
-            <th className="border border-gray-300 px-4 py-2">
+          <tr className="bg-gray-200 dark:bg-gray-700">
+            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
               <Tippy content={<CustomTooltip content="The storage disk being monitored." />} placement="top">
                 <span className="cursor-help font-semibold">Disk ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 px-4 py-2">
+            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
               <Tippy content={<CustomTooltip content="Percentage of storage used versus total allocated." />} placement="top">
                 <span className="cursor-help font-semibold">Disk Usage (%) ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 px-4 py-2">
+            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
               <Tippy content={<CustomTooltip content="Percentage of files used versus total allowed." />} placement="top">
                 <span className="cursor-help font-semibold">File Usage (%) ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 px-4 py-2">
+            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
               <span className="font-semibold">Action</span>
             </th>
           </tr>
@@ -156,18 +156,18 @@ const QuotaInfo = () => {
             const isHomeDir = quota.disk.includes("/home");
 
             return (
-              <tr key={index} className={`${quota.additional_info ? "bg-yellow-100" : ""} group relative`}>
-                <td className="border border-gray-300 px-4 py-2" title={quota.additional_info || ""}>
+              <tr key={index} className={`${quota.additional_info ? "bg-yellow-100 dark:bg-yellow-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-700"} group relative transition-colors text-gray-900 dark:text-gray-100`}>
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2" title={quota.additional_info || ""}>
                   {generate_file_explorer_path_for_disk(quota.disk)}
                 </td>
-                <td className="border border-gray-300 px-4 py-4">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-4">
                   <Tippy content={<CustomTooltip content={`Used: ${quota.disk_usage} / Total: ${quota.disk_limit}`} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
                       <p>{quota.disk_usage}/{quota.disk_limit}</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2">
                         
 
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2 overflow-hidden">
                           <div 
                             className={`h-2.5 rounded-full ${diskPercentage >= 75 ? 'bg-red-600' : diskPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`} 
                             style={{ width: `${Math.min(100, diskPercentage)}%` }}
@@ -179,11 +179,11 @@ const QuotaInfo = () => {
                     </div>
                   </Tippy>
                 </td>
-                <td className="border border-gray-300 px-4 py-4">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-4">
                   <Tippy content={<CustomTooltip content={`Used: ${quota.file_usage} / Total: ${quota.file_limit}`} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
                       <p>{quota.file_usage}/{quota.file_limit}</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2 overflow-hidden">
                         <div 
                           className={`h-2.5 rounded-full ${filePercentage >= 75 ? 'bg-red-600' : filePercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
                           style={{ width: `${Math.min(100, filePercentage)}%` }}
@@ -193,7 +193,7 @@ const QuotaInfo = () => {
                     </div>
                   </Tippy>
                 </td>
-                <td className="border border-gray-300 px-4 py-4 text-center">
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-4 text-center">
                   {!isHomeDir && (
                     <QuotaButton 
                       disk={quota.disk} 
@@ -208,11 +208,11 @@ const QuotaInfo = () => {
         </tbody>
       </table>
       
-      {additionalText && <p className="mt-4 text-gray-700 italic text-left">{additionalText}</p>}
+      {additionalText && <p className="mt-4 text-gray-700 dark:text-gray-300 italic text-left">{additionalText}</p>}
       
       {/* Additional note at the bottom */}
-      <div className="mt-4 pt-3 border-t border-gray-200 flex-shrink-0">
-        <p className="text-sm text-gray-600">
+      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 flex-shrink-0">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Need more storage space? Click "Request" next to a specific disk to request an increase for that disk.
         </p>
       </div>

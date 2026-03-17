@@ -1,2 +1,0 @@
-- make dashboard layout 'lockable'
-- make default layout the one that's loaded 

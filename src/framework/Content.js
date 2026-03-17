@@ -20,6 +20,7 @@ import Accounts from "../elements/Accounts";
 import Composer from "../elements/Composer";
 import QuotaButton from "../elements/QuotaButton";
 import AcknowledgementForm from "../elements/AcknowledgementForm";
+import Announcement from "../elements/Announcement";
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -41,6 +42,7 @@ const getMinSize = (componentName) => {
     "Chatbot": { minW: 4, minH: 8 },
     "Quota Button": { minW: 2, minH: 2 },
     "AcknowledgementForm": { minW: 3, minH: 6 },
+    "Announcement": { minW: 5, minH: 4 },
   };
 
   return componentMinSizes[componentName] || defaultMin;
@@ -49,6 +51,7 @@ const getMinSize = (componentName) => {
 const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
   // Default layout (used on first load)
   const defaultLayout = [
+    { name: "Announcement", i: uuidv4(), x: 0, y: 0, w: 10, h: 6 },
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
     { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
@@ -278,6 +281,8 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         return <Accounts />;
       case "AcknowledgementForm":
         return <AcknowledgementForm />;
+      case "Announcement":
+        return <Announcement />;
       default:
         return <div className="text-center text-red-500">Unknown Chart</div>;
     }
@@ -301,7 +306,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         drop(node);
         gridRef.current = node;
       }}
-      className={`max-w-full h-auto p-4 relative ${isOver ? "bg-blue-50" : ""}`}
+      className={`max-w-full h-auto p-4 relative ${isOver ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
     >
       {/* Toast Notification Container */}
       <ToastContainer />
@@ -309,7 +314,6 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
       <ReactGridLayout
         layout={combinedLayout}
         onLayoutChange={onLayoutChange}
-        width={1200}
         cols={10}
         rowHeight={20}
         isBounded={false}
@@ -330,10 +334,10 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
             <div
               key={ele.i}
               data-grid={{...ele, minW, minH}}
-              className={`resizable-element bg-white rounded-md border border-gray-300 relative h-full w-full overflow-hidden ${
+              className={`resizable-element bg-white dark:bg-gray-800 rounded-md border relative h-full w-full overflow-hidden ${
 		      layoutLocked
 	                ? 'border-2'
-                        : 'border-gray-300'
+                        : 'border-gray-300 dark:border-gray-600'
 	      }`}
               style={{
 	        borderColor: layoutLocked ? '#500000' : undefined
@@ -343,7 +347,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 	      {!layoutLocked && (
 	        <button
                   onClick={() => removeElement(index) }
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white dark:bg-gray-700 bg-opacity-80 hover:bg-red-500 dark:hover:bg-red-600 text-gray-500 dark:text-gray-300 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
                   title="Remove this element"
                 >
                   <span className="text-sm">✕</span>
@@ -368,10 +372,10 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
               isResizable: false,
               isDraggable: false,
             }}
-            className="border-2 border-dashed border-blue-500 bg-blue-100 bg-opacity-50 rounded-md flex items-center justify-center"
+            className="border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-100 dark:bg-blue-900/40 bg-opacity-50 rounded-md flex items-center justify-center"
           >
-            <div className="bg-white px-3 py-1.5 rounded-md shadow-sm">
-              <span className="text-blue-600 font-medium">
+            <div className="bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md shadow-sm">
+              <span className="text-blue-600 dark:text-blue-400 font-medium">
                 {currentDragItem ? `Drop to add ${currentDragItem.name}` : 'Drop here'}
               </span>
             </div>
