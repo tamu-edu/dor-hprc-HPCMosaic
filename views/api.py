@@ -523,6 +523,15 @@ def parse_scontrol_output(output):
             key, value = token.split("=", 1)
             if key in key_map:
                 job_info[key_map[key]] = value
+            elif key == "ReqTRES":
+                # total GPU count
+                gpu_match = re.search(r"gres/gpu=(\d+)", value)
+                if gpu_match:
+                    job_info["gpus"] = int(gpu_match.group(1))
+                else:
+                    job_info["gpus"] = 0
+    if "gpus" not in job_info:
+        job_info["gpus"] = 0
 
     return {"job_details": job_info}
 
@@ -646,9 +655,11 @@ def get_user_jobs():
                     "state": state,
                     "cpus": job_details_parsed.get("cores"),
                     "nodes": nodes,
+                    "gpus": job_details_parsed.get("gpus"),
                     "time_requested": job_details_parsed.get("time_requested"),
                     "time_elapsed": job_details_parsed.get("time_elapsed"),
                     "submit_dir": job_details_parsed.get("submit_dir"),
+                    "reason": job_details_parsed.get("reason"),
                 })
             
         return jsonify({ "jobs": jobs }), 200
