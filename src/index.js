@@ -44,7 +44,7 @@ const App = () => {
   return (
     <ThemeProvider>
       <ChatbotVisibilityProvider> {/* Wrap the app with the provider */}
-        <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="min-h-screen w-full theme-surface-alt">
         <DndProvider backend={HTML5Backend}>
           <Joyride
             steps={steps}
@@ -76,7 +76,7 @@ const App = () => {
               }
             }}
           />
-          <div className="px-3 py-4 sm:px-4 sm:py-6 md:p-10 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+          <div className="px-3 py-4 sm:px-4 sm:py-6 md:p-10 min-h-screen theme-surface-alt">
 	    <SandboxGrid setRunTour={setRunTour} />
             <Toaster position="bottom-right" reverseorder={false} toastOptions={{ duration: 30000 }} />
             <EnhancedChatbotComponent />

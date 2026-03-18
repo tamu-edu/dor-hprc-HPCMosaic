@@ -1,6 +1,8 @@
 import React from "react";
+import { useTheme } from "../context/ThemeContext";
 
 export default function BannerBackground( { children } ) {
+  const { theme } = useTheme();
 
   const svgPattern = `
     <svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 200 50' shape-rendering="crispEdges">
@@ -35,8 +37,9 @@ export default function BannerBackground( { children } ) {
 
   return (
       <div
-        className="w-full h-32 rounded-md border-b border-gray-300 dark:border-gray-800 shadow-sm" 
+        className="w-full h-32 rounded-md border-b shadow-sm" 
 	style={{
+          borderColor: theme.colors.border,
           backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(svgPattern)}")`,
 	  backgroundPosition: "center"
         }}

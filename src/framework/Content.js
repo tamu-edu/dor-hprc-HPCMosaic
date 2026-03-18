@@ -21,6 +21,7 @@ import Composer from "../elements/Composer";
 import QuotaButton from "../elements/QuotaButton";
 import AcknowledgementForm from "../elements/AcknowledgementForm";
 import Announcement from "../elements/Announcement";
+import { useTheme } from "../context/ThemeContext";
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -49,6 +50,7 @@ const getMinSize = (componentName) => {
 };
 
 const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
+  const { theme } = useTheme();
   // Default layout (used on first load)
   const defaultLayout = [
     { name: "Announcement", i: uuidv4(), x: 0, y: 0, w: 10, h: 6 },
@@ -306,7 +308,8 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         drop(node);
         gridRef.current = node;
       }}
-      className={`max-w-full h-auto p-4 relative ${isOver ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
+      className={`max-w-full h-auto p-4 relative ${isOver ? "bg-blue-50" : ""}`}
+      style={isOver ? { backgroundColor: "rgba(59, 130, 246, 0.15)" } : undefined}
     >
       {/* Toast Notification Container */}
       <ToastContainer />
@@ -334,10 +337,10 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
             <div
               key={ele.i}
               data-grid={{...ele, minW, minH}}
-              className={`resizable-element bg-white dark:bg-gray-800 rounded-md border relative h-full w-full overflow-hidden ${
+              className={`resizable-element theme-surface rounded-md border relative h-full w-full overflow-hidden ${
 		      layoutLocked
 	                ? 'border-2'
-                        : 'border-gray-300 dark:border-gray-600'
+			: 'theme-border'
 	      }`}
               style={{
 	        borderColor: layoutLocked ? '#500000' : undefined
@@ -347,7 +350,8 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 	      {!layoutLocked && (
 	        <button
                   onClick={() => removeElement(index) }
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white dark:bg-gray-700 bg-opacity-80 hover:bg-red-500 dark:hover:bg-red-600 text-gray-500 dark:text-gray-300 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
+                  style={{ backgroundColor: theme.colors.surfaceBg, color: theme.colors.textSecondary }}
                   title="Remove this element"
                 >
                   <span className="text-sm">✕</span>
@@ -372,10 +376,11 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
               isResizable: false,
               isDraggable: false,
             }}
-            className="border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-100 dark:bg-blue-900/40 bg-opacity-50 rounded-md flex items-center justify-center"
+            className="border-2 border-dashed border-blue-500 bg-blue-100 bg-opacity-50 rounded-md flex items-center justify-center"
+            style={{ backgroundColor: "rgba(59, 130, 246, 0.15)" }}
           >
-            <div className="bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md shadow-sm">
-              <span className="text-blue-600 dark:text-blue-400 font-medium">
+            <div className="theme-surface px-3 py-1.5 rounded-md shadow-sm">
+              <span className="text-blue-600 font-medium">
                 {currentDragItem ? `Drop to add ${currentDragItem.name}` : 'Drop here'}
               </span>
             </div>
