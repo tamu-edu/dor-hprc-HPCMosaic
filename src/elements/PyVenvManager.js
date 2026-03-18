@@ -89,10 +89,10 @@ const PyVenvManager = () => {
  }
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg w-full h-full flex flex-col transition-colors duration-200">
+    <div className="p-4 theme-surface rounded-lg w-full h-full flex flex-col">
       {isFormOpen && 
 	  	<div className='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-9999'>
-			<div className='relative bg-white dark:bg-gray-800 p-6 rounded-lg w-2/3'>
+			<div className='relative theme-surface p-6 rounded-lg w-2/3'>
 				<button className='absolute top-2 right-2 text-gray-500 hover:text-red-500'
 				onClick={() => {setIsFormOpen(false)}}>
 					&#10006;
@@ -109,31 +109,31 @@ const PyVenvManager = () => {
 	  }
 	  {((envData && envData != "NO ENVIRONMENTS") && envKeys) && 
 	  <div className="overflow-auto w-full h-full flex-grow flex-col">
-	  	<h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100"> Virtual Env Management </h2>
-			<table className="table-auto w-full border-collapse border border-gray-300 dark:border-gray-600 m-2">
+	  	<h2 className="text-2xl font-semibold mb-4 theme-text-primary"> Virtual Env Management </h2>
+			<table className="table-auto w-full border-collapse border theme-border m-2">
 				<thead>
-				<tr className="bg-gray-200 dark:bg-gray-700">
+				<tr className="theme-table-header">
 					{envKeys.map((field, index) => (
-					<th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100" key={index}>
+					<th className="border theme-border px-4 py-2 theme-text-primary" key={index}>
 						{field.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
 					</th>
 					))}
-					<th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+					<th className="border theme-border px-4 py-2 theme-text-primary">
 					Action
 					</th>
 				</tr>
 				</thead>
 				<tbody>
 					{envData.map((env) => (
-						<tr key={env.name} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{env.group}</td>
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{env.name}</td>
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{env.GCCcore_version}</td>
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{env.description}</td>
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{env.owner}</td>
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{env.python_version}</td>
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{env.toolchain}</td>
-							<td className="border border-gray-300 dark:border-gray-600 px-4 py-2"> 
+						<tr key={env.name} className="theme-hover-surface transition-colors theme-text-primary">
+							<td className="border theme-border px-4 py-2">{env.group}</td>
+							<td className="border theme-border px-4 py-2">{env.name}</td>
+							<td className="border theme-border px-4 py-2">{env.GCCcore_version}</td>
+							<td className="border theme-border px-4 py-2">{env.description}</td>
+							<td className="border theme-border px-4 py-2">{env.owner}</td>
+							<td className="border theme-border px-4 py-2">{env.python_version}</td>
+							<td className="border theme-border px-4 py-2">{env.toolchain}</td>
+							<td className="border theme-border px-4 py-2"> 
 								<button className="bg-maroon text-white px-2 py-1 rounded hover:bg-red-700"
 								onClick={() => deleteHandler(env.name)} disabled={deletingEnv === env.name}>
 									{deletingEnv === env.name ? (
@@ -162,7 +162,7 @@ const PyVenvManager = () => {
 	  }
 	  {(envData == "NO ENVIRONMENTS" && !envKeys) && 
 	  <div className="overflow-auto w-full h-full flex flex-grow flex-col justify-center items-center">	
-		<h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100"> No virtual environments to manage. </h2>
+		<h2 className="text-xl font-semibold mb-4 theme-text-primary"> No virtual environments to manage. </h2>
 		<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}} 
 			className="bg-maroon text-white rounded-lg p-1 hover:bg-pink-950 m-2">
 				<svg xmlns="http://www.ws.org/2000/svg"

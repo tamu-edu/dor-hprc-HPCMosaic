@@ -64,11 +64,11 @@ const UserGroups = () => {
   }
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 w-full flex flex-col transition-colors duration-200">
+    <div className="p-4 theme-surface w-full flex flex-col">
       {/* Header section with title and action button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-2xl font-semibold theme-text-primary">
             <Tippy content={ElementDescriptions["User Groups"]}>
               <span className="cursor-help">User Groups ⓘ</span>
             </Tippy>
@@ -83,7 +83,7 @@ const UserGroups = () => {
         </div>
       </div>
 
-      <hr className="border-gray-300 mb-4" />
+      <hr className="theme-border mb-4" />
 
       {/*User's Groups*/}
       <div className="overflow-auto w-full h-full flex-grow">
@@ -100,8 +100,8 @@ const UserGroups = () => {
       </div>
       
       {/* Additional note at the bottom */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+      <div className="mt-4 pt-3 border-t theme-border">
+        <p className="text-sm theme-text-secondary">
           Need access to additional groups? Use the "Group Request" button above to submit a request.
         </p>
       </div>
