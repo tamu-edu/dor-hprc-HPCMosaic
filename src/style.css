@@ -11,21 +11,87 @@ body,
   padding: 0;
 }
 
-/* Dark mode */
+/* Global Mosaic theme tokens (light defaults). */
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
+  --mosaic-color-app-bg: #f9fafb;
+  --mosaic-color-surface-bg: #ffffff;
+  --mosaic-color-surface-bg-hover: #f3f4f6;
+  --mosaic-color-text-primary: #111827;
+  --mosaic-color-text-secondary: #6b7280;
+  --mosaic-color-text-muted: #9ca3af;
+  --mosaic-color-text-inverse: #ffffff;
+  --mosaic-color-border: #e5e7eb;
+  --mosaic-color-border-strong: #d1d5db;
+  --mosaic-color-table-header-bg: #e5e7eb;
+  --mosaic-color-link: #003c71;
+  --mosaic-color-icon: #6b7280;
+  --mosaic-color-icon-active: #374151;
+  --mosaic-color-warning-text: #500000;
+  --mosaic-color-warning-text-soft: #fca5a5;
+  --mosaic-color-alert-bg: #fef2f2;
+  --mosaic-color-alert-border: #dc2626;
+  --mosaic-color-alert-text: #991b1b;
+  --mosaic-color-alert-text-secondary: #b91c1c;
+  --mosaic-color-overlay: rgba(0, 0, 0, 0.5);
+  --mosaic-color-disabled-text: #cccccc;
 }
 
-.dark {
-  --bg-primary: #1f2937;
-  --bg-secondary: #111827;
-  --text-primary: #f9fafb;
-  --text-secondary: #d1d5db;
-  --border-color: #374151;
+body {
+  background-color: var(--mosaic-color-app-bg);
+  color: var(--mosaic-color-text-primary);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.theme-surface {
+  background-color: var(--mosaic-color-surface-bg);
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.theme-surface-alt {
+  background-color: var(--mosaic-color-app-bg);
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.theme-text-primary {
+  color: var(--mosaic-color-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--mosaic-color-text-secondary);
+}
+
+.theme-text-muted {
+  color: var(--mosaic-color-text-muted);
+}
+
+.theme-border {
+  border-color: var(--mosaic-color-border);
+}
+
+.theme-border-strong {
+  border-color: var(--mosaic-color-border-strong);
+}
+
+.theme-table-header {
+  background-color: var(--mosaic-color-table-header-bg);
+}
+
+.theme-hover-surface:hover {
+  background-color: var(--mosaic-color-surface-bg-hover);
+}
+
+.theme-surface-hover {
+  background-color: var(--mosaic-color-surface-bg-hover);
+}
+
+.theme-progress-track {
+  background-color: var(--mosaic-color-border);
+}
+
+.theme-input {
+  background-color: var(--mosaic-color-surface-bg);
+  color: var(--mosaic-color-text-primary);
+  border-color: var(--mosaic-color-border-strong);
 }
 
 .tippy-box {

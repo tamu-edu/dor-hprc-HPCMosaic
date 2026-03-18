@@ -4,6 +4,18 @@
   display: flex;
   flex-direction: column;
 
+  --composer-surface: var(--mosaic-color-surface-bg);
+  --composer-surface-alt: var(--mosaic-color-app-bg);
+  --composer-surface-hover: var(--mosaic-color-surface-bg-hover);
+  --composer-text-primary: var(--mosaic-color-text-primary);
+  --composer-text-secondary: var(--mosaic-color-text-secondary);
+  --composer-border: var(--mosaic-color-border);
+  --composer-border-strong: var(--mosaic-color-border-strong);
+  --composer-warning: var(--mosaic-color-warning-text);
+  --composer-error-bg: var(--mosaic-color-alert-bg);
+  --composer-error-border: var(--mosaic-color-alert-border);
+  --composer-error-text: var(--mosaic-color-alert-text);
+
   /*To prevent selection bleeding*/
   position: relative;
   z-index: 1000;
@@ -28,7 +40,7 @@
 }
 
 .composer-wrapper .form-card {
-  background: white;
+  background: var(--composer-surface);
   border-radius: 15px;
   box-shadow: 0 2px 8px rgba(128, 0, 0, 0.08);
   display: flex;
@@ -38,29 +50,16 @@
   margin: 1rem;
 }
 
-.dark .composer-wrapper .form-card {
-  background: #1f2937;
-}
-
 .composer-wrapper .form-header {
   flex-shrink: 0;
   padding: 1.5rem;
-  background: white;
-  border-bottom: 1px solid rgba(128, 0, 0, 0.1);
-}
-
-.dark .composer-wrapper .form-header {
-  background: #1f2937;
-  border-bottom: 1px solid #4b5563;
-  color: #f3f4f6;
+  background: var(--composer-surface);
+  border-bottom: 1px solid var(--composer-border-strong);
+  color: var(--composer-text-primary);
 }
 
 .composer-wrapper .form-header h2 {
-  color: #1f2937;
-}
-
-.dark .composer-wrapper .form-header h2 {
-  color: #f3f4f6;
+  color: var(--composer-text-primary);
 }
 
 .composer-wrapper .form-content {
@@ -88,17 +87,12 @@
 .composer-wrapper .form-control {
   width: 100%;
   padding: 0.625rem 0.875rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--composer-border);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
-  background-color: white;
-}
-
-.dark .composer-wrapper .form-control {
-  border: 1px solid #4b5563;
-  background-color: #111827;
-  color: #f3f4f6;
+  background-color: var(--composer-surface);
+  color: var(--composer-text-primary);
 }
 
 .composer-wrapper .form-control:focus {
@@ -108,21 +102,17 @@
 }
 
 .composer-wrapper .form-control:hover:not(:focus) {
-  border-color: #d1d5db;
+  border-color: var(--composer-border-strong);
 }
 
 /* Labels */
 .composer-wrapper .form-label {
   display: flex;
   align-items: center;
-  color: #374151;
+  color: var(--composer-text-secondary);
   font-weight: 500;
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
-}
-
-.dark .composer-wrapper .form-label {
-  color: #d1d5db;
 }
 
 /* Form Groups */
@@ -136,9 +126,9 @@
 
 /* Error Message */
 .composer-wrapper .error-message {
-  background-color: #fef2f2;
-  border: 1px solid #fee2e2;
-  color: #dc2626;
+  background-color: var(--composer-error-bg);
+  border: 1px solid var(--composer-error-border);
+  color: var(--composer-error-text);
   padding: 0.875rem 1rem;
   margin: 1rem 0;
   border-radius: 8px;
@@ -148,16 +138,10 @@
   font-size: 0.95rem;
 }
 
-.dark .composer-wrapper .error-message {
-  background-color: #7f1d1d;
-  border: 1px solid #991b1b;
-  color: #fca5a5;
-}
-
 .composer-wrapper .error-message button {
   background: none;
   border: none;
-  color: #dc2626;
+  color: var(--composer-error-text);
   cursor: pointer;
   padding: 0.25rem;
   margin-left: 1rem;
@@ -173,13 +157,8 @@
 .composer-wrapper .form-footer {
   flex-shrink: 0;
   padding: 1.5rem;
-  background: #fafafa;
-  border-top: 1px solid rgba(128, 0, 0, 0.1);
-}
-
-.dark .composer-wrapper .form-footer {
-  background: #111827;
-  border-top: 1px solid #4b5563;
+  background: var(--composer-surface-alt);
+  border-top: 1px solid var(--composer-border-strong);
 }
 
 /* Buttons */
@@ -213,50 +192,30 @@
 }
 
 .composer-wrapper .btn-secondary {
-  background-color: white;
-  color: maroon;
-  border: 1px solid #d1d5db;
+  background-color: var(--composer-surface);
+  color: var(--composer-warning);
+  border: 1px solid var(--composer-border-strong);
 }
 
 .composer-wrapper .btn-secondary:hover {
-  background-color: #f9fafb;
-  border-color: maroon;
-}
-
-.dark .composer-wrapper .btn-secondary {
-  background-color: #374151;
-  color: #fca5a5;
-  border: 1px solid #4b5563;
-}
-
-.dark .composer-wrapper .btn-secondary:hover {
-  background-color: #4b5563;
-  border-color: #fca5a5;
+  background-color: var(--composer-surface-hover);
+  border-color: var(--composer-warning);
 }
 
 /* Container sections */
 .composer-wrapper .container-section {
-  background-color: #fafafa;
+  background-color: var(--composer-surface-alt);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--composer-border);
 }
 
 .composer-wrapper .container-title {
-  color: maroon;
+  color: var(--composer-warning);
   font-weight: 600;
   margin-bottom: 1rem;
   font-size: 1.1rem;
-}
-
-.dark .composer-wrapper .container-section {
-  background-color: #111827;
-  border: 1px solid #4b5563;
-}
-
-.dark .composer-wrapper .container-title {
-  color: #fca5a5;
 }
 
 /* Responsive adjustments */
@@ -297,7 +256,9 @@
   width: 100%;
   text-align: center;
   padding: 0.625rem 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--composer-border);
+  background-color: var(--composer-surface);
+  color: var(--composer-text-primary);
   border-radius: 8px;
   font-size: 0.95rem;
 }
@@ -310,6 +271,7 @@
 }
 
 .composer-wrapper .time-input-container input[type="number"] {
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -318,7 +280,7 @@
   display: block;
   text-align: center;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--composer-text-secondary);
   margin-top: 0.25rem;
 }
 
