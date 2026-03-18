@@ -2,14 +2,14 @@ import React from "react";
 import { useTheme } from '../context/ThemeContext';
 
 export function generate_file_explorer_path_for_disk(disk_path) {
-  const { isDarkMode } = useTheme();
+  const { theme } = useTheme();
   const fullUrl = `/pun/sys/dashboard/files/fs${disk_path}`;
 
   return (
     <a
       target="_blank"
       style={{
-        color: isDarkMode ? '#60A5FA' : '#003C71',
+        color: theme.colors.link,
 	fontWeight: 'bold',
         textDecoration: 'underline'
       }}
@@ -21,7 +21,7 @@ export function generate_file_explorer_path_for_disk(disk_path) {
 }
 
 export function generate_file_explorer_path_for_jobs(job) {
-  const { isDarkMode } = useTheme();
+  const { theme } = useTheme();
   if (!job.submit_dir) return job.job_id; // fallback if no directory
 
   const fullUrl = `/pun/sys/dashboard/files/fs${job.submit_dir}`;
@@ -33,7 +33,7 @@ export function generate_file_explorer_path_for_jobs(job) {
       target="_blank"
       rel="noopener noreferrer"
       style={{
-        color: isDarkMode ? '#60A5FA' : '#003C71',
+        color: theme.colors.link,
         fontWeight: 'bold',
         textDecoration: 'underline',
       }}

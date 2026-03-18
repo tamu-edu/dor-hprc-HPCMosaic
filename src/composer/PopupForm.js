@@ -9,7 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 
 const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting }) => {
   const modalRef = useRef(null);
-  const { isDarkMode } = useTheme();
+  const { theme } = useTheme();
 
   const handleClickOutside = useCallback((event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -71,7 +71,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
     <div style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: theme.colors.overlay,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -79,7 +79,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
       pointerEvents: 'auto'
     }}>
       <div ref={modalRef} style={{
-        backgroundColor: isDarkMode ? '#1f2937' : 'white',
+        backgroundColor: theme.colors.surfaceBg,
         width: '90%',
         maxWidth: '800px',
         maxHeight: '90vh',
@@ -100,7 +100,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             border: 'none',
             fontSize: '24px',
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            color: isSubmitting ? (isDarkMode ? '#4b5563' : '#ccc') : (isDarkMode ? '#d1d5db' : '#666'),
+            color: isSubmitting ? theme.colors.disabledText : theme.colors.textSecondary,
             padding: '4px 12px',
             zIndex: 1
           }}
@@ -111,14 +111,14 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
         <div style={{ padding: '20px' }}>
           {disclaimerText && (
             <div style={{
-              borderBottom: isDarkMode ? '1px solid #4b5563' : '1px solid #e5e7eb',
+              borderBottom: `1px solid ${theme.colors.borderStrong}`,
               marginBottom: '24px',
               paddingBottom: '16px'
             }}>
               <div style={{
                 fontSize: '15px',
                 fontWeight: '500',
-                color: isDarkMode ? '#fca5a5' : '#500000',
+                color: theme.colors.warningText,
                 marginBottom: '12px'
               }}>
                 Important Information
@@ -128,7 +128,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
                   display: 'flex',
                   gap: '8px',
                   marginBottom: '8px',
-                  color: isDarkMode ? '#fca5a5' : '#500000',
+                  color: theme.colors.warningText,
                   fontSize: '14px',
                   lineHeight: '1.5'
                 }}>
@@ -148,7 +148,6 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             title={title}
             className="popup-form"
             errorMessage={errorMessage}
-            isDarkMode={isDarkMode}
           />
         </div>
       </div>
