@@ -13,14 +13,13 @@ const UserJobs = () => {
   const [error, setError] = useState(null);
   const [isCanceling, setIsCanceling] = useState(null);
   const baseUrl = get_base_url();
-
   // Fetch jobs for the current user
   useEffect(() => {
     fetch(`${baseUrl}/api/jobs`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
-        setJobs(data.jobs || []);
+	setJobs(data.jobs || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -59,6 +58,21 @@ const UserJobs = () => {
 
     const newTime = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     return daysPart ? `${daysPart}-${newTime}` : newTime;
+  };
+  const getPendingReasonLabel = (reason) => {
+	console.log(reason);
+	switch (reason) {
+        case "Resources":
+            return "Waiting for available resources";
+	case "Priority":
+	    return "Waiting for higher priority jobs to finish";
+	case "Dependency":
+	    return "Waiting for another job to finish";
+	case "QQSMaxJobsPerUserLimit":
+	    return "Blocked by queue policy limits";
+	default:
+	    return "Scheduler related reason";
+	}
   };
 
   // Format SLURM time for display
@@ -124,7 +138,20 @@ const UserJobs = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg overflow-auto w-full h-full transition-colors duration-200">
+    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
+        <style>
+          {`
+            .tippy-box[data-theme~='job-tooltip'] {
+              background-color: transparent !important;
+              box-shadow: none !important;
+              border: none !important;
+            }
+        
+            .tippy-box[data-theme~='job-tooltip'] .tippy-content {
+              padding: 0 !important;
+            }
+          `}
+        </style>
       {/* Title with Tooltip */}
       <div className="flex items-center">
         <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
@@ -161,8 +188,48 @@ const UserJobs = () => {
                 <td className="py-3 px-4">
                     {generate_file_explorer_path_for_jobs(job)}
                 </td>
-                <td className={`py-3 px-4 ${job.state === "R" ? "text-green-600" : "text-yellow-600"}`}>
-                  {job.state === "R" ? "Running" : "Pending"}
+		        <td className={`py-3 px-4 ${job.state === "R" ? "text-green-600" : "text-yellow-600"}`}>
+                  {job.state === "R" ? (
+                    "Running"
+                  ) : (
+                    <Tippy
+                      theme="job-tooltip"
+                      interactive={true}
+                      trigger="click"
+                      placement="bottom"
+                      appendTo={document.body}
+                      zIndex={9999}
+                      popperOptions={{ strategy: 'fixed' }}
+                      content={
+                        <div className="w-80 rounded-lg border border-black bg-white text-gray-800">
+                          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold">Why is this job pending?</h3>
+                          </div>
+                
+                          <div className="px-4 py-3">
+                            <p className="text-base font-medium">
+                              {getPendingReasonLabel(job.reason)}
+                            </p>
+                          </div>
+                
+                          <div className="border-t border-gray-200 px-4 py-3">
+                            <p className="text-sm font-semibold text-gray-600 mb-2">
+                              Scheduler details:
+                            </p>
+                            <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                              <li>Reason: {job.reason || "Unknown"}</li>
+                              <li>Requested: {job.cpus} CPU{Number(job.cpus) !== 1 ? "s" : ""},{" "}{job.gpus} GPU{Number(job.gpus) !== 1 ? "s" : ""},{" "}{job.nodes} node{Number(job.nodes) !== 1 ? "s" : ""}</li>
+                              <li>Partition is busy</li>
+                            </ul>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <span className="cursor-pointer inline-flex items-center gap-1 underline decoration-dotted">
+                        Pending <span className="text-xs">ⓘ</span>
+                      </span>
+                    </Tippy>
+                  )}
                 </td>
                 <td className="py-3 px-4">
                     {job.cpus}
@@ -219,6 +286,7 @@ const UserJobs = () => {
         </table>
       )}
     </div>
+  
   );
 };
 
