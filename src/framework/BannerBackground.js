@@ -37,7 +37,7 @@ export default function BannerBackground( { children } ) {
 
   return (
       <div
-        className="w-full h-32 rounded-md border-b shadow-sm" 
+        className="w-full h-32 rounded-md border-b shadow-sm flex items-center" 
 	style={{
           borderColor: theme.colors.border,
           backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(svgPattern)}")`,

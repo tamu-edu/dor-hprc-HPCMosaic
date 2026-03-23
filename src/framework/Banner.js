@@ -316,11 +316,11 @@ const Banner = ({ setRunTour }) => {
 
       {/* Header */}
       <BannerBackground>
-        <div className="flex justify-between w-full items-center space-x-3 pr-1">
+	<div className="flex justify-between w-full h-full items-center space-x-3 pr-1">
 	  
           {/*Logo*/}
-	  <div className="hidden md:flex bg-white px-2 md:px-4 py-1 md:py-2 rounded-l-md">
-	    <ClusterLogo className="w-6 md:w-8 lg:w-10 h-6 md:h-8 lg:h-10" />
+    <div className="hidden md:flex bg-white rounded-l-md h-full w-[130px] items-center justify-center overflow-hidden">
+      <ClusterLogo className="block w-[108px] h-[108px] object-contain" />
           </div>
 
 	  {/*Dashboard Name*/}
