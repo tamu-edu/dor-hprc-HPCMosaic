@@ -775,6 +775,7 @@ def request_quota():
         new_quota = request.form.get('newQuota')
         new_file_limit = request.form.get('newFileLimit')
         request_type = request.form.get('requestType')
+        pi_name = request.form.get("piName")
         pi_awareness = request.form.get('piAwareness')
         stored_data = request.form.get('storedData')
         research_description = request.form.get('researchDescription')
@@ -826,6 +827,8 @@ Requesting disk space: {new_quota}TB
 Requesting file limit: {new_file_limit}
 
 --- Justification ---
+PI Name: {pi_name}
+
 Is the PI aware of this request?
 {pi_awareness}
 
@@ -847,6 +850,8 @@ Comment: {comment}
         # First attempt: send to HPRC Bot
         try:
             combined_justification = f"""
+PI Name: {pi_name}
+
 Is the PI aware of this request?
 {pi_awareness}
 

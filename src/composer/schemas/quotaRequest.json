@@ -11,6 +11,8 @@
    },
 
    
+
+   
    "isPIRequest": {
       "type": "radioGroup",
       "label": "Are you a principal investigator (PI)?",
@@ -91,7 +93,7 @@
 	    "allowHtml": true
           },
 
-          "requestType": {
+      "requestType": {
       	    "type": "radioGroup",
             "label": "Request Type",
             "name": "requestType",
@@ -101,7 +103,7 @@
       	    ]
    	 },
 
-   "quotaContainer": {
+      "quotaContainer": {
       "type": "rowContainer",
       "elements": {
          "currentQuota": {
@@ -120,7 +122,7 @@
 	    "required": true
          }
       }
-   },
+      },
 
    "fileContainer": {
       "type": "rowContainer",
@@ -142,7 +144,12 @@
    },
 
 
-
+      "piName":{
+         "type":"textarea",
+         "label": "Who is the PI for this project?",
+         "name": "piName",
+         "required": true
+      },
 
 
       "piAwareness": {
