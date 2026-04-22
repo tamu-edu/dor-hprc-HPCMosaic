@@ -7,7 +7,7 @@ const DEFAULT_THEME_NAME = 'light';
 
 const themes = {
   light: {
-    name: 'light',
+    label: 'Light',
     colors: {
       appBg: '#f9fafb',
       surfaceBg: '#ffffff',
@@ -50,7 +50,7 @@ const themes = {
     }
   },
   dark: {
-    name: 'dark',
+    label: 'Dark',
     colors: {
       appBg: '#111827',
       surfaceBg: '#1f2937',
@@ -91,6 +91,92 @@ const themes = {
       disabledBg: '#4b5563',
       focusRing: 'rgba(96, 165, 250, 0.35)'
     }
+  },
+  darkLavender: {
+    label: 'Dark Lavender',
+    colors: {
+      appBg: '#15121d',
+      surfaceBg: '#211c2b',
+      surfaceBgHover: '#2c2540',
+      textPrimary: '#f5f3ff',
+      textSecondary: '#ddd6fe',
+      textMuted: '#b4abc8',
+      textInverse: '#15121d',
+      border: '#3b3353',
+      borderStrong: '#51466f',
+      tableHeaderBg: '#2a233b',
+      link: '#c4b5fd',
+      primary: '#c4b5fd',
+      primaryHover: '#a78bfa',
+      primaryText: '#15121d',
+      selectedBg: 'rgba(167, 139, 250, 0.22)',
+      selectedText: '#ddd6fe',
+      icon: '#d8d0ee',
+      iconActive: '#f5f3ff',
+      warningText: '#fdba74',
+      warningTextSoft: '#fb923c',
+      successText: '#bbf7d0',
+      successBg: '#34d399',
+      successBgHover: '#10b981',
+      cautionText: '#fde68a',
+      cautionBg: '#f59e0b',
+      dangerText: '#fbcfe8',
+      dangerBg: '#ec4899',
+      dangerBgHover: '#db2777',
+      alertBg: 'rgba(236, 72, 153, 0.14)',
+      alertBorder: '#f472b6',
+      alertText: '#f9a8d4',
+      alertTextSecondary: '#f472b6',
+      tooltipBg: '#0f0b16',
+      tooltipText: '#f5f3ff',
+      overlay: 'rgba(0, 0, 0, 0.5)',
+      disabledText: '#9f96b3',
+      disabledBg: '#4b445f',
+      focusRing: 'rgba(196, 181, 253, 0.35)'
+    }
+  },
+  darkPink: {
+    label: 'Dark Pink',
+    colors: {
+      appBg: '#1a1423',
+      surfaceBg: '#241a30',
+      surfaceBgHover: '#31213f',
+      textPrimary: '#fdf2f8',
+      textSecondary: '#fbcfe8',
+      textMuted: '#d8b4c9',
+      textInverse: '#1a1423',
+      border: '#4a334f',
+      borderStrong: '#66435f',
+      tableHeaderBg: '#31213f',
+      link: '#f9a8d4',
+      primary: '#f9a8d4',
+      primaryHover: '#f472b6',
+      primaryText: '#1a1423',
+      selectedBg: 'rgba(244, 114, 182, 0.20)',
+      selectedText: '#fbcfe8',
+      icon: '#fbcfe8',
+      iconActive: '#fdf2f8',
+      warningText: '#f9a8d4',
+      warningTextSoft: '#f9a8d4',
+      successText: '#bbf7d0',
+      successBg: '#34d399',
+      successBgHover: '#10b981',
+      cautionText: '#fce7f3',
+      cautionBg: '#f9a8d4',
+      dangerText: '#fbcfe8',
+      dangerBg: '#db2777',
+      dangerBgHover: '#be185d',
+      alertBg: 'rgba(190, 24, 93, 0.16)',
+      alertBorder: '#ec4899',
+      alertText: '#f9a8d4',
+      alertTextSecondary: '#f472b6',
+      tooltipBg: '#140f1c',
+      tooltipText: '#fdf2f8',
+      overlay: 'rgba(0, 0, 0, 0.5)',
+      disabledText: '#bfa3b8',
+      disabledBg: '#5b445a',
+      focusRing: 'rgba(249, 168, 212, 0.35)'
+    }
   }
 };
 
@@ -117,11 +203,10 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  // Check localStorage or default to light mode
+  // Check localStorage or default to the configured default theme.
   const [themeName, setThemeName] = useState(getStoredThemeName);
 
-  const theme = themes[themeName] || themes.light;
-  const isDarkMode = themeName === 'dark';
+  const theme = themes[themeName] || themes[DEFAULT_THEME_NAME];
 
   // Apply token CSS variables globally and persist the selected theme.
   useEffect(() => {
@@ -141,19 +226,12 @@ export const ThemeProvider = ({ children }) => {
     return true;
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    setThemeName((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  }, []);
-
   return (
     <ThemeContext.Provider
       value={{
-        isDarkMode,
         theme,
         themeName,
         setTheme,
-        setThemeName: setTheme,
-        toggleTheme,
         themes
       }}
     >
