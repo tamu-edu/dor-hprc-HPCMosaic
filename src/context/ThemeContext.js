@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const ThemeContext = createContext();
 
 const THEME_STORAGE_KEY = 'theme';
+const DEFAULT_THEME_NAME = 'light';
 
 const themes = {
   light: {
@@ -93,6 +94,13 @@ const themes = {
   }
 };
 
+const isThemeName = (themeName) => Object.prototype.hasOwnProperty.call(themes, themeName);
+
+const getStoredThemeName = () => {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  return isThemeName(savedTheme) ? savedTheme : DEFAULT_THEME_NAME;
+};
+
 const applyThemeVariables = (root, activeTheme) => {
   Object.entries(activeTheme.colors).forEach(([token, value]) => {
     const cssVarName = `--mosaic-color-${token.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
@@ -110,10 +118,7 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   // Check localStorage or default to light mode
-  const [themeName, setThemeName] = useState(() => {
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-    return savedTheme === 'dark' ? 'dark' : 'light';
-  });
+  const [themeName, setThemeName] = useState(getStoredThemeName);
 
   const theme = themes[themeName] || themes.light;
   const isDarkMode = themeName === 'dark';
@@ -125,9 +130,20 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem(THEME_STORAGE_KEY, themeName);
   }, [theme, themeName]);
 
-  const toggleTheme = () => {
+  const setTheme = useCallback((nextThemeName) => {
+    if (!isThemeName(nextThemeName)) {
+      console.warn(`Unknown theme "${nextThemeName}". Falling back to "${DEFAULT_THEME_NAME}".`);
+      setThemeName(DEFAULT_THEME_NAME);
+      return false;
+    }
+
+    setThemeName(nextThemeName);
+    return true;
+  }, []);
+
+  const toggleTheme = useCallback(() => {
     setThemeName((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
+  }, []);
 
   return (
     <ThemeContext.Provider
@@ -135,7 +151,8 @@ export const ThemeProvider = ({ children }) => {
         isDarkMode,
         theme,
         themeName,
-        setThemeName,
+        setTheme,
+        setThemeName: setTheme,
         toggleTheme,
         themes
       }}

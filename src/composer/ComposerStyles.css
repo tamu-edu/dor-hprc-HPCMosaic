@@ -24,6 +24,7 @@
   position: relative;
   z-index: 1000;
   pointer-events: auto;
+  color: var(--composer-text-primary);
 }
 
 .composer-wrapper * {
@@ -71,6 +72,32 @@
   overflow-y: auto;
   padding: 1.5rem;
   min-height: 0;
+  color: var(--composer-text-primary);
+}
+
+.composer-wrapper h1,
+.composer-wrapper h2,
+.composer-wrapper h3,
+.composer-wrapper h4,
+.composer-wrapper h5,
+.composer-wrapper h6,
+.composer-wrapper p,
+.composer-wrapper label,
+.composer-wrapper legend,
+.composer-wrapper .form-control-label,
+.composer-wrapper .col-form-label,
+.composer-wrapper .form-check-label {
+  color: var(--composer-text-primary);
+}
+
+.composer-wrapper .text-muted,
+.composer-wrapper .form-text,
+.composer-wrapper small {
+  color: var(--composer-text-secondary) !important;
+}
+
+.composer-wrapper a {
+  color: var(--mosaic-color-link) !important;
 }
 
 /* Row Container Styles */
@@ -97,6 +124,29 @@
   transition: all 0.2s ease;
   background-color: var(--composer-surface);
   color: var(--composer-text-primary);
+}
+
+.composer-wrapper select,
+.composer-wrapper textarea,
+.composer-wrapper input:not([type="radio"]):not([type="checkbox"]):not([type="button"]):not([type="submit"]) {
+  background-color: var(--composer-surface);
+  color: var(--composer-text-primary);
+  border-color: var(--composer-border);
+}
+
+.composer-wrapper option {
+  background-color: var(--composer-surface);
+  color: var(--composer-text-primary);
+}
+
+.composer-wrapper input[type="radio"],
+.composer-wrapper input[type="checkbox"],
+.composer-wrapper .form-check-input {
+  accent-color: var(--composer-primary) !important;
+}
+
+.composer-wrapper .form-check-input:checked + .form-check-label {
+  color: var(--composer-primary) !important;
 }
 
 .composer-wrapper .form-control:focus {
@@ -184,26 +234,46 @@
   justify-content: center;
 }
 
-.composer-wrapper .btn-primary {
+.composer-wrapper .btn-primary,
+.composer-wrapper .maroon-button-filled,
+.composer-wrapper .btn-primary.maroon-button {
   background-color: var(--composer-primary);
   color: var(--composer-primary-text);
   border: 1px solid var(--composer-primary);
 }
 
-.composer-wrapper .btn-primary:hover {
+.composer-wrapper .btn-primary:hover,
+.composer-wrapper .maroon-button-filled:hover,
+.composer-wrapper .btn-primary.maroon-button:hover {
   background-color: var(--composer-primary-hover);
   border-color: var(--composer-primary-hover);
+  color: var(--composer-primary-text);
 }
 
-.composer-wrapper .btn-secondary {
+.composer-wrapper .maroon-button:not(.btn-primary) {
+  background-color: var(--composer-surface);
+  color: var(--composer-primary);
+  border: 1px solid var(--composer-primary);
+}
+
+.composer-wrapper .maroon-button:not(.btn-primary):hover {
+  background-color: var(--composer-primary-hover);
+  border-color: var(--composer-primary-hover);
+  color: var(--composer-primary-text);
+}
+
+.composer-wrapper .btn-secondary,
+.composer-wrapper .maroon-button-secondary {
   background-color: var(--composer-surface);
   color: var(--composer-warning);
   border: 1px solid var(--composer-border-strong);
 }
 
-.composer-wrapper .btn-secondary:hover {
+.composer-wrapper .btn-secondary:hover,
+.composer-wrapper .maroon-button-secondary:hover {
   background-color: var(--composer-surface-hover);
   border-color: var(--composer-warning);
+  color: var(--composer-warning);
 }
 
 /* Container sections */
