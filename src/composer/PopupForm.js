@@ -80,12 +80,14 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
     }}>
       <div ref={modalRef} style={{
         backgroundColor: theme.colors.surfaceBg,
+        color: theme.colors.textPrimary,
         width: '90%',
         maxWidth: '800px',
         maxHeight: '90vh',
         overflow: 'auto',
         position: 'relative',
         borderRadius: '4px',
+        border: `1px solid ${theme.colors.borderStrong}`,
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
 	pointerEvents: 'auto'
       }}>
@@ -171,8 +173,8 @@ const PopupForm = ({
   const [showModal, setShowModal] = useState(false);
 
   const defaultButtonStyle = {
-    backgroundColor: '#500000',
-    color: 'white',
+    backgroundColor: 'var(--mosaic-color-primary)',
+    color: 'var(--mosaic-color-primary-text)',
     border: 'none',
     padding: '8px 16px',
     borderRadius: '4px',
