@@ -102,8 +102,8 @@ const GroupButton = () => {
       title="Group Request"
       disclaimerText={disclaimerText}
       buttonStyle={{
-        backgroundColor: 'maroon',
-        color: 'white',
+        backgroundColor: 'var(--mosaic-color-primary)',
+        color: 'var(--mosaic-color-primary-text)',
         border: 'none',
         padding: '8px 16px',
         borderRadius: '4px',

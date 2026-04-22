@@ -262,7 +262,7 @@ const LayoutUtility = ({
                         <button 
                             onClick={handleRefreshLayouts}
                             disabled={!!actionInProgress}
-                            className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50"
+                            className="theme-link p-1 rounded-full theme-hover-surface"
                             title="Refresh layouts"
                         >
                             <MdRefresh className={actionInProgress === 'refresh' ? 'animate-spin' : ''} />
@@ -277,29 +277,29 @@ const LayoutUtility = ({
                                 <li 
                                     key={layoutName} 
                                     className={`px-4 py-2 flex justify-between items-center cursor-pointer transition-all
-                                        ${activeLayout === layoutName ? 'bg-blue-50' : 'theme-hover-surface'}
+                                        ${activeLayout === layoutName ? 'theme-selected' : 'theme-hover-surface'}
                                     `}
                                     onClick={() => handleLoadLayout(layoutName)}
                                 >
                                     <div className="flex items-center">
                                         {activeLayout === layoutName && (
-                                            <MdCheck className="text-blue-500 mr-1" />
+                                            <MdCheck className="mr-1" />
                                         )}
-                                        <span className={activeLayout === layoutName ? 'font-medium text-blue-700' : 'theme-text-primary'}>
+                                        <span className={activeLayout === layoutName ? 'font-medium' : 'theme-text-primary'}>
                                             {layoutName}
                                         </span>
                                     </div>
                                     <div className="flex space-x-2">
                                         <button 
                                             onClick={(e) => handleRename(layoutName, e)} 
-                                            className="text-blue-500 hover:text-blue-700 p-1"
+                                            className="theme-link p-1"
                                             disabled={actionInProgress === `rename-${layoutName}`}
                                         >
                                             <MdEdit />
                                         </button>
                                         <button 
                                             onClick={(e) => handleDelete(layoutName, e)} 
-                                            className="text-red-500 hover:text-red-700 p-1"
+                                            className="theme-status-danger p-1"
                                             disabled={actionInProgress === `delete-${layoutName}`}
                                         >
                                             <MdDelete />
@@ -312,7 +312,7 @@ const LayoutUtility = ({
                         <li className="border-t theme-border mt-1"></li>
                         
                         <li 
-                            className="px-4 py-2 theme-hover-surface cursor-pointer transition-all text-blue-600 hover:text-blue-800 font-medium" 
+                            className="px-4 py-2 theme-hover-surface cursor-pointer transition-all theme-link font-medium"
                             onClick={handleSaveLayout}
                             disabled={actionInProgress === 'save'}
                         >

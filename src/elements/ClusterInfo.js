@@ -17,7 +17,7 @@ const ClusterInfo = () => {
 
   // Custom Tooltip Component
   const CustomTooltip = ({ content }) => (
-    <div className="bg-gray-800 text-white text-sm p-2 rounded-md shadow-lg z-50">
+    <div className="theme-tooltip text-sm p-2 rounded-md shadow-lg z-50">
       {content}
     </div>
   );
@@ -46,9 +46,15 @@ const ClusterInfo = () => {
     total > 0 ? ((used / total) * 100).toFixed(2) : 0;
 
   const getColor = (percentage) => {
-    if (percentage < 50) return "text-green-600";
-    if (percentage < 75) return "text-yellow-500";
-    return "text-red-600";
+    if (percentage < 50) return "theme-status-success";
+    if (percentage < 75) return "theme-status-caution";
+    return "theme-status-danger";
+  };
+
+  const getProgressClass = (percentage) => {
+    if (percentage < 50) return "theme-progress-success";
+    if (percentage < 75) return "theme-progress-caution";
+    return "theme-progress-danger";
   };
 
   return (
@@ -121,7 +127,7 @@ const ClusterInfo = () => {
                       <div className="gap-x-4 items-center cursor-help">
 			<div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
                           <div
-                            className={`h-2.5 rounded-full ${cpuPercentage >= 75 ? 'bg-red-600' : cpuPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+	                            className={`h-2.5 rounded-full ${getProgressClass(cpuPercentage)}`}
                             style={{ width: `${Math.min(100, cpuPercentage)}%` }}
                           ></div>
                         </div>
@@ -134,7 +140,7 @@ const ClusterInfo = () => {
                       <div className="gap-x-4 items-center cursor-help">
 			<div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
                           <div
-                            className={`h-2.5 rounded-full ${nodesPercentage >= 75 ? 'bg-red-600' : nodesPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+	                            className={`h-2.5 rounded-full ${getProgressClass(nodesPercentage)}`}
                             style={{ width: `${Math.min(100, nodesPercentage)}%` }}
                           ></div>
                         </div>

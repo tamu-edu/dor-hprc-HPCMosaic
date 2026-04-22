@@ -58,9 +58,9 @@ const ProjectInfo = () => {
 
   // Function to determine color for usage percentage
   const getUsageColor = (usagePercentage) => {
-    if (usagePercentage < 50) return "text-green-600";
-    if (usagePercentage < 75) return "text-yellow-500";
-    return "text-red-600";
+    if (usagePercentage < 50) return "theme-status-success";
+    if (usagePercentage < 75) return "theme-status-caution";
+    return "theme-status-danger";
   };
 
   // Show error message if there is an error
@@ -88,7 +88,7 @@ const ProjectInfo = () => {
       {message && (
         <div
           className={`fixed top-5 right-5 p-3 text-sm font-semibold rounded shadow-md ${
-            message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+            message.type === "success" ? "theme-button-success" : "theme-button-danger"
           }`}
         >
           {message.text}
@@ -143,10 +143,10 @@ const ProjectInfo = () => {
                 <td className="border theme-border px-4 py-2">{project.fy}</td>
                 <td className="border theme-border px-4 py-2 text-center">
                   {project.default === "Y" ? (
-                    <span className="text-green-600 font-semibold">✅ Y</span>
+                    <span className="theme-status-success font-semibold">Y</span>
                   ) : (
                     <button
-                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded transition-colors"
+	                      className="theme-button-success px-2 py-1 rounded transition-colors"
                       onClick={() => setDefaultAccount(project.account)}
                     >
                       Set as Default

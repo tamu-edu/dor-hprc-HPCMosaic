@@ -1,16 +1,14 @@
 import React from "react";
-import { useTheme } from '../context/ThemeContext';
 
 export function generate_file_explorer_path_for_disk(disk_path) {
-  const { theme } = useTheme();
   const fullUrl = `/pun/sys/dashboard/files/fs${disk_path}`;
 
   return (
     <a
       target="_blank"
       style={{
-        color: theme.colors.link,
-	fontWeight: 'bold',
+        color: 'var(--mosaic-color-link)',
+        fontWeight: 'bold',
         textDecoration: 'underline'
       }}
       href={fullUrl}
@@ -21,11 +19,10 @@ export function generate_file_explorer_path_for_disk(disk_path) {
 }
 
 export function generate_file_explorer_path_for_jobs(job) {
-  const { theme } = useTheme();
   if (!job.submit_dir) return job.job_id; // fallback if no directory
 
   const fullUrl = `/pun/sys/dashboard/files/fs${job.submit_dir}`;
-  
+
   const shortPath = shortenPath(job.submit_dir);
 
   return (
@@ -33,7 +30,7 @@ export function generate_file_explorer_path_for_jobs(job) {
       target="_blank"
       rel="noopener noreferrer"
       style={{
-        color: theme.colors.link,
+        color: 'var(--mosaic-color-link)',
         fontWeight: 'bold',
         textDecoration: 'underline',
       }}

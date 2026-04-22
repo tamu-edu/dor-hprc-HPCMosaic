@@ -115,9 +115,15 @@ const UserJobs = () => {
   };
   
   const getColor = (percentage) => {
-    if (percentage < 50) return "text-green-600";
-    if (percentage < 75) return "text-yellow-500";
-    return "text-red-600";
+    if (percentage < 50) return "theme-status-success";
+    if (percentage < 75) return "theme-status-caution";
+    return "theme-status-danger";
+  };
+
+  const getProgressClass = (percentage) => {
+    if (percentage < 50) return "theme-progress-success";
+    if (percentage < 75) return "theme-progress-caution";
+    return "theme-progress-danger";
   };
 
   // Cancel a job
@@ -187,7 +193,7 @@ const UserJobs = () => {
                 <td className="py-3 px-4">
                     {generate_file_explorer_path_for_jobs(job)}
                 </td>
-		        <td className={`py-3 px-4 ${job.state === "R" ? "text-green-600" : "text-yellow-600"}`}>
+			        <td className={`py-3 px-4 ${job.state === "R" ? "theme-status-success" : "theme-status-caution"}`}>
                   {job.state === "R" ? (
                     "Running"
                   ) : (
@@ -200,10 +206,10 @@ const UserJobs = () => {
                       zIndex={9999}
                       popperOptions={{ strategy: 'fixed' }}
                       content={
-                        <div className="w-80 rounded-lg border border-black bg-white text-gray-800">
-                          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold">Why is this job pending?</h3>
-                          </div>
+	                        <div className="w-80 rounded-lg border theme-border theme-surface theme-text-primary shadow-lg">
+	                          <div className="flex items-center justify-between px-4 py-3 border-b theme-border">
+	                            <h3 className="text-lg font-semibold">Why is this job pending?</h3>
+	                          </div>
                 
                           <div className="px-4 py-3">
                             <p className="text-base font-medium">
@@ -211,11 +217,11 @@ const UserJobs = () => {
                             </p>
                           </div>
                 
-                          <div className="border-t border-gray-200 px-4 py-3">
-                            <p className="text-sm font-semibold text-gray-600 mb-2">
-                              Scheduler details:
-                            </p>
-                            <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+	                          <div className="border-t theme-border px-4 py-3">
+	                            <p className="text-sm font-semibold theme-text-secondary mb-2">
+	                              Scheduler details:
+	                            </p>
+	                            <ul className="list-disc pl-5 text-sm theme-text-primary space-y-1">
                               <li>Reason: {job.reason || "Unknown"}</li>
                               <li>Requested: {job.cpus} CPU{Number(job.cpus) !== 1 ? "s" : ""},{" "}{job.gpus} GPU{Number(job.gpus) !== 1 ? "s" : ""},{" "}{job.nodes} node{Number(job.nodes) !== 1 ? "s" : ""}</li>
                               <li>Partition is busy</li>
@@ -245,13 +251,7 @@ const UserJobs = () => {
                             const timePercentage = getElapsedPercentage(job.time_elapsed, job.time_requested);
                             return (
                                 <div
-                                    className={`h-2.5 rounded-full ${
-                                        timePercentage >=75
-                                        ? "bg-red-600"
-                                        : timePercentage >= 50
-                                        ? "bg-yellow-500"
-                                        : "bg-green-500"
-                                    }`}
+	                                    className={`h-2.5 rounded-full ${getProgressClass(timePercentage)}`}
                                     style={{ width: `${timePercentage}%` }}
                                 ></div>
                             );
@@ -265,11 +265,11 @@ const UserJobs = () => {
                     {/* <div> */}
                       <button
                         onClick={() => cancelJob(job.job_id)}
-                        className={`px-3 py-1 rounded ${
-                          isCanceling === job.job_id
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-red-500 hover:bg-red-600 text-white"
-                        }`}
+	                        className={`px-3 py-1 rounded ${
+	                          isCanceling === job.job_id
+	                            ? "theme-button-disabled"
+	                            : "theme-button-danger"
+	                        }`}
                         disabled={isCanceling === job.job_id}
                       >
                         {isCanceling === job.job_id ? "Canceling..." : "Cancel Job"}

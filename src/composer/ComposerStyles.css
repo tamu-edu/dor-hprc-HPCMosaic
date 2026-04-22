@@ -15,6 +15,10 @@
   --composer-error-bg: var(--mosaic-color-alert-bg);
   --composer-error-border: var(--mosaic-color-alert-border);
   --composer-error-text: var(--mosaic-color-alert-text);
+  --composer-primary: var(--mosaic-color-primary);
+  --composer-primary-hover: var(--mosaic-color-primary-hover);
+  --composer-primary-text: var(--mosaic-color-primary-text);
+  --composer-focus-ring: var(--mosaic-color-focus-ring);
 
   /*To prevent selection bleeding*/
   position: relative;
@@ -96,8 +100,8 @@
 }
 
 .composer-wrapper .form-control:focus {
-  border-color: maroon;
-  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+  border-color: var(--composer-primary);
+  box-shadow: 0 0 0 3px var(--composer-focus-ring);
   outline: none;
 }
 
@@ -181,14 +185,14 @@
 }
 
 .composer-wrapper .btn-primary {
-  background-color: maroon;
-  color: white;
-  border: 1px solid maroon;
+  background-color: var(--composer-primary);
+  color: var(--composer-primary-text);
+  border: 1px solid var(--composer-primary);
 }
 
 .composer-wrapper .btn-primary:hover {
-  background-color: #600000;
-  border-color: #600000;
+  background-color: var(--composer-primary-hover);
+  border-color: var(--composer-primary-hover);
 }
 
 .composer-wrapper .btn-secondary {
@@ -286,12 +290,12 @@
 
 /* Time input specific styling */
 .composer-wrapper .time-input-container input[type="number"]::placeholder {
-  color: #9ca3af;
+  color: var(--mosaic-color-text-muted);
 }
 
 .composer-wrapper .time-input-container input[type="number"]:focus {
-  border-color: maroon;
-  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+  border-color: var(--composer-primary);
+  box-shadow: 0 0 0 3px var(--composer-focus-ring);
   outline: none;
 }
 
@@ -354,9 +358,9 @@
   flex-direction: column;
   width: 100%;
   pointer-events: auto;
-  background-color: #fff;
+  background-color: var(--mosaic-color-surface-bg);
   background-clip: padding-box;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--mosaic-color-border-strong);
   border-radius: 0.3rem;
   outline: 0;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
@@ -368,10 +372,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--mosaic-color-border-strong);
   border-top-left-radius: calc(0.3rem - 1px);
   border-top-right-radius: calc(0.3rem - 1px);
-  background-color: #fff;
+  background-color: var(--mosaic-color-surface-bg);
 }
 
 .modal-title {
@@ -379,14 +383,14 @@
   line-height: 1.5;
   font-size: 1.25rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--mosaic-color-text-primary);
 }
 
 .modal-body {
   position: relative;
   flex: 1 1 auto;
   padding: 1rem;
-  background-color: #fff;
+  background-color: var(--mosaic-color-surface-bg);
 }
 
 .modal-footer {
@@ -395,10 +399,10 @@
   align-items: center;
   justify-content: flex-end;
   padding: 0.75rem;
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--mosaic-color-border-strong);
   border-bottom-right-radius: calc(0.3rem - 1px);
   border-bottom-left-radius: calc(0.3rem - 1px);
-  background-color: #fff;
+  background-color: var(--mosaic-color-surface-bg);
 }
 
 /* Modal buttons - consistent with form buttons */
@@ -412,14 +416,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: maroon;
-  color: white;
-  border: 1px solid maroon;
+  background-color: var(--mosaic-color-primary);
+  color: var(--mosaic-color-primary-text);
+  border: 1px solid var(--mosaic-color-primary);
 }
 
 .modal-footer .btn:hover {
-  background-color: #600000;
-  border-color: #600000;
+  background-color: var(--mosaic-color-primary-hover);
+  border-color: var(--mosaic-color-primary-hover);
 }
 
 .modal-header .close {
@@ -429,7 +433,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   line-height: 1;
-  color: #000;
+  color: var(--mosaic-color-text-primary);
   opacity: 0.5;
   cursor: pointer;
 }
@@ -447,9 +451,9 @@
 }
 
 .alert-warning {
-  color: #856404;
-  background-color: #fff3cd;
-  border-color: #ffeaa7;
+  color: var(--mosaic-color-caution-text);
+  background-color: var(--mosaic-color-alert-bg);
+  border-color: var(--mosaic-color-alert-border);
 }
 
 .list-unstyled {
@@ -459,7 +463,7 @@
 }
 
 .text-danger {
-  color: #dc3545 !important;
+  color: var(--mosaic-color-danger-text) !important;
 }
 
 .me-2 {

@@ -43,9 +43,15 @@ const QuotaInfo = () => {
   };
 
   const getColor = (percentage) => {
-    if (percentage < 50) return "text-green-600";
-    if (percentage < 75) return "text-yellow-500";
-    return "text-red-600";
+    if (percentage < 50) return "theme-status-success";
+    if (percentage < 75) return "theme-status-caution";
+    return "theme-status-danger";
+  };
+
+  const getProgressClass = (percentage) => {
+    if (percentage < 50) return "theme-progress-success";
+    if (percentage < 75) return "theme-progress-caution";
+    return "theme-progress-danger";
   };
 
   useEffect(() => {
@@ -76,7 +82,7 @@ const QuotaInfo = () => {
 
   // Custom Tooltip Component
   const CustomTooltip = ({ content }) => (
-    <div className="bg-gray-800 text-white text-sm p-2 rounded-md shadow-lg z-50">
+    <div className="theme-tooltip text-sm p-2 rounded-md shadow-lg z-50">
       {content}
     </div>
   );
@@ -181,7 +187,7 @@ const QuotaInfo = () => {
 
                         <div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
                           <div 
-                            className={`h-2.5 rounded-full ${diskPercentage >= 75 ? 'bg-red-600' : diskPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`} 
+	                            className={`h-2.5 rounded-full ${getProgressClass(diskPercentage)}`}
                             style={{ width: `${Math.min(100, diskPercentage)}%` }}
                           ></div>
                         </div>
@@ -197,7 +203,7 @@ const QuotaInfo = () => {
                       <p>{quota.file_usage}/{quota.file_limit}</p>
                       <div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
                         <div 
-                          className={`h-2.5 rounded-full ${filePercentage >= 75 ? 'bg-red-600' : filePercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+	                          className={`h-2.5 rounded-full ${getProgressClass(filePercentage)}`}
                           style={{ width: `${Math.min(100, filePercentage)}%` }}
                         ></div>
                       </div>

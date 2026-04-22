@@ -519,7 +519,7 @@ const Banner = ({ setRunTour }) => {
                 {/* Enhanced maximize/minimize button */}
                 <button
                   onClick={toggleSidebarSize}
-                  className={`p-2 flex items-center theme-text-secondary hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors ${sidebarMaximized ? 'bg-blue-50' : ''}`}
+	                  className={`p-2 flex items-center theme-text-secondary theme-hover-surface rounded-md transition-colors ${sidebarMaximized ? 'theme-selected' : ''}`}
                   title={sidebarMaximized ? "Minimize panel" : "Maximize panel"}
                 >
                   {sidebarMaximized ? (
@@ -548,7 +548,7 @@ const Banner = ({ setRunTour }) => {
                 </button>
                 <button
                   onClick={closePopup}
-                  className="p-2 theme-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+	                  className="p-2 theme-text-secondary theme-hover-danger rounded-md transition-colors"
                   title="Close panel"
                 >
                   <MdClose className="text-xl" />
@@ -570,9 +570,9 @@ const Banner = ({ setRunTour }) => {
 	}}
 	className={`fixed bottom-4 left-4 w-12 h-12 rounded-full shadow-lg flex items-center items-center justify-center transition-all duration-200 z-500 ${
 	  layoutLocked
-	    ? 'bg-yellow-400 hover: bg-yellow-500 text-yello-800'
-	    : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
-	}`}
+		    ? 'theme-button-caution'
+		    : 'theme-surface theme-text-secondary theme-border'
+		}`}
 	title={layoutLocked ? 'Unlock Layout' : 'Lock Layout'}
       >
         {layoutLocked ? (

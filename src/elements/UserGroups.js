@@ -56,7 +56,7 @@ const UserGroups = () => {
   }, []);
 
   if (error) {
-    return <p className="text-red-500">{error}</p>;
+    return <p className="theme-status-danger">{error}</p>;
   }
 
   if (loading) {
@@ -91,9 +91,9 @@ const UserGroups = () => {
           {groups.map((group, index) => (
             <div
               key={index}
-              className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-center hover:bg-blue-100 transition-colors duration-200"
+              className="theme-selected border theme-border rounded-lg px-4 py-3 text-center theme-hover-surface transition-colors duration-200"
             >
-              <span className="font-medium text-blue-900">{group}</span>
+              <span className="font-medium">{group}</span>
             </div>
           ))}
         </div>

@@ -308,8 +308,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         drop(node);
         gridRef.current = node;
       }}
-      className={`max-w-full h-auto p-4 relative ${isOver ? "bg-blue-50" : ""}`}
-      style={isOver ? { backgroundColor: "rgba(59, 130, 246, 0.15)" } : undefined}
+      className={`max-w-full h-auto p-4 relative ${isOver ? "theme-selected" : ""}`}
     >
       {/* Toast Notification Container */}
       <ToastContainer />
@@ -351,7 +350,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 	        <button
                   onClick={() => removeElement(index) }
                   className="absolute top-2 right-2 w-7 h-7 rounded-full bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
-                  style={{ backgroundColor: theme.colors.surfaceBg, color: theme.colors.textSecondary }}
+	                style={{ backgroundColor: theme.colors.surfaceBg, color: theme.colors.textSecondary }}
                   title="Remove this element"
                 >
                   <span className="text-sm">✕</span>
@@ -376,11 +375,11 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
               isResizable: false,
               isDraggable: false,
             }}
-            className="border-2 border-dashed border-blue-500 bg-blue-100 bg-opacity-50 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: "rgba(59, 130, 246, 0.15)" }}
+	            className="border-2 border-dashed rounded-md flex items-center justify-center theme-selected"
+	            style={{ borderColor: "var(--mosaic-color-primary)" }}
           >
             <div className="theme-surface px-3 py-1.5 rounded-md shadow-sm">
-              <span className="text-blue-600 font-medium">
+	              <span className="theme-link font-medium">
                 {currentDragItem ? `Drop to add ${currentDragItem.name}` : 'Drop here'}
               </span>
             </div>
