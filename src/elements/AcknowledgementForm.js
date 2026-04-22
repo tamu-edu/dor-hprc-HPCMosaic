@@ -134,8 +134,8 @@ const AcknowledgementForm = () => {
           <PopupForm
             buttonText="Submit Acknowledgement"
             buttonStyle={{
-              backgroundColor: '#500000',
-              color: 'white',
+              backgroundColor: 'var(--mosaic-color-primary)',
+              color: 'var(--mosaic-color-primary-text)',
               border: 'none',
               padding: '8px 16px',
               borderRadius: '4px',
