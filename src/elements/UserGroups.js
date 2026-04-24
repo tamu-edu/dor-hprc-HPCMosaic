@@ -56,7 +56,7 @@ const UserGroups = () => {
   }, []);
 
   if (error) {
-    return <p className="text-red-500">{error}</p>;
+    return <p className="theme-status-danger">{error}</p>;
   }
 
   if (loading) {
@@ -64,11 +64,11 @@ const UserGroups = () => {
   }
 
   return (
-    <div className="p-4 bg-white w-full flex flex-col">
+    <div className="p-4 theme-surface w-full flex flex-col">
       {/* Header section with title and action button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold theme-text-primary">
             <Tippy content={ElementDescriptions["User Groups"]}>
               <span className="cursor-help">User Groups ⓘ</span>
             </Tippy>
@@ -83,7 +83,7 @@ const UserGroups = () => {
         </div>
       </div>
 
-      <hr className="border-gray-300 mb-4" />
+      <hr className="theme-border mb-4" />
 
       {/*User's Groups*/}
       <div className="overflow-auto w-full h-full flex-grow">
@@ -91,17 +91,17 @@ const UserGroups = () => {
           {groups.map((group, index) => (
             <div
               key={index}
-              className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-center hover:bg-blue-100 transition-colors duration-200"
+              className="theme-selected border theme-border rounded-lg px-4 py-3 text-center theme-hover-surface transition-colors duration-200"
             >
-              <span className="font-medium text-blue-900">{group}</span>
+              <span className="font-medium">{group}</span>
             </div>
           ))}
         </div>
       </div>
       
       {/* Additional note at the bottom */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <p className="text-sm text-gray-600">
+      <div className="mt-4 pt-3 border-t theme-border">
+        <p className="text-sm theme-text-secondary">
           Need access to additional groups? Use the "Group Request" button above to submit a request.
         </p>
       </div>

@@ -7,8 +7,8 @@ export function generate_file_explorer_path_for_disk(disk_path) {
     <a
       target="_blank"
       style={{
-        color: '#003C71',
-	fontWeight: 'bold',
+        color: 'var(--mosaic-color-link)',
+        fontWeight: 'bold',
         textDecoration: 'underline'
       }}
       href={fullUrl}
@@ -22,7 +22,7 @@ export function generate_file_explorer_path_for_jobs(job) {
   if (!job.submit_dir) return job.job_id; // fallback if no directory
 
   const fullUrl = `/pun/sys/dashboard/files/fs${job.submit_dir}`;
-  
+
   const shortPath = shortenPath(job.submit_dir);
 
   return (
@@ -30,7 +30,7 @@ export function generate_file_explorer_path_for_jobs(job) {
       target="_blank"
       rel="noopener noreferrer"
       style={{
-        color: '#003C71',
+        color: 'var(--mosaic-color-link)',
         fontWeight: 'bold',
         textDecoration: 'underline',
       }}

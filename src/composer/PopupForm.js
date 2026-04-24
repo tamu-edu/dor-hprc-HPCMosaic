@@ -5,9 +5,11 @@ import ComposerWrapper from './ComposerWrapper';
 
 //Context Import
 import { useLayoutLock } from '../context/LayoutLockContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting }) => {
   const modalRef = useRef(null);
+  const { theme } = useTheme();
 
   const handleClickOutside = useCallback((event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -69,7 +71,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
     <div style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: theme.colors.overlay,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -77,13 +79,15 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
       pointerEvents: 'auto'
     }}>
       <div ref={modalRef} style={{
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.surfaceBg,
+        color: theme.colors.textPrimary,
         width: '90%',
         maxWidth: '800px',
         maxHeight: '90vh',
         overflow: 'auto',
         position: 'relative',
         borderRadius: '4px',
+        border: `1px solid ${theme.colors.borderStrong}`,
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
 	pointerEvents: 'auto'
       }}>
@@ -98,7 +102,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             border: 'none',
             fontSize: '24px',
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            color: isSubmitting ? '#ccc' : '#666',
+            color: isSubmitting ? theme.colors.disabledText : theme.colors.textSecondary,
             padding: '4px 12px',
             zIndex: 1
           }}
@@ -109,14 +113,14 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
         <div style={{ padding: '20px' }}>
           {disclaimerText && (
             <div style={{
-              borderBottom: '1px solid #e5e7eb',
+              borderBottom: `1px solid ${theme.colors.borderStrong}`,
               marginBottom: '24px',
               paddingBottom: '16px'
             }}>
               <div style={{
                 fontSize: '15px',
                 fontWeight: '500',
-                color: '#500000',
+                color: theme.colors.warningText,
                 marginBottom: '12px'
               }}>
                 Important Information
@@ -126,7 +130,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
                   display: 'flex',
                   gap: '8px',
                   marginBottom: '8px',
-                  color: '#500000',
+                  color: theme.colors.warningText,
                   fontSize: '14px',
                   lineHeight: '1.5'
                 }}>
@@ -169,8 +173,8 @@ const PopupForm = ({
   const [showModal, setShowModal] = useState(false);
 
   const defaultButtonStyle = {
-    backgroundColor: '#500000',
-    color: 'white',
+    backgroundColor: 'var(--mosaic-color-primary)',
+    color: 'var(--mosaic-color-primary-text)',
     border: 'none',
     padding: '8px 16px',
     borderRadius: '4px',

@@ -141,13 +141,16 @@
         }
    },
 
-
-
-
+      "piName":{
+         "type":"textarea",
+         "label": "Who is the PI for this project?",
+         "name": "piName",
+         "required": true
+      },
 
       "piAwareness": {
         "type": "textarea",
-        "label": "Is your PI aware of this request",
+        "label": "Is your PI aware of this request?",
         "name": "piAwareness",
         "help": "Please provide details of PI's awareness and approval",
 	"required": true

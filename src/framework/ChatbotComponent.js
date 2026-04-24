@@ -20,15 +20,15 @@ const ChatbotComponent = () => {
       {showCloud && (
         <div className="absolute bottom-20 right-1 w-80">
           {/* Main bubble */}
-          <div className="relative bg-white rounded-lg shadow-md p-4 border border-gray-200">
-             {/* Tail */}
-            <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-r border-b border-gray-200 transform rotate-45" />
-            
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-semibold text-gray-800">
-                Howdy! Have any questions? We're here to help!
-              </span>
-              <button onClick={closeCloud} className="text-gray-600 hover:text-gray-900">
+	          <div className="relative theme-surface rounded-lg shadow-md p-4 border theme-border">
+	             {/* Tail */}
+	            <div className="absolute -bottom-2 right-8 w-4 h-4 theme-surface border-r border-b theme-border transform rotate-45" />
+
+	            <div className="flex justify-between items-center mb-2">
+	              <span className="font-semibold theme-text-primary">
+	                Howdy! Have any questions? We're here to help!
+	              </span>
+	              <button onClick={closeCloud} className="theme-text-secondary theme-hover-danger">
                 <IoCloseSharp size={18} />
               </button>
             </div>
@@ -38,13 +38,13 @@ const ChatbotComponent = () => {
 
       {/* Chatbot popup (always mounted, hidden when not visible) */}
       <div
-        className={`fixed bottom-24 right-4 bg-gray-500 border border-gray-300 rounded-xl shadow-2xl overflow-hidden transition-all transform ${
+	        className={`fixed bottom-24 right-4 theme-surface border theme-border rounded-xl shadow-2xl overflow-hidden transition-all transform ${
           visible ? "block" : "hidden"
         }`}
       >
-        <div className="flex justify-between items-center px-4 py-3 bg-[#500000] text-white rounded-t-xl">
+	        <div className="flex justify-between items-center px-4 py-3 theme-button-primary rounded-t-xl">
           <span className="font-bold text-lg">HPRC Chatbot</span>
-          <button onClick={toggleChat} className="hover:text-gray-300">
+	          <button onClick={toggleChat}>
             <IoCloseSharp size={22} />
           </button>
         </div>
@@ -85,9 +85,9 @@ const ChatbotComponent = () => {
       {/* Chatbot toggle button */}
       <button
         onClick={toggleChat}
-        className="bg-[#500000] text-white w-16 h-16 rounded-full flex justify-center items-center shadow-lg hover:bg-[#4B0000] transition"
+	        className="theme-button-primary w-16 h-16 rounded-full flex justify-center items-center shadow-lg transition"
       >
-        <AiOutlineRobot size={30} className="text-white" />
+	        <AiOutlineRobot size={30} />
       </button>
     </div>
   );

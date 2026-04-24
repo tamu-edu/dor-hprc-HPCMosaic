@@ -11,6 +11,156 @@ body,
   padding: 0;
 }
 
+body {
+  background-color: var(--mosaic-color-app-bg, #f9fafb);
+  color: var(--mosaic-color-text-primary, #111827);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.theme-surface {
+  background-color: var(--mosaic-color-surface-bg);
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.theme-surface-alt {
+  background-color: var(--mosaic-color-app-bg);
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.theme-text-primary {
+  color: var(--mosaic-color-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--mosaic-color-text-secondary);
+}
+
+.theme-text-muted {
+  color: var(--mosaic-color-text-muted);
+}
+
+.theme-link {
+  color: var(--mosaic-color-link);
+}
+
+.theme-border {
+  border-color: var(--mosaic-color-border);
+}
+
+.theme-border-strong {
+  border-color: var(--mosaic-color-border-strong);
+}
+
+.theme-table-header {
+  background-color: var(--mosaic-color-table-header-bg);
+}
+
+.theme-hover-surface:hover {
+  background-color: var(--mosaic-color-surface-bg-hover);
+}
+
+.theme-hover-danger:hover {
+  background-color: var(--mosaic-color-alert-bg);
+  color: var(--mosaic-color-danger-text);
+}
+
+.theme-surface-hover {
+  background-color: var(--mosaic-color-surface-bg-hover);
+}
+
+.theme-selected {
+  background-color: var(--mosaic-color-selected-bg);
+  color: var(--mosaic-color-selected-text);
+}
+
+.theme-progress-track {
+  background-color: var(--mosaic-color-border);
+}
+
+.theme-progress-success {
+  background-color: var(--mosaic-color-success-bg);
+}
+
+.theme-progress-caution {
+  background-color: var(--mosaic-color-caution-bg);
+}
+
+.theme-progress-danger {
+  background-color: var(--mosaic-color-danger-bg);
+}
+
+.theme-input {
+  background-color: var(--mosaic-color-surface-bg);
+  color: var(--mosaic-color-text-primary);
+  border-color: var(--mosaic-color-border-strong);
+}
+
+.theme-input:focus {
+  border-color: var(--mosaic-color-primary);
+  box-shadow: 0 0 0 3px var(--mosaic-color-focus-ring);
+}
+
+.theme-status-success {
+  color: var(--mosaic-color-success-text);
+}
+
+.theme-status-caution {
+  color: var(--mosaic-color-caution-text);
+}
+
+.theme-status-danger {
+  color: var(--mosaic-color-danger-text);
+}
+
+.theme-button-primary,
+.theme-button-caution,
+.theme-button-success,
+.theme-button-danger,
+.theme-button-disabled {
+  color: var(--mosaic-color-primary-text);
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.theme-button-primary {
+  background-color: var(--mosaic-color-primary);
+}
+
+.theme-button-primary:hover {
+  background-color: var(--mosaic-color-primary-hover);
+}
+
+.theme-button-success {
+  background-color: var(--mosaic-color-success-bg);
+}
+
+.theme-button-success:hover {
+  background-color: var(--mosaic-color-success-bg-hover);
+}
+
+.theme-button-danger {
+  background-color: var(--mosaic-color-danger-bg);
+}
+
+.theme-button-danger:hover {
+  background-color: var(--mosaic-color-danger-bg-hover);
+}
+
+.theme-button-caution {
+  background-color: var(--mosaic-color-caution-bg);
+  color: var(--mosaic-color-text-inverse);
+}
+
+.theme-button-disabled {
+  background-color: var(--mosaic-color-disabled-bg);
+  color: var(--mosaic-color-disabled-text);
+  cursor: not-allowed;
+}
+
+.theme-tooltip {
+  background-color: var(--mosaic-color-tooltip-bg);
+  color: var(--mosaic-color-tooltip-text);
+}
+
 .tippy-box {
   z-index: 3000 !important;
 }

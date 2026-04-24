@@ -67,8 +67,8 @@ const Card = ({ name, title, description, icon }) => {
         ref={ref}
         className={`relative flex flex-col transition-all
           border rounded-lg shadow-sm overflow-hidden 
-          ${isDragging ? "opacity-50 border-blue-300 scale-95" : "border-gray-200 hover:border-blue-300 hover:shadow-md"}
-          cursor-grab active:cursor-grabbing bg-white`}
+          ${isDragging ? "opacity-50 border-blue-300 scale-95" : "theme-border hover:border-blue-300 hover:shadow-md"}
+          cursor-grab active:cursor-grabbing theme-surface`}
         style={{ 
           width: "100%", 
           touchAction: "none",
@@ -76,18 +76,18 @@ const Card = ({ name, title, description, icon }) => {
         }}
       >
         {/* Card header */}
-        <div className="p-4 flex items-center space-x-3 border-b border-gray-100">
+        <div className="p-4 flex items-center space-x-3 border-b theme-border">
           <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
             {icon}
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">{title}</h3>
-            <div className="text-xs text-gray-500">Click and drag to dashboard</div>
+            <h3 className="font-semibold theme-text-primary">{title}</h3>
+            <div className="text-xs theme-text-secondary">Click and drag to dashboard</div>
           </div>
         </div>
         
         {/* Card description */}
-        <div className="p-4 text-sm text-gray-600 flex-grow">
+        <div className="p-4 text-sm theme-text-secondary flex-grow">
           <p className="line-clamp-3">{description}</p>
         </div>
         

@@ -1,18 +1,23 @@
+#Attempt to refactor api.py to be less convoluted. WIP
+
+#IMPORTS
 from flask import Blueprint, request, jsonify
-import json
 from sys import version as python_formatted_version
+from machine_driver_scripts.engine import Engine
+from collections import OrderedDict
+import json
 import sqlite3
 import re
 import os
-from machine_driver_scripts.engine import Engine
-from collections import OrderedDict
 import subprocess
 import logging  # Add this line at the top
-
-import datetime
+from datetime import datetime
 import requests
-
 import yaml
+
+# ===========================================================
+# VARIABLE SETUP
+# ===========================================================
 
 # Get the path to the config file
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +30,19 @@ with open(config_path, 'r') as file:
 # Get the production settings
 production = config_data.get('development', {})
 
+# Create variables for easy access
+cluster_name = production.get('cluster_name')
+dashboard_url = production.get('dashboard_url')
+request_email = production.get('request_email')
+help_email = production.get('help_email')
+hprcbot_route = production.get('hprcbot_route')
+api = Blueprint('api', __name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+# ===========================================================
+# HELPER FUNCTIONS
+# ===========================================================
 def get_group_directory_info(group_name):
     directory_path = f"/scratch/group/{group_name}"
     owner = None
@@ -101,39 +119,9 @@ def clean_number(value):
             return None
     return None
 
-# Create variables for easy access
-cluster_name = production.get('cluster_name')
-dashboard_url = production.get('dashboard_url')
-request_email = production.get('request_email')
-help_email = production.get('help_email')
-hprcbot_route = production.get('hprcbot_route')
-
-api = Blueprint('api', __name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-@api.route('/user-data', methods=['GET'])
-def get_user_data():
-    try:
-        user = os.environ.get('USER', 'unknown')
-        email = get_user_email(user)
-        return jsonify({"user": user, "email": email}), 200
-    except Exception as e:
-        logging.error(f"Failed to fetch user data: {e}")
-        return jsonify({"error": "Unable to fetch user data"}), 500
-
-@api.route('/sinfo', methods=['GET'])
-def get_sinfo():
-    try:
-        result = subprocess.check_output("/sw/local/bin/retrieve_sinfo", shell=True, stderr=subprocess.STDOUT)
-        output = result.decode("utf-8")
-        print("Raw Output:", output)  # Debugging: print raw output
-        return jsonify(eval(output)), 200
-    except subprocess.CalledProcessError as e:
-        error_message = e.output.decode("utf-8")
-        return jsonify({"error": f"Command failed: {error_message}"}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+# ===========================================================
+# LAYOUT MODIFICATION API ROUTES
+# ===========================================================
 @api.route('/save_layout', methods=['POST'])
 def save_layout():
     try:
@@ -197,6 +185,90 @@ def load_layout():
             layout_data = json.load(f)
 
         return jsonify({"layout_name": layout_name, "layout_data": layout_data}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api.route('/delete_layout', methods=['DELETE'])
+def delete_layout():
+    """Delete a saved layout"""
+    try:
+        layout_name = request.json.get("layout_name")
+
+        if not layout_name:
+            return jsonify({"error": "Missing layout name"}), 400
+
+        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
+        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+
+        if not os.path.exists(layout_file_path):
+            return jsonify({"error": f"Layout {layout_name} does not exist"}), 404
+
+        os.remove(layout_file_path)
+
+        return jsonify({"message": f"Layout {layout_name} deleted successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api.route('/rename_layout', methods=['POST'])
+def rename_layout():
+    """Rename a saved layout"""
+
+    try:
+        data = request.json
+        old_name = data.get("old_name")
+        new_name = data.get("new_name")
+
+        if not old_name or not new_name:
+            return jsonify({"error": "Missing old or new layout name"}), 400
+
+        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
+        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
+        old_path = os.path.join(layouts_dir, f"{old_name}.json")
+        new_path = os.path.join(layouts_dir, f"{new_name}.json")
+
+        if not os.path.exists(old_path):
+            return jsonify({"error": f"Layout {old_name} does not exist"}), 404
+
+        if os.path.exists(new_path):
+            return jsonify({"error": f"A layout named {new_name} already exists"}), 400
+
+        os.rename(old_path, new_path)
+
+        return jsonify({"message": f"Layout {old_name} renamed to {new_name} successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ===========================================================
+# INFO RETRIEVAL API ROUTES
+# ===========================================================
+@api.route('/user-data', methods=['GET'])
+def get_user_data():
+    try:
+        user = os.environ.get('USER', 'unknown')
+        email = get_user_email(user)
+        return jsonify({"user": user, "email": email}), 200
+
+    except Exception as e:
+        logging.error(f"Failed to fetch user data: {e}")
+        return jsonify({"error": "Unable to fetch user data"}), 500
+
+@api.route('/sinfo', methods=['GET'])
+def get_sinfo():
+    try:
+        result = subprocess.check_output("/sw/local/bin/retrieve_sinfo", shell=True, stderr=subprocess.STDOUT)
+        output = result.decode("utf-8")
+        print("Raw Output:", output)  # Debugging: print raw output
+        return jsonify(eval(output)), 200
+
+    except subprocess.CalledProcessError as e:
+        error_message = e.output.decode("utf-8")
+        return jsonify({"error": f"Command failed: {error_message}"}), 500
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -302,6 +374,9 @@ def get_cpuavail():
         print(f"Unexpected error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# ===========================================================
+# MODULAIR INTERACTION API ROUTES
+# ===========================================================
 @api.route('/get_env', methods=['GET'])
 def get_envs():
     envs = str(os.environ)
@@ -367,23 +442,39 @@ def create_venv():
         description = data.get('description')
         pyVersion = data.get('pyVersion')
         gccversion = data.get('GCCversion')
+        
         if not envName or not gccversion or not pyVersion:
             return jsonify({"error": "Missing required parameters from the form submission"}), 400
-        # When running commands on the flask server machine for this app, you will need to source /etc/profile before using ml/module load
-        #createVenvCommand = f"ssh alogin2 source /etc/profile && module load {gccversion} {pyVersion} && /sw/local/bin/create_venv {envName} -d '{descriptio
+        
+        # Get current hostname
+        hostname_result = subprocess.run(['hostname', '-f'], capture_output=True, text=True)
+        current_host = hostname_result.stdout.strip()
+        
+        # Extract login node based on current cluster
+        if  'portal' in current_host:
+            login_node = 'alogin3.cluster'
+        else:
+            login_node = current_host
+
         createVenvCommand = (
-                #f"ssh -O StrictJostKeyChecking=no -o UserKnownHostsFile=/dev/null alogin2 'bash -l -c \"source /etc/profile && "
-                f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null alogin2 'bash -l -c \"source /etc/profile && "
+                f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {login_node} 'bash -l -c \"source /etc/profile && "
                 f"module load {gccversion} {pyVersion} && "
                 f"/sw/local/bin/create_venv {envName} -d \\\"{description}\\\"\"'"
         )
+        
         result = subprocess.run(createVenvCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+    
         if result.returncode != 0:
-            return jsonify({"error": f"There was an error while creating the virtual environment: {result.stderr}"}), 500
+            return jsonify({"error": f"There was an error while creating the virtual environment:\n{result.stderr}.\nHostname returned: {current_host}"}), 500
+        
         return jsonify({"message": f"{envName} was successfully created!"}), 200
+    
     except Exception as e:
         return jsonify({"error": f"There was an unexpected error while creating a new venv: {str(e)}"}), 500
 
+# ===========================================================
+# JOB AND PROJECT INTERACTION API ROUTES
+# ===========================================================
 @api.route('/projectinfo', methods=['GET'])
 def get_projectinfo():
     """Retrieve project information and allow querying for job history or pending jobs."""
@@ -523,6 +614,15 @@ def parse_scontrol_output(output):
             key, value = token.split("=", 1)
             if key in key_map:
                 job_info[key_map[key]] = value
+            elif key == "ReqTRES":
+                # total GPU count
+                gpu_match = re.search(r"gres/gpu=(\d+)", value)
+                if gpu_match:
+                    job_info["gpus"] = int(gpu_match.group(1))
+                else:
+                    job_info["gpus"] = 0
+    if "gpus" not in job_info:
+        job_info["gpus"] = 0
 
     return {"job_details": job_info}
 
@@ -559,6 +659,7 @@ def parse_job_history(output):
 
     return {"job_history": history_data}
 
+
 @api.route('/set_default_account', methods=['POST'])
 def set_default_account():
     """
@@ -591,6 +692,7 @@ def set_default_account():
     except Exception as e:
         logging.error(f"Unexpected error setting default account: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 
 def run_command(command):
     """
@@ -646,9 +748,11 @@ def get_user_jobs():
                     "state": state,
                     "cpus": job_details_parsed.get("cores"),
                     "nodes": nodes,
+                    "gpus": job_details_parsed.get("gpus"),
                     "time_requested": job_details_parsed.get("time_requested"),
                     "time_elapsed": job_details_parsed.get("time_elapsed"),
                     "submit_dir": job_details_parsed.get("submit_dir"),
+                    "reason": job_details_parsed.get("reason"),
                 })
             
         return jsonify({ "jobs": jobs }), 200
@@ -713,58 +817,9 @@ def get_utilization():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@api.route('/delete_layout', methods=['DELETE'])
-def delete_layout():
-    """Delete a saved layout"""
-    try:
-        layout_name = request.json.get("layout_name")
-        if not layout_name:
-            return jsonify({"error": "Missing layout name"}), 400
-
-        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
-
-        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
-        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
-
-        if not os.path.exists(layout_file_path):
-            return jsonify({"error": f"Layout {layout_name} does not exist"}), 404
-
-        os.remove(layout_file_path)
-        return jsonify({"message": f"Layout {layout_name} deleted successfully"}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api.route('/rename_layout', methods=['POST'])
-def rename_layout():
-    """Rename a saved layout"""
-    try:
-        data = request.json
-        old_name = data.get("old_name")
-        new_name = data.get("new_name")
-
-        if not old_name or not new_name:
-            return jsonify({"error": "Missing old or new layout name"}), 400
-
-        user = os.getenv("USER", "default_user")  # Fallback to 'default_user' if USER is not set
-
-        layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
-        old_path = os.path.join(layouts_dir, f"{old_name}.json")
-        new_path = os.path.join(layouts_dir, f"{new_name}.json")
-
-        if not os.path.exists(old_path):
-            return jsonify({"error": f"Layout {old_name} does not exist"}), 404
-
-        if os.path.exists(new_path):
-            return jsonify({"error": f"A layout named {new_name} already exists"}), 400
-
-        os.rename(old_path, new_path)
-        return jsonify({"message": f"Layout {old_name} renamed to {new_name} successfully"}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+# ===========================================================
+# HPRC BOT REQUEST API ROUTES
+# ===========================================================
 @api.route('/quota', methods=['POST'])
 def request_quota():
     try:
@@ -775,6 +830,7 @@ def request_quota():
         new_quota = request.form.get('newQuota')
         new_file_limit = request.form.get('newFileLimit')
         request_type = request.form.get('requestType')
+        pi_name = request.form.get("piName")
         pi_awareness = request.form.get('piAwareness')
         stored_data = request.form.get('storedData')
         research_description = request.form.get('researchDescription')
@@ -788,7 +844,7 @@ def request_quota():
         account_number = request.form.get('account', '')
 
         user = os.environ.get('USER', 'unknown')
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         subject = f"[{cluster_name}] Quota Request: {user}"
 
         if is_buy_request == 'Yes':
@@ -893,7 +949,8 @@ What is your long-term storage plan for your data after the quota increase expir
                 'has_previous': has_previous,
                 'request_until': expiration_date,
                 'account_number': account_number if buyin_status == 'yes' else '',
-                'email': get_user_email(user)
+                'email': get_user_email(user),
+                'project_pi': pi_name
             }
 
             logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
@@ -1271,3 +1328,25 @@ def submit_acknowledgement():
             "error": f"Failed to process your acknowledgement: {str(e)}",
             "status": "failed"
         }), 500
+        
+@api.route('/announcement', methods=['GET'])
+def get_announcement():
+    try:
+        announcement = {
+            "messages": [
+                "Welcome to HPRC!",
+                "Maintenance is scheduled for Saturday, March 6, through 8 PM CDT. ACES may be unavailable during this time."
+            ],
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+        }
+
+        return jsonify({"announcement": announcement}), 200
+
+    except Exception as e:
+        logging.error(f"Failed to fetch announcement: {e}")
+        return jsonify({"error": "Unable to fetch announcement"
+        }), 500
+        
+        
+        
+        

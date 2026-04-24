@@ -5,10 +5,12 @@ import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 import ElementDescriptions from "../framework/ElementDescriptions";
+import { useTheme } from "../context/ThemeContext";
 import { get_base_url } from "../utils/api_config.js"
 
 const AcknowledgementForm = () => {
   const baseUrl = config.production.dashboard_url;
+  const { theme } = useTheme();
   const clusterName = (config.production.cluster_name || '').toLowerCase();
   const usesAccessAcknowledgement = ["aces", "launch"].includes(clusterName);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,22 +100,22 @@ const AcknowledgementForm = () => {
   };
 
   return (
-    <div className="p-2 bg-white rounded-lg overflow-auto w-full h-full">
-      <h2 className="text-lg font-semibold mb-2">
+    <div className="p-2 theme-surface rounded-lg overflow-auto w-full h-full">
+      <h2 className="text-lg font-semibold mb-2 theme-text-primary">
         <Tippy content={ElementDescriptions["Acknowledgement Form for Papers using HPRC Resources"]}>
           <span className="cursor-help">Acknowledging HPRC ⓘ</span>
         </Tippy>
       </h2>
 
       <div className="mb-2">
-        <p className="text-gray-600 text-sm mb-2">
+        <p className="theme-text-secondary text-sm mb-2">
           Please acknowledge HPRC when you showcase research or publish a paper that has benefited from Texas A&M HPRC resources.
         </p>
-        <p className="text-gray-600 text-sm mb-2">
+        <p className="theme-text-secondary text-sm mb-2">
           {usesAccessAcknowledgement ? (
             <>
               For standard acknowledgement examples acknowledging ACCESS, click{' '}
-              <a style={{ color: '#500000' }} href="https://access-ci.org/about/acknowledging-access/" target="_blank" rel="noopener noreferrer">
+              <a style={{ color: theme.colors.warningText }} className="hover:underline" href="https://access-ci.org/about/acknowledging-access/" target="_blank" rel="noopener noreferrer">
                 https://access-ci.org/about/acknowledging-access/
               </a>
               .
@@ -121,7 +123,7 @@ const AcknowledgementForm = () => {
           ) : (
             <>
               For standard acknowledgment examples and a listing of publications acknowledging HPRC, click{' '}
-              <a style={{ color: '#500000' }} href="https://hprc.tamu.edu/research/citations.html" target="_blank" rel="noopener noreferrer">
+              <a style={{ color: theme.colors.warningText }} className="hover:underline" href="https://hprc.tamu.edu/research/citations.html" target="_blank" rel="noopener noreferrer">
                 here
               </a>
               . Once you acknowledge us, we will add your paper to the publications list on the HPRC website.
@@ -132,8 +134,8 @@ const AcknowledgementForm = () => {
           <PopupForm
             buttonText="Submit Acknowledgement"
             buttonStyle={{
-              backgroundColor: '#500000',
-              color: 'white',
+              backgroundColor: 'var(--mosaic-color-primary)',
+              color: 'var(--mosaic-color-primary-text)',
               border: 'none',
               padding: '8px 16px',
               borderRadius: '4px',

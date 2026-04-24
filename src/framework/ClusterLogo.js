@@ -1,7 +1,7 @@
 import React from 'react'
 import logo from '../images/Cluster_Logo.png'
 
-const ClusterLogo = () => {
+const ClusterLogo = ({ className = '' }) => {
   return  (
     <div>
       <a
@@ -13,7 +13,7 @@ const ClusterLogo = () => {
           alt="ACES Logo"
           width="250"
           height="250"
-          className="hidden md:block max-w-[6rem] w-full h-auto p-2"
+          className={className || 'block w-full h-full object-contain'}
         />
       </a>
     </div>

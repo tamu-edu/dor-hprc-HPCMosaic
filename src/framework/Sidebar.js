@@ -60,35 +60,35 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full theme-surface">
       {/* Search and filter toolbar */}
-      <div className="bg-gray-50 p-4 border-b border-gray-200 sticky top-0 z-10">
+      <div className="theme-surface-alt p-4 border-b theme-border sticky top-0 z-10">
         <div className="flex items-center justify-between mb-4">
           <div className="relative flex-grow mr-4">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MdSearch className="text-gray-400 text-xl" />
+              <MdSearch className="theme-text-muted text-xl" />
             </div>
             <input
               type="text"
               placeholder="Search elements..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm theme-input placeholder-gray-400 focus:outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
           {/* View toggle: Grid vs List */}
-          <div className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md">
+          <div className="flex items-center space-x-2 theme-surface border theme-border rounded-md">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-l-md ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-500"}`}
+              className={`p-2 rounded-l-md ${viewMode === "grid" ? "theme-selected" : "theme-text-secondary"}`}
               title="Grid view"
             >
               <MdGridView className="text-xl" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-r-md ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-500"}`}
+              className={`p-2 rounded-r-md ${viewMode === "list" ? "theme-selected" : "theme-text-secondary"}`}
               title="List view"
             >
               <MdViewList className="text-xl" />
@@ -98,7 +98,7 @@ const Sidebar = () => {
 
         {/* Category filters */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-gray-600 mr-1 flex items-center">
+          <span className="text-sm font-medium theme-text-secondary mr-1 flex items-center">
             <MdFilterList className="mr-1" /> Filter:
           </span>
           {["all", "analytics", "system", "user"].map(category => (
@@ -107,8 +107,8 @@ const Sidebar = () => {
               onClick={() => toggleCategory(category)}
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
                 categories[category]
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "theme-button-primary"
+                  : "theme-progress-track theme-text-secondary theme-hover-surface"
               }`}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -120,7 +120,7 @@ const Sidebar = () => {
       {/* Elements display area */}
       <div className="relative w-full overflow-y-auto pt-4 pb-8 px-4 flex-grow">
         {filteredList.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 theme-text-muted">
             <p>No elements match your search or filters.</p>
           </div>
         ) : viewMode === "grid" ? (
@@ -139,7 +139,7 @@ const Sidebar = () => {
             {filteredList.map((name, id) => {
               const { cardComponent: CardComponent } = CardConfig[name];
               return (
-                <div key={id} className="w-full transition-colors hover:bg-blue-50">
+                <div key={id} className="w-full transition-colors theme-hover-surface" style={{ borderRadius: "0.375rem" }}>
                   <CardComponent />
                 </div>
               );

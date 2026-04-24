@@ -13,14 +13,13 @@ const UserJobs = () => {
   const [error, setError] = useState(null);
   const [isCanceling, setIsCanceling] = useState(null);
   const baseUrl = get_base_url();
-
   // Fetch jobs for the current user
   useEffect(() => {
     fetch(`${baseUrl}/api/jobs`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
-        setJobs(data.jobs || []);
+	setJobs(data.jobs || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -59,6 +58,20 @@ const UserJobs = () => {
 
     const newTime = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     return daysPart ? `${daysPart}-${newTime}` : newTime;
+  };
+  const getPendingReasonLabel = (reason) => {
+	switch (reason) {
+        case "Resources":
+            return "Waiting for available resources";
+	case "Priority":
+	    return "Waiting for higher priority jobs to finish";
+	case "Dependency":
+	    return "Waiting for another job to finish";
+	case "QQSMaxJobsPerUserLimit":
+	    return "Blocked by queue policy limits";
+	default:
+	    return "Scheduler related reason";
+	}
   };
 
   // Format SLURM time for display
@@ -102,9 +115,15 @@ const UserJobs = () => {
   };
   
   const getColor = (percentage) => {
-    if (percentage < 50) return "text-green-600";
-    if (percentage < 75) return "text-yellow-500";
-    return "text-red-600";
+    if (percentage < 50) return "theme-status-success";
+    if (percentage < 75) return "theme-status-caution";
+    return "theme-status-danger";
+  };
+
+  const getProgressClass = (percentage) => {
+    if (percentage < 50) return "theme-progress-success";
+    if (percentage < 75) return "theme-progress-caution";
+    return "theme-progress-danger";
   };
 
   // Cancel a job
@@ -124,34 +143,47 @@ const UserJobs = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-4 bg-white rounded-lg overflow-auto w-full h-full">
+    <div className="p-4 theme-surface rounded-lg overflow-auto w-full h-full">
+        <style>
+          {`
+            .tippy-box[data-theme~='job-tooltip'] {
+              background-color: transparent !important;
+              box-shadow: none !important;
+              border: none !important;
+            }
+        
+            .tippy-box[data-theme~='job-tooltip'] .tippy-content {
+              padding: 0 !important;
+            }
+          `}
+        </style>
       {/* Title with Tooltip */}
       <div className="flex items-center">
-        <h2 className="text-2xl font-semibold mb-4">
+        <h2 className="text-2xl font-semibold mb-4 theme-text-primary">
           <Tippy content={ElementDescriptions["User Jobs"]}>
             <span className="cursor-help">Your Jobs ⓘ</span>
           </Tippy>
         </h2>
       </div>
       {jobs.length === 0 ? (
-        <p className="text-gray-500">No active jobs.</p>
+        <p className="theme-text-secondary">No active jobs.</p>
       ) : (
-        <table className="table-auto w-full border-collapse border border-gray-300 rounded-lg shadow-sm">
+        <table className="table-auto w-full border-collapse border theme-border rounded-lg shadow-sm">
           <thead>
-            <tr className="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
-              <th className="border border-gray-300 px-4 py-2">Job ID</th>
-              <th className="border border-gray-300 px-4 py-2">Job Name</th>
-              <th className="border border-gray-300 px-4 py-2">Location</th>
-              <th className="border border-gray-300 px-4 py-2">State</th>
-              <th className="border border-gray-300 px-4 py-2">CPUs</th>
-              <th className="border border-gray-300 px-4 py-2">Nodes</th>
-              <th className="border border-gray-300 px-4 py-2">Time Elapsed</th>
-              <th className="border border-gray-300 px-4 py-2">Actions</th>
+            <tr className="theme-table-header theme-text-secondary uppercase text-sm leading-normal">
+              <th className="border theme-border px-4 py-2">Job ID</th>
+              <th className="border theme-border px-4 py-2">Job Name</th>
+              <th className="border theme-border px-4 py-2">Location</th>
+              <th className="border theme-border px-4 py-2">State</th>
+              <th className="border theme-border px-4 py-2">CPUs</th>
+              <th className="border theme-border px-4 py-2">Nodes</th>
+              <th className="border theme-border px-4 py-2">Time Elapsed</th>
+              <th className="border theme-border px-4 py-2">Actions</th>
             </tr>
           </thead>
-          <tbody className="text-gray-800 text-sm">
+          <tbody className="text-sm theme-text-primary">
             {jobs.map((job) => (
-              <tr key={job.job_id} className="border-b border-gray-200">
+              <tr key={job.job_id} className="border-b theme-border theme-hover-surface transition-colors">
                 <td className="py-3 px-4">
                     {job.job_id}
                 </td>
@@ -161,8 +193,48 @@ const UserJobs = () => {
                 <td className="py-3 px-4">
                     {generate_file_explorer_path_for_jobs(job)}
                 </td>
-                <td className={`py-3 px-4 ${job.state === "R" ? "text-green-600" : "text-yellow-600"}`}>
-                  {job.state === "R" ? "Running" : "Pending"}
+			        <td className={`py-3 px-4 ${job.state === "R" ? "theme-status-success" : "theme-status-caution"}`}>
+                  {job.state === "R" ? (
+                    "Running"
+                  ) : (
+                    <Tippy
+                      theme="job-tooltip"
+                      interactive={true}
+                      trigger="click"
+                      placement="bottom"
+                      appendTo={document.body}
+                      zIndex={9999}
+                      popperOptions={{ strategy: 'fixed' }}
+                      content={
+	                        <div className="w-80 rounded-lg border theme-border theme-surface theme-text-primary shadow-lg">
+	                          <div className="flex items-center justify-between px-4 py-3 border-b theme-border">
+	                            <h3 className="text-lg font-semibold">Why is this job pending?</h3>
+	                          </div>
+                
+                          <div className="px-4 py-3">
+                            <p className="text-base font-medium">
+                              {getPendingReasonLabel(job.reason)}
+                            </p>
+                          </div>
+                
+	                          <div className="border-t theme-border px-4 py-3">
+	                            <p className="text-sm font-semibold theme-text-secondary mb-2">
+	                              Scheduler details:
+	                            </p>
+	                            <ul className="list-disc pl-5 text-sm theme-text-primary space-y-1">
+                              <li>Reason: {job.reason || "Unknown"}</li>
+                              <li>Requested: {job.cpus} CPU{Number(job.cpus) !== 1 ? "s" : ""},{" "}{job.gpus} GPU{Number(job.gpus) !== 1 ? "s" : ""},{" "}{job.nodes} node{Number(job.nodes) !== 1 ? "s" : ""}</li>
+                              <li>Partition is busy</li>
+                            </ul>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <span className="cursor-pointer inline-flex items-center gap-1 underline decoration-dotted">
+                        Pending <span className="text-xs">ⓘ</span>
+                      </span>
+                    </Tippy>
+                  )}
                 </td>
                 <td className="py-3 px-4">
                     {job.cpus}
@@ -171,21 +243,15 @@ const UserJobs = () => {
                     {job.nodes}
                 </td>
                 <td className="py-3 px-4">
-                    <div className="flex justify-between text-base font-medium text-gray-700 mb-1">
+                    <div className="flex justify-between text-base font-medium theme-text-secondary mb-1">
                       <span> ({formatTime(job.time_elapsed)}) / ({formatTime(job.time_requested)}) </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                    <div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
                         {(() => {
                             const timePercentage = getElapsedPercentage(job.time_elapsed, job.time_requested);
                             return (
                                 <div
-                                    className={`h-2.5 rounded-full ${
-                                        timePercentage >=75
-                                        ? "bg-red-600"
-                                        : timePercentage >= 50
-                                        ? "bg-yellow-500"
-                                        : "bg-green-500"
-                                    }`}
+	                                    className={`h-2.5 rounded-full ${getProgressClass(timePercentage)}`}
                                     style={{ width: `${timePercentage}%` }}
                                 ></div>
                             );
@@ -199,11 +265,11 @@ const UserJobs = () => {
                     {/* <div> */}
                       <button
                         onClick={() => cancelJob(job.job_id)}
-                        className={`px-3 py-1 rounded ${
-                          isCanceling === job.job_id
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-red-500 hover:bg-red-600 text-white"
-                        }`}
+	                        className={`px-3 py-1 rounded ${
+	                          isCanceling === job.job_id
+	                            ? "theme-button-disabled"
+	                            : "theme-button-danger"
+	                        }`}
                         disabled={isCanceling === job.job_id}
                       >
                         {isCanceling === job.job_id ? "Canceling..." : "Cancel Job"}
@@ -219,6 +285,7 @@ const UserJobs = () => {
         </table>
       )}
     </div>
+  
   );
 };
 
