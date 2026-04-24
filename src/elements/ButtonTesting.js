@@ -6,7 +6,7 @@ import HelpButton from './HelpButton'
 
 const ButtonTesting = () => {
     return (
-    <div className="p-4 bg-white w-full h-full flex flex-col">
+	    <div className="p-4 theme-surface w-full h-full flex flex-col">
       <QuotaButton/>
       <GroupButton/>
       <HelpButton/>

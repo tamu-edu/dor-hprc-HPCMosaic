@@ -256,13 +256,13 @@ const LayoutUtility = ({
     return (
         <div className="relative inline-block">
             {isOpen && !loadingLayouts && (
-                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
-                    <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="font-medium text-gray-700 dark:text-gray-200">Layouts</h3>
+                <div className="absolute right-0 mt-2 w-64 theme-surface border theme-border rounded-lg shadow-lg z-10">
+                    <div className="flex justify-between items-center px-4 py-2 border-b theme-border">
+                        <h3 className="font-medium theme-text-secondary">Layouts</h3>
                         <button 
                             onClick={handleRefreshLayouts}
                             disabled={!!actionInProgress}
-                            className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                            className="theme-link p-1 rounded-full theme-hover-surface"
                             title="Refresh layouts"
                         >
                             <MdRefresh className={actionInProgress === 'refresh' ? 'animate-spin' : ''} />
@@ -271,35 +271,35 @@ const LayoutUtility = ({
                     
                     <ul className="py-1 max-h-64 overflow-auto">
                         {localLayouts.length === 0 ? (
-                            <li className="px-4 py-2 text-gray-500 dark:text-gray-400 text-center">No layouts available</li>
+                            <li className="px-4 py-2 theme-text-muted text-center">No layouts available</li>
                         ) : (
                             localLayouts.map((layoutName) => (
                                 <li 
                                     key={layoutName} 
-                                    className={`px-4 py-2 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-all
-                                        ${activeLayout === layoutName ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
+                                    className={`px-4 py-2 flex justify-between items-center cursor-pointer transition-all
+                                        ${activeLayout === layoutName ? 'theme-selected' : 'theme-hover-surface'}
                                     `}
                                     onClick={() => handleLoadLayout(layoutName)}
                                 >
                                     <div className="flex items-center">
                                         {activeLayout === layoutName && (
-                                            <MdCheck className="text-blue-500 dark:text-blue-400 mr-1" />
+                                            <MdCheck className="mr-1" />
                                         )}
-                                        <span className={activeLayout === layoutName ? 'font-medium text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100'}>
+                                        <span className={activeLayout === layoutName ? 'font-medium' : 'theme-text-primary'}>
                                             {layoutName}
                                         </span>
                                     </div>
                                     <div className="flex space-x-2">
                                         <button 
                                             onClick={(e) => handleRename(layoutName, e)} 
-                                            className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-1"
+                                            className="theme-link p-1"
                                             disabled={actionInProgress === `rename-${layoutName}`}
                                         >
                                             <MdEdit />
                                         </button>
                                         <button 
                                             onClick={(e) => handleDelete(layoutName, e)} 
-                                            className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1"
+                                            className="theme-status-danger p-1"
                                             disabled={actionInProgress === `delete-${layoutName}`}
                                         >
                                             <MdDelete />
@@ -309,17 +309,17 @@ const LayoutUtility = ({
                             ))
                         )}
                         
-                        <li className="border-t border-gray-200 dark:border-gray-700 mt-1"></li>
+                        <li className="border-t theme-border mt-1"></li>
                         
                         <li 
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-all text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium" 
+                            className="px-4 py-2 theme-hover-surface cursor-pointer transition-all theme-link font-medium"
                             onClick={handleSaveLayout}
                             disabled={actionInProgress === 'save'}
                         >
                             Save Current Layout
                         </li>
                         <li 
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-all text-gray-900 dark:text-gray-100" 
+                            className="px-4 py-2 theme-hover-surface cursor-pointer transition-all theme-text-primary" 
                             onClick={handleLoadDefault}
                             disabled={actionInProgress === 'default'}
                         >

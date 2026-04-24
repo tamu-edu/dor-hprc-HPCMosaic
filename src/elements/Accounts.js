@@ -58,9 +58,9 @@ const ProjectInfo = () => {
 
   // Function to determine color for usage percentage
   const getUsageColor = (usagePercentage) => {
-    if (usagePercentage < 50) return "text-green-600";
-    if (usagePercentage < 75) return "text-yellow-500";
-    return "text-red-600";
+    if (usagePercentage < 50) return "theme-status-success";
+    if (usagePercentage < 75) return "theme-status-caution";
+    return "theme-status-danger";
   };
 
   // Show error message if there is an error
@@ -74,10 +74,10 @@ const ProjectInfo = () => {
   }
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg overflow-auto w-full h-full transition-colors duration-200">
+    <div className="p-4 theme-surface rounded-lg overflow-auto w-full h-full">
       {/* Title with Tooltip */}
       <div className="flex items-center">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+        <h2 className="text-2xl font-semibold mb-4 theme-text-primary">
           <Tippy content={ElementDescriptions.Accounts}>
             <span className="cursor-help">Project Information ⓘ</span>
           </Tippy>
@@ -88,42 +88,42 @@ const ProjectInfo = () => {
       {message && (
         <div
           className={`fixed top-5 right-5 p-3 text-sm font-semibold rounded shadow-md ${
-            message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+            message.type === "success" ? "theme-button-success" : "theme-button-danger"
           }`}
         >
           {message.text}
         </div>
       )}
 
-      <table className="table-auto w-full border-collapse border border-gray-300 dark:border-gray-600">
+      <table className="table-auto w-full border-collapse border theme-border">
         <thead>
-          <tr className="bg-gray-200 dark:bg-gray-700">
-            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+          <tr className="theme-table-header">
+            <th className="border theme-border px-4 py-2 theme-text-primary">
               <Tippy content="Your allocated project account for computing resources.">
                 <span className="cursor-help">Account ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+            <th className="border theme-border px-4 py-2 theme-text-primary">
               <Tippy content="The Fiscal Year in which the project is active.">
                 <span className="cursor-help">FY ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+            <th className="border theme-border px-4 py-2 theme-text-primary">
               <Tippy content="Indicates if this account is your default account.">
                 <span className="cursor-help">Default ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+            <th className="border theme-border px-4 py-2 theme-text-primary">
               <Tippy content="Used vs. allocated service units (SUs), with percentage usage.">
                 <span className="cursor-help">Used / Allocated (%) ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+            <th className="border theme-border px-4 py-2 theme-text-primary">
               <Tippy content="Remaining balance of computing resources.">
                 <span className="cursor-help">Balance ⓘ</span>
               </Tippy>
             </th>
-            <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+            <th className="border theme-border px-4 py-2 theme-text-primary">
               <Tippy content="Principal Investigator responsible for the project.">
                 <span className="cursor-help">PI ⓘ</span>
               </Tippy>
@@ -138,22 +138,22 @@ const ProjectInfo = () => {
             const usageColor = getUsageColor(usagePercentage);
 
             return (
-              <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-100">
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{project.account}</td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{project.fy}</td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+              <tr key={index} className="theme-hover-surface transition-colors theme-text-primary">
+                <td className="border theme-border px-4 py-2">{project.account}</td>
+                <td className="border theme-border px-4 py-2">{project.fy}</td>
+                <td className="border theme-border px-4 py-2 text-center">
                   {project.default === "Y" ? (
-                    <span className="text-green-600 font-semibold">✅ Y</span>
+                    <span className="theme-status-success font-semibold">Y</span>
                   ) : (
                     <button
-                      className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
+	                      className="theme-button-success px-2 py-1 rounded transition-colors"
                       onClick={() => setDefaultAccount(project.account)}
                     >
                       Set as Default
                     </button>
                   )}
                 </td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                <td className="border theme-border px-4 py-2">
                   <Tippy content={`Used: ${used} SUs / Allocated: ${allocated} SUs`}>
                     <span className="cursor-help">
                       {used.toFixed(2)} / {allocated.toFixed(2)}{" "}
@@ -161,8 +161,8 @@ const ProjectInfo = () => {
                     </span>
                   </Tippy>
                 </td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{project.balance}</td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">{project.pi}</td>
+                <td className="border theme-border px-4 py-2">{project.balance}</td>
+                <td className="border theme-border px-4 py-2">{project.pi}</td>
               </tr>
             );
           })}

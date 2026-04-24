@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import Joyride, { STATUS, ACTIONS } from 'react-joyride';
-import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdDarkMode, MdLightMode } from "react-icons/md";
+import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdPalette, MdCheck } from "react-icons/md";
 import { Toaster, toast } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdAddChart } from "react-icons/md";
@@ -40,7 +40,9 @@ const Banner = ({ setRunTour }) => {
   const [layoutLocked, setLayoutLocked] = useState(false);
 
   const { hideChatbot, showChatbot } = useChatbotVisibility();
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { theme, themeName, setTheme, themes } = useTheme();
+  const themeOptions = Object.entries(themes);
+  const activeThemeLabel = theme.label || themeName;
 
   // Tour steps configuration
   const tourSteps = [
@@ -271,7 +273,7 @@ const Banner = ({ setRunTour }) => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-x-hidden">
+    <div className="min-h-screen w-full flex flex-col theme-surface-alt overflow-x-hidden">
       {/* Tour Component */}
       <Joyride
         steps={tourSteps}
@@ -316,11 +318,11 @@ const Banner = ({ setRunTour }) => {
 
       {/* Header */}
       <BannerBackground>
-        <div className="flex justify-between w-full items-center space-x-3 pr-1">
+	<div className="flex justify-between w-full h-full items-center space-x-3 pr-1">
 	  
           {/*Logo*/}
-	  <div className="hidden md:flex bg-white px-2 md:px-4 py-1 md:py-2 rounded-l-md">
-	    <ClusterLogo className="w-6 md:w-8 lg:w-10 h-6 md:h-8 lg:h-10" />
+    <div className="hidden md:flex bg-white rounded-l-md h-full w-[130px] items-center justify-center overflow-hidden">
+      <ClusterLogo className="block w-[108px] h-[108px] object-contain" />
           </div>
 
 	  {/*Dashboard Name*/}
@@ -334,24 +336,51 @@ const Banner = ({ setRunTour }) => {
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-3">
-            {/* Dark Mode Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              className="flex items-center justify-center px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 min-w-[48px]"
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {isDarkMode ? (
-                <MdLightMode className="text-xl text-yellow-400" />
-              ) : (
-                <MdDarkMode className="text-xl text-gray-700" />
-              )}
-            </button>
+            {/* Theme Selector */}
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button
+                className="flex items-center justify-center px-3 py-2 theme-surface border theme-border rounded-lg shadow theme-hover-surface transition-all duration-200 min-w-[48px]"
+                title={`Current theme: ${activeThemeLabel}`}
+                aria-label="Select dashboard theme"
+              >
+                <MdPalette className="text-xl" style={{ color: theme.colors.iconActive }} />
+                <span className="hidden lg:inline ml-2 font-semibold theme-text-secondary text-base whitespace-nowrap">
+                  {activeThemeLabel}
+                </span>
+              </Menu.Button>
+
+              <Transition
+                enter="transition duration-100 ease-out"
+                enterFrom="transform scale-95 opacity-0"
+                enterTo="transform scale-100 opacity-100"
+                leave="transition duration-75 ease-in"
+                leaveFrom="transform scale-100 opacity-100"
+                leaveTo="transform scale-95 opacity-0"
+              >
+                <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right theme-surface border theme-border rounded-md shadow-lg focus:outline-none z-50 py-1">
+                  {themeOptions.map(([name, optionTheme]) => (
+                    <Menu.Item key={name}>
+                      {({ active }) => (
+                        <button
+                          type="button"
+                          onClick={() => setTheme(name)}
+                          className={`${themeName === name ? 'theme-selected' : active ? 'theme-surface-hover' : ''} flex w-full items-center justify-between px-4 py-2 text-sm text-left theme-text-secondary`}
+                        >
+                          <span>{optionTheme.label || name}</span>
+                          {themeName === name && <MdCheck className="text-lg ml-3 flex-shrink-0" />}
+                        </button>
+                      )}
+                    </Menu.Item>
+                  ))}
+                </Menu.Items>
+              </Transition>
+            </Menu>
             
             {/* Settings Dropdown - Contains Add Element, Layout, Feedback */}
             <Menu as="div" className="relative inline-block text-left">
-              <Menu.Button className="flex items-center justify-center md:justify-start px-3 py-2 md:px-4 md:py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 min-w-[48px] md:min-w-auto">
-                <MdSettings className="text-xl text-gray-500 dark:text-gray-300 md:mr-2 flex-shrink-0" />
-                <span className="hidden md:inline font-semibold text-gray-700 dark:text-gray-200 text-base whitespace-nowrap">Settings</span>
+              <Menu.Button className="flex items-center justify-center md:justify-start px-3 py-2 md:px-4 md:py-2 theme-surface border theme-border rounded-lg shadow theme-hover-surface transition-all duration-200 min-w-[48px] md:min-w-auto">
+                <MdSettings className="text-xl theme-text-secondary md:mr-2 flex-shrink-0" />
+                <span className="hidden md:inline font-semibold theme-text-secondary text-base whitespace-nowrap">Settings</span>
               </Menu.Button>  
 
 	      <Transition
@@ -363,14 +392,14 @@ const Banner = ({ setRunTour }) => {
 	        leaveTo="transform scale-95 opacity-0"
 	      >
 
-                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700 rounded-md shadow-lg focus:outline-none z-50">
+                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right theme-surface border theme-border divide-y divide-gray-200 rounded-md shadow-lg focus:outline-none z-50">
 	          <div className="py-1">
 
 	            {/*Add Element Menu Option*/}
 	            <Menu.Item>
 	              {({ active }) => (
-			<button onClick={openPopup}
-			  className={`${active ? 'bg-gray-100 dark:bg-gray-700' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-200`}
+      <button onClick={openPopup}
+        className={`${active ? 'theme-surface-hover' : ''} flex w-full px-4 py-2 text-sm text-left theme-text-secondary`}
 			>
 			  <MdAddchart className="text-lg mr-2" />
 			  Add Dashboard Element
@@ -381,7 +410,7 @@ const Banner = ({ setRunTour }) => {
  	            {/*Layout Utility*/}
 	            <Menu.Item>
 	              {({ active }) => (
-			<button onClick={() => setLayoutUtilityOpen(!layoutUtilityOpen)} className={`${active ? 'bg-gray-100 dark:bg-gray-700' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-200`}>
+      <button onClick={() => setLayoutUtilityOpen(!layoutUtilityOpen)} className={`${active ? 'theme-surface-hover' : ''} flex w-full px-4 py-2 text-sm text-left theme-text-secondary`}>
 
 			  <MdAddchart className="text-lg mr-2" />
                           Layouts
@@ -396,7 +425,7 @@ const Banner = ({ setRunTour }) => {
 			  href="https://forms.gle/7RwxdFgXVamGVVss8"
 			  target="_blank"
                           rel="noopener noreferrer"
-                          className={`${active ? 'bg-gray-100 dark:bg-gray-700' : ''} flex w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-200 items-center`}
+                          className={`${active ? 'theme-surface-hover' : ''} flex w-full px-4 py-2 text-sm text-left theme-text-secondary items-center`}
                         >
                           <MdFeedback className="text-lg mr-2 text-green-600" />
                           Give Feedback
@@ -414,9 +443,9 @@ const Banner = ({ setRunTour }) => {
             <div className="request-help-container">
 	      <HelpButton
                 buttonStyle={{
-                  backgroundColor: isDarkMode ? '#1F2937' : 'white',
-                  color: isDarkMode ? '#E5E7EB' : '#374151',
-                  border: isDarkMode ? '1px solid #4B5563' : '1px solid #D1D5DB',
+                  backgroundColor: theme.colors.surfaceBg,
+                  color: theme.colors.textSecondary,
+                  border: `1px solid ${theme.colors.borderStrong}`,
                   borderRadius: '0.5rem',
                   cursor: 'pointer',
                   display: 'flex',
@@ -432,8 +461,8 @@ const Banner = ({ setRunTour }) => {
                 }}
                 buttonText={
                   <div className="flex items-center justify-center md:justify-start">
-                    <MdOutlineQuestionAnswer className="text-xl text-gray-500 dark:text-gray-300 md:mr-2 flex-shrink-0" />
-                    <span className="hidden md:inline font-semibold text-gray-700 dark:text-gray-200 text-base whitespace-nowrap">Get Help</span>
+	            <MdOutlineQuestionAnswer className="text-xl md:mr-2 flex-shrink-0" style={{ color: theme.colors.icon }} />
+                    <span className="hidden md:inline font-semibold text-base whitespace-nowrap" style={{ color: theme.colors.textSecondary }}>Get Help</span>
 	          </div>
 		}
 	      />
@@ -467,7 +496,7 @@ const Banner = ({ setRunTour }) => {
       <LayoutLockProvider layoutLocked={layoutLocked} setLayoutLocked={setLayoutLocked}>
         {/* Main Content Area */}
         <div className={`flex-1 flex flex-col mt-5 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
-	    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mx-1">
+      <div className="theme-surface rounded-lg border theme-border shadow-sm mx-1">
               <Content
                 change={(data) => changeHandler(0, data)}
                 layoutData={layoutData} setLayoutData={setLayoutData}
@@ -503,13 +532,13 @@ const Banner = ({ setRunTour }) => {
         <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-end justify-center pointer-events-none">
           <div
                ref={sidebarRef}
-	       className={`w-full pointer-events-auto bg-white dark:bg-gray-800 shadow-2xl rounded-t-xl border-t border-gray-300 dark:border-gray-700 transition-all duration-300 ease-in-out transform ${sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
+	       className={`w-full pointer-events-auto theme-surface shadow-2xl rounded-t-xl border-t theme-border transition-all duration-300 ease-in-out transform ${sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
               }`}
               >
             {/* Improved Sidebar Header with better maximize/minimize button */}
-            <div className="sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-xl">
+	    <div className="sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b theme-border theme-surface rounded-t-xl">
 	
-              <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+              <h3 className="text-2xl font-semibold theme-text-primary flex items-center">
                 <MdAddchart className="text-blue-500 mr-2" />
                 Add Dashboard Elements
               </h3>
@@ -519,7 +548,7 @@ const Banner = ({ setRunTour }) => {
                 {/* Enhanced maximize/minimize button */}
                 <button
                   onClick={toggleSidebarSize}
-                  className={`p-2 flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors ${sidebarMaximized ? 'bg-blue-50 dark:bg-blue-900' : ''}`}
+	                  className={`p-2 flex items-center theme-text-secondary theme-hover-surface rounded-md transition-colors ${sidebarMaximized ? 'theme-selected' : ''}`}
                   title={sidebarMaximized ? "Minimize panel" : "Maximize panel"}
                 >
                   {sidebarMaximized ? (
@@ -548,7 +577,7 @@ const Banner = ({ setRunTour }) => {
                 </button>
                 <button
                   onClick={closePopup}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
+	                  className="p-2 theme-text-secondary theme-hover-danger rounded-md transition-colors"
                   title="Close panel"
                 >
                   <MdClose className="text-xl" />
@@ -570,9 +599,9 @@ const Banner = ({ setRunTour }) => {
 	}}
 	className={`fixed bottom-4 left-4 w-12 h-12 rounded-full shadow-lg flex items-center items-center justify-center transition-all duration-200 z-500 ${
 	  layoutLocked
-	    ? 'bg-yellow-400 hover: bg-yellow-500 text-yello-800'
-	    : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
-	}`}
+		    ? 'theme-button-caution'
+		    : 'theme-surface theme-text-secondary theme-border'
+		}`}
 	title={layoutLocked ? 'Unlock Layout' : 'Lock Layout'}
       >
         {layoutLocked ? (

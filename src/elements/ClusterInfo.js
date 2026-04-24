@@ -17,7 +17,7 @@ const ClusterInfo = () => {
 
   // Custom Tooltip Component
   const CustomTooltip = ({ content }) => (
-    <div className="bg-gray-800 text-white text-sm p-2 rounded-md shadow-lg z-50">
+    <div className="theme-tooltip text-sm p-2 rounded-md shadow-lg z-50">
       {content}
     </div>
   );
@@ -46,16 +46,22 @@ const ClusterInfo = () => {
     total > 0 ? ((used / total) * 100).toFixed(2) : 0;
 
   const getColor = (percentage) => {
-    if (percentage < 50) return "text-green-600";
-    if (percentage < 75) return "text-yellow-500";
-    return "text-red-600";
+    if (percentage < 50) return "theme-status-success";
+    if (percentage < 75) return "theme-status-caution";
+    return "theme-status-danger";
+  };
+
+  const getProgressClass = (percentage) => {
+    if (percentage < 50) return "theme-progress-success";
+    if (percentage < 75) return "theme-progress-caution";
+    return "theme-progress-danger";
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 w-full h-full flex flex-col transition-colors duration-200">
+    <div className="p-4 theme-surface w-full h-full flex flex-col">
       {/* Title with Tooltip */}
       <div className="flex items-center">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+        <h2 className="text-2xl font-semibold mb-4 theme-text-primary">
           <Tippy content={ElementDescriptions["Node Utilization"]}>
             <span className="cursor-help">Queue Availability ⓘ</span>
           </Tippy>
@@ -63,20 +69,20 @@ const ClusterInfo = () => {
       </div>
         
       <div className="overflow-auto w-full h-full flex-grow">
-        <table className="table-auto w-full border-collapse border border-gray-300 dark:border-gray-600">
+        <table className="table-auto w-full border-collapse border theme-border">
           <thead>
-            <tr className="bg-gray-200 dark:bg-gray-700">
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+            <tr className="theme-table-header">
+              <th className="border theme-border px-4 py-2 theme-text-primary">
                 <Tippy content="HPC queues define groups of nodes with specific job scheduling policies.">
                   <span className="cursor-help">Queue ⓘ</span>
                 </Tippy>
               </th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+              <th className="border theme-border px-4 py-2 theme-text-primary">
                 <Tippy content="CPU cores available vs. used in this queue.">
                   <span className="cursor-help">Core Usage (%) ⓘ</span>
                 </Tippy>
 	        </th>
-	        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+	        <th className="border theme-border px-4 py-2 theme-text-primary">
                 <Tippy content="Nodes available vs. used in this queue.">
                   <span className="cursor-help">Node Usage (%)  ⓘ</span>
                 </Tippy>
@@ -101,8 +107,8 @@ const ClusterInfo = () => {
               );
 
               return (
-                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+    <tr key={index} className="theme-hover-surface transition-colors">
+                  <td className="border theme-border px-4 py-2 theme-text-primary">
 		    <Tippy content={
 	              <CustomTooltip content={
 			<>
@@ -116,12 +122,12 @@ const ClusterInfo = () => {
 		    </Tippy>
                   </td>
 	           
-		    <td className="border border-gray-300 dark:border-gray-600 px-4 py-4">	
+		    <td className="border theme-border px-4 py-4">	
                     <Tippy content={<CustomTooltip content={`Used: ${cpuUsed} / Total: ${cpuTotal} (${cpuPercentage}%)`} />} placement="top">
                       <div className="gap-x-4 items-center cursor-help">
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2 overflow-hidden">
+			<div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
                           <div
-                            className={`h-2.5 rounded-full ${cpuPercentage >= 75 ? 'bg-red-600' : cpuPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+	                            className={`h-2.5 rounded-full ${getProgressClass(cpuPercentage)}`}
                             style={{ width: `${Math.min(100, cpuPercentage)}%` }}
                           ></div>
                         </div>
@@ -129,12 +135,12 @@ const ClusterInfo = () => {
                     </Tippy>
                   </td>
 
-	            <td className="border border-gray-300 dark:border-gray-600 px-4 py-4">
+	            <td className="border theme-border px-4 py-4">
                     <Tippy content={<CustomTooltip content={`Used: ${nodesUsed} / Total: ${nodesTotal} (${nodesPercentage}%)`} />} placement="top">
                       <div className="gap-x-4 items-center cursor-help">
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2 overflow-hidden">
+			<div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
                           <div
-                            className={`h-2.5 rounded-full ${nodesPercentage >= 75 ? 'bg-red-600' : nodesPercentage >= 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+	                            className={`h-2.5 rounded-full ${getProgressClass(nodesPercentage)}`}
                             style={{ width: `${Math.min(100, nodesPercentage)}%` }}
                           ></div>
                         </div>

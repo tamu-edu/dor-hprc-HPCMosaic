@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Spinner from "../framework/Spinner";
 import { get_base_url } from "../utils/api_config.js";
+import { useTheme } from "../context/ThemeContext";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 
@@ -9,6 +10,7 @@ const Announcement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const baseUrl = get_base_url();
+  const { theme } = useTheme();
 
   // Fetch message of the day
   useEffect(() => {
@@ -29,16 +31,22 @@ const Announcement = () => {
   if (!announcement) return null;
 
   return (
-      <div className="w-full p-4 pb-20 bg-red-50 dark:bg-red-900/20 border-2 border-red-600 dark:border-red-700 border-l-8 rounded-lg shadow-md mb-6">
+      <div
+        className="w-full p-4 pb-20 border-2 border-l-8 rounded-lg shadow-md mb-6"
+        style={{
+          backgroundColor: theme.colors.alertBg,
+          borderColor: theme.colors.alertBorder
+        }}
+      >
         <div className="flex items-center">
-          <h2 className="text-2xl font-bold text-red-800 dark:text-red-300">
+          <h2 className="text-2xl font-bold" style={{ color: theme.colors.alertText }}>
             <Tippy content="Message of the Day from System Administrators">
               <span className="cursor-help">Announcements</span>
             </Tippy>
           </h2>
         </div>
     
-        <ul className="mt-3 list-disc pl-5 text-red-900 dark:text-red-100 text-lg">
+        <ul className="mt-3 list-disc pl-5 text-lg" style={{ color: theme.colors.alertText }}>
           {announcement.messages.map((msg, i) => (
             <li key={i} className="whitespace-pre-wrap">
               {msg}
@@ -47,7 +55,7 @@ const Announcement = () => {
         </ul>
     
         {announcement.updated_at && (
-          <h5 className="text-base text-red-700 dark:text-red-400 mt-4">
+          <h5 className="text-base mt-4" style={{ color: theme.colors.alertTextSecondary }}>
             Last updated: {announcement.updated_at}
           </h5>
         )}

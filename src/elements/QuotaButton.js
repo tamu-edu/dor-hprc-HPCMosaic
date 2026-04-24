@@ -142,8 +142,8 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
       disclaimerText={disclaimerText}
       defaultValues={defaultValues}
       buttonStyle={{
-        backgroundColor: 'maroon',
-        color: 'white',
+        backgroundColor: 'var(--mosaic-color-primary)',
+        color: 'var(--mosaic-color-primary-text)',
         border: 'none',
         padding: disk ? '6px 12px' : '8px 16px',
         borderRadius: '4px',
