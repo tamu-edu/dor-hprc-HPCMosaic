@@ -830,6 +830,7 @@ def request_quota():
         new_quota = request.form.get('newQuota')
         new_file_limit = request.form.get('newFileLimit')
         request_type = request.form.get('requestType')
+        pi_name = request.form.get("piName")
         pi_awareness = request.form.get('piAwareness')
         stored_data = request.form.get('storedData')
         research_description = request.form.get('researchDescription')
@@ -843,7 +844,7 @@ def request_quota():
         account_number = request.form.get('account', '')
 
         user = os.environ.get('USER', 'unknown')
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         subject = f"[{cluster_name}] Quota Request: {user}"
 
         if is_buy_request == 'Yes':
@@ -948,7 +949,8 @@ What is your long-term storage plan for your data after the quota increase expir
                 'has_previous': has_previous,
                 'request_until': expiration_date,
                 'account_number': account_number if buyin_status == 'yes' else '',
-                'email': get_user_email(user)
+                'email': get_user_email(user),
+                'project_pi': pi_name
             }
 
             logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
