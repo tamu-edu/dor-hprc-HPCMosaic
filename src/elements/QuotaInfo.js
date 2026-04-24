@@ -179,35 +179,26 @@ const QuotaInfo = () => {
                   {generate_file_explorer_path_for_disk(quota.disk)}
                 </td>
                 <td className="border theme-border px-4 py-4">
-                  <Tippy content={<CustomTooltip content={`Used: ${quota.disk_usage} / Total: ${quota.disk_limit}`} />} placement="top">
+                  <Tippy content={<CustomTooltip content={`Used: ${quota.disk_usage} / Total: ${quota.disk_limit} (${diskPercentage}%) `} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
-                      <p>{quota.disk_usage}/{quota.disk_limit}</p>
                       <div className="w-full theme-progress-track rounded-full h-2.5 mt-2">
-                        
-
                         <div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
-                          <div 
-	                            className={`h-2.5 rounded-full ${getProgressClass(diskPercentage)}`}
-                            style={{ width: `${Math.min(100, diskPercentage)}%` }}
-                          ></div>
+                          <div className={`h-2.5 rounded-full ${getProgressClass(diskPercentage)}`}
+                            style={{ width: `${Math.min(100, diskPercentage)}%` }}>
+		        </div>
                         </div>
-                         
                       </div>
-                      <p className={`${getColor(diskPercentage)} text-sm mt-1`}>{diskPercentage}%</p>
                     </div>
                   </Tippy>
                 </td>
                 <td className="border theme-border px-4 py-4">
-                  <Tippy content={<CustomTooltip content={`Used: ${quota.file_usage} / Total: ${quota.file_limit}`} />} placement="top">
+                  <Tippy content={<CustomTooltip content={`Used: ${quota.file_usage} / Total: ${quota.file_limit} (${filePercentage}%)`} />} placement="top">
                     <div className="gap-x-4 items-center cursor-help">
-                      <p>{quota.file_usage}/{quota.file_limit}</p>
                       <div className="w-full theme-progress-track rounded-full h-2.5 mt-2 overflow-hidden">
-                        <div 
-	                          className={`h-2.5 rounded-full ${getProgressClass(filePercentage)}`}
-                          style={{ width: `${Math.min(100, filePercentage)}%` }}
-                        ></div>
+                        <div className={`h-2.5 rounded-full ${getProgressClass(filePercentage)}`}
+                          style={{ width: `${Math.min(100, filePercentage)}%` }}>
+		        </div>
                       </div>
-                      <p className={`${getColor(filePercentage)} text-sm mt-1`}>{filePercentage}%</p>
                     </div>
                   </Tippy>
                 </td>

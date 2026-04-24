@@ -318,7 +318,7 @@ const Banner = ({ setRunTour }) => {
 
       {/* Header */}
       <BannerBackground>
-	<div className="flex justify-between w-full h-full items-center space-x-3 pr-1">
+	<div className="flex justify-between w-full h-full items-center space-x-3 pr-4">
 	  
           {/*Logo*/}
     <div className="hidden md:flex bg-white rounded-l-md h-full w-[130px] items-center justify-center overflow-hidden">
