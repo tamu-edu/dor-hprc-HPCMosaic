@@ -827,8 +827,6 @@ Requesting disk space: {new_quota}TB
 Requesting file limit: {new_file_limit}
 
 --- Justification ---
-PI Name: {pi_name}
-
 Is the PI aware of this request?
 {pi_awareness}
 
@@ -850,8 +848,6 @@ Comment: {comment}
         # First attempt: send to HPRC Bot
         try:
             combined_justification = f"""
-PI Name: {pi_name}
-
 Is the PI aware of this request?
 {pi_awareness}
 
@@ -898,7 +894,8 @@ What is your long-term storage plan for your data after the quota increase expir
                 'has_previous': has_previous,
                 'request_until': expiration_date,
                 'account_number': account_number if buyin_status == 'yes' else '',
-                'email': get_user_email(user)
+                'email': get_user_email(user),
+                'project_pi': pi_name
             }
 
             logging.info(f"Sending quota request to HPRC Bot at {hprcbot_route}")
