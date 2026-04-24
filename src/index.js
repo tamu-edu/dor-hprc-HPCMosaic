@@ -8,7 +8,7 @@ import { createRoot } from "react-dom/client";
 import ChatbotComponent from "./framework/ChatbotComponent";
 import { Toaster } from "react-hot-toast";
 import { useChatbotVisibility, ChatbotVisibilityProvider } from "./framework/ChatbotVisibilityContext"; // Import the context provider
-import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeProvider, initializeTheme } from "./context/ThemeContext";
 
 const App = () => {
   const [runTour, setRunTour] = useState(false);
@@ -102,4 +102,5 @@ const EnhancedChatbotComponent = () => {
 };
 
 const root = createRoot(document.getElementById("root"));
+initializeTheme();
 root.render(<App />);

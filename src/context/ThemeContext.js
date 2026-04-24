@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useMemo
+} from 'react';
 
 const ThemeContext = createContext();
 
@@ -182,17 +190,76 @@ const themes = {
 
 const isThemeName = (themeName) => Object.prototype.hasOwnProperty.call(themes, themeName);
 
+const themeColorTokens = Array.from(
+  new Set(
+    Object.values(themes).flatMap((themeDefinition) => Object.keys(themeDefinition.colors))
+  )
+);
+
+const getCssVariableName = (token) =>
+  `--mosaic-color-${token.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
+
+const canUseDOM = () => typeof window !== 'undefined' && typeof document !== 'undefined';
+
+const getStorage = () => {
+  if (!canUseDOM()) {
+    return null;
+  }
+
+  try {
+    return window.localStorage;
+  } catch (error) {
+    console.warn('Theme storage is unavailable:', error);
+    return null;
+  }
+};
+
 const getStoredThemeName = () => {
-  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const storage = getStorage();
+  const savedTheme = storage?.getItem(THEME_STORAGE_KEY);
   return isThemeName(savedTheme) ? savedTheme : DEFAULT_THEME_NAME;
 };
 
 const applyThemeVariables = (root, activeTheme) => {
-  Object.entries(activeTheme.colors).forEach(([token, value]) => {
-    const cssVarName = `--mosaic-color-${token.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
+  themeColorTokens.forEach((token) => {
+    const cssVarName = getCssVariableName(token);
+    const value = activeTheme.colors[token];
+
+    if (value === undefined) {
+      root.style.removeProperty(cssVarName);
+      return;
+    }
+
     root.style.setProperty(cssVarName, value);
   });
 };
+
+const persistThemeName = (themeName) => {
+  const storage = getStorage();
+  storage?.setItem(THEME_STORAGE_KEY, themeName);
+};
+
+const setThemeAttribute = (root, themeName) => {
+  root.setAttribute('data-theme', themeName);
+};
+
+const resolveTheme = (themeName) => themes[themeName] || themes[DEFAULT_THEME_NAME];
+
+export const initializeTheme = () => {
+  if (!canUseDOM()) {
+    return DEFAULT_THEME_NAME;
+  }
+
+  const themeName = getStoredThemeName();
+  const root = document.documentElement;
+
+  applyThemeVariables(root, resolveTheme(themeName));
+  setThemeAttribute(root, themeName);
+
+  return themeName;
+};
+
+const useIsomorphicLayoutEffect = canUseDOM() ? useLayoutEffect : useEffect;
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
@@ -206,13 +273,19 @@ export const ThemeProvider = ({ children }) => {
   // Check localStorage or default to the configured default theme.
   const [themeName, setThemeName] = useState(getStoredThemeName);
 
-  const theme = themes[themeName] || themes[DEFAULT_THEME_NAME];
+  const theme = resolveTheme(themeName);
 
   // Apply token CSS variables globally and persist the selected theme.
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
+    if (!canUseDOM()) {
+      return;
+    }
+
     const root = document.documentElement;
+
     applyThemeVariables(root, theme);
-    localStorage.setItem(THEME_STORAGE_KEY, themeName);
+    setThemeAttribute(root, themeName);
+    persistThemeName(themeName);
   }, [theme, themeName]);
 
   const setTheme = useCallback((nextThemeName) => {
@@ -226,15 +299,15 @@ export const ThemeProvider = ({ children }) => {
     return true;
   }, []);
 
+  const value = useMemo(() => ({
+    theme,
+    themeName,
+    setTheme,
+    themes
+  }), [theme, themeName, setTheme]);
+
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        themeName,
-        setTheme,
-        themes
-      }}
-    >
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
