@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MdViewQuilt, MdArrowDropDown, MdDelete, MdEdit, MdRefresh, MdCheck } from "react-icons/md";
 import config from "../../config.yml";
 import { toast } from "react-hot-toast";
@@ -20,6 +20,19 @@ const LayoutUtility = ({
     const [actionInProgress, setActionInProgress] = useState(null);
     const [localLayouts, setLocalLayouts] = useState(layouts);
     const baseUrl = get_base_url();
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+    	const handleClickOutside = (e) => {
+	    if (containerRef.curret && !containerRef.current.contains(e.target)) {
+	    	setIsOpen(false);
+	    }
+	};
+	
+	document.addEventListener('mousedown', handleClickOutside);
+
+	return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [setIsOpen]);
 
     // Update local layouts when parent layouts change
     useEffect(() => {
@@ -254,7 +267,7 @@ const LayoutUtility = ({
     };
 
     return (
-        <div className="relative inline-block">
+        <div className="relative inline-block" ref={containerRef}>
             {isOpen && !loadingLayouts && (
                 <div className="absolute right-0 mt-2 w-64 theme-surface border theme-border rounded-lg shadow-lg z-10">
                     <div className="flex justify-between items-center px-4 py-2 border-b theme-border">

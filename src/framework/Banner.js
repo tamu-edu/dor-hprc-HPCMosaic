@@ -418,21 +418,6 @@ const Banner = ({ setRunTour }) => {
                       )}
 	            </Menu.Item>
 
-                    {/*Give Feedback*/}
-	            <Menu.Item>
-	              {({ active }) => (
-			<a
-			  href="https://forms.gle/7RwxdFgXVamGVVss8"
-			  target="_blank"
-                          rel="noopener noreferrer"
-                          className={`${active ? 'theme-surface-hover' : ''} flex w-full px-4 py-2 text-sm text-left theme-text-secondary items-center`}
-                        >
-                          <MdFeedback className="text-lg mr-2 text-green-600" />
-                          Give Feedback
-                        </a>
-                      )}
-                    </Menu.Item>
-
 	          </div>
 	        </Menu.Items>
 	      </Transition>
@@ -506,6 +491,24 @@ const Banner = ({ setRunTour }) => {
             </div>
         </div>
       </LayoutLockProvider>
+
+      {/* Footer */}
+      <footer className="mt-4 py-4 px-6 border-t theme-border text-sm theme-text-muted flex flex-wrap justify-between items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+          <span className="font-semibold theme-text-secondary">HPCMosaic Dashboard &mdash; Texas A&amp;M University</span>
+          <span className="hidden sm:inline theme-text-muted">|</span>
+          <span>Developed by the Fishbowl Student Helpdesk, HPRC</span>
+        </div>
+        <div className="flex items-center gap-5">
+          <a href="mailto:help@hprc.tamu.edu" className="theme-link hover:underline">help@hprc.tamu.edu</a>
+          <a href="https://github.com/tamu-edu/dor-hprc-HPCMosaic" target="_blank" rel="noopener noreferrer" className="theme-link hover:underline">GitHub</a>
+          <a href="https://github.com/tamu-edu/dor-hprc-HPCMosaic/graphs/contributors" target="_blank" rel="noopener noreferrer" className="theme-link hover:underline">Contributors</a>
+          <a href="https://forms.gle/7RwxdFgXVamGVVss8" target="_blank" rel="noopener noreferrer" className="theme-link hover:underline flex items-center gap-1">
+            <MdFeedback className="text-base mr-1" />
+            Give Feedback
+          </a>
+        </div>
+      </footer>
 
       {/* Development Disclaimer */}
       {/*

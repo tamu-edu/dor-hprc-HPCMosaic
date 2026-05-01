@@ -308,7 +308,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         drop(node);
         gridRef.current = node;
       }}
-      className={`max-w-full h-auto p-4 relative ${isOver ? "theme-selected" : ""}`}
+      className={`max-w-full h-auto p-0 relative ${isOver ? "theme-selected" : ""}`}
     >
       {/* Toast Notification Container */}
       <ToastContainer />
