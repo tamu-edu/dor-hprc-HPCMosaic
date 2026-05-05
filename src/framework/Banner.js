@@ -466,6 +466,13 @@ const Banner = ({ setRunTour }) => {
 	</div>
       </BannerBackground>
 
+      {layoutUtilityOpen && (
+        <div
+	      className = "fixed inset-0 z-[9]"
+	      onClick={() => setLayoutUtilityOpen(false)}
+	/>
+      )}
+
       <LayoutUtility
         layouts={layouts}
         setLayouts={setLayouts}
