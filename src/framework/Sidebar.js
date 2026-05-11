@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import CardConfig from "./CardConfig";
 import { MdSearch, MdFilterList, MdGridView, MdViewList } from "react-icons/md";
 
@@ -12,17 +12,6 @@ const Sidebar = () => {
     user: true
   });
 
-  // Categorize components for better organization
-  const componentCategories = {
-    "Node Utilization": "system",
-    "PyVenvManager": "system",
-    "Quota Info": "system",
-    "User Groups": "user",
-    "Accounts": "user",
-    "User Jobs": "user",
-    "AcknowledgementForm": "user"
-  };
-
   const list = Object.keys(CardConfig);
 
   // Filter elements based on search and category filters
@@ -31,7 +20,7 @@ const Sidebar = () => {
                          CardConfig[name].title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          CardConfig[name].description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const category = componentCategories[name] || "analytics";
+    const category = CardConfig[name].category ?? "analytics";
     const matchesCategory = categories.all || categories[category];
 
     return matchesSearch && matchesCategory;

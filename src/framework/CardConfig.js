@@ -22,7 +22,10 @@ const CardConfig = {
                 icon={<AiOutlineCluster size={30} />} />
         )),
         chartComponent: ClusterInfo,
+	category: "system",
+	minW: 3, minH: 6
     },
+
     PyVenvManager: {
         cardComponent: React.memo((props) => (
             <Card {...props} name="PyVenvManager" title="Python Venv Manager"
@@ -30,23 +33,10 @@ const CardConfig = {
                 icon={<AiOutlineCode size={30} />} />
         )),
         chartComponent: PyVenvManager,
-        // defaultProps: { w: 2, h: 2 },
+	category: "system",
+        minW: 4, minH: 10
     },
-    // Chatbot: {
-    //     cardComponent: React.memo((props) => <Card {...props} title="Chatbot" image="/images/chatbot.png" />),
-    //     chartComponent: Chatbot,
-    //     // defaultProps: { w: 1, h: 2 },
-    // },
-    // Composer: {
-    //     cardComponent: React.memo((props) => <Card {...props} title="Composer" image="/images/chatbot.png" />),
-    //     chartComponent: Composer,
-    //     // defaultProps: { w: 1, h: 2 },
-    // },
-    // "Quota Button": {
-    //     cardComponent: React.memo((props) => <Card {...props} title="Quota Button" image="/images/chatbot.png" />),
-    //     chartComponent: QuotaButton,
-    //     // defaultProps: { w: 1, h: 2 },
-    // },
+
     "Quota Info": {
         cardComponent: React.memo((props) => (
             <Card {...props} name="Quota Info" title="Quota Information"
@@ -54,7 +44,10 @@ const CardConfig = {
                 icon={<AiOutlinePieChart size={30} />} />
         )),
         chartComponent: QuotaInfo,
+	category: "system",
+        minW: 3, minH: 8
     },
+
     "User Groups": {
         cardComponent: React.memo((props) => (
             <Card {...props} name="User Groups" title="User Groups"
@@ -62,7 +55,10 @@ const CardConfig = {
                 icon={<AiOutlineUser size={30} />} />
         )),
         chartComponent: UserGroups,
+	category: "user",
+        minW: 3, minH: 6
     },
+
     Accounts: {
         cardComponent: React.memo((props) => (
             <Card {...props} name="Accounts" title="Accounts"
@@ -70,7 +66,10 @@ const CardConfig = {
                 icon={<AiOutlineDatabase size={30} />} />
         )),
         chartComponent: Accounts,
+	category: "user",
+        minW: 5, minH: 8
     },
+
     "User Jobs": {
         cardComponent: React.memo((props) => (
             <Card {...props} name="User Jobs" title="User Jobs"
@@ -78,7 +77,10 @@ const CardConfig = {
                 icon={<AiOutlineProject size={30} />} />
         )),
         chartComponent: UserJobs,
+	category: "user",
+        minW: 3, minH: 6
     },
+
     AcknowledgementForm: {
         cardComponent: React.memo((props) => (
             <Card {...props} name="AcknowledgementForm" title="Acknowledgement Form"
@@ -86,7 +88,10 @@ const CardConfig = {
                 icon={<AiOutlineCode size={30} />} />
         )),
         chartComponent: AcknowledgementForm,
+	category: "user",
+        minW: 3, minH: 6
     },
+
     "Announcement": {
         cardComponent: React.memo((props) => (
             <Card {...props} name="Announcement" title="Announcement"
@@ -95,6 +100,8 @@ const CardConfig = {
             />
         )),
         chartComponent: Announcement,
+	category: "analytics",
+        minW: 5, minH: 4
     },
 };
 
