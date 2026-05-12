@@ -4,11 +4,10 @@ import "chart.js/auto";
 import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Import Tippy styles
-import ElementDescriptions from "../framework/ElementDescriptions";
 import Spinner from "../framework/Spinner";
 import { get_base_url } from "../utils/api_config.js"
 
-const ClusterInfo = () => {
+const ClusterInfo = ({ description }) => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [view, setView] = useState("chart");
@@ -62,7 +61,7 @@ const ClusterInfo = () => {
       {/* Title with Tooltip */}
       <div className="flex items-center">
         <h2 className="text-2xl font-semibold mb-4 theme-text-primary">
-          <Tippy content={ElementDescriptions["Node Utilization"]}>
+          <Tippy content={description}>
             <span className="cursor-help">Queue Availability ⓘ</span>
           </Tippy>
         </h2>

@@ -2,11 +2,10 @@ import React, { useEffect, useState } from "react";
 import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
-import ElementDescriptions from "../framework/ElementDescriptions";
 import Spinner from "../framework/Spinner";
 import { get_base_url } from "../utils/api_config.js"
 
-const ProjectInfo = () => {
+const ProjectInfo = ({ description }) => {
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -78,7 +77,7 @@ const ProjectInfo = () => {
       {/* Title with Tooltip */}
       <div className="flex items-center">
         <h2 className="text-2xl font-semibold mb-4 theme-text-primary">
-          <Tippy content={ElementDescriptions.Accounts}>
+          <Tippy content={description}>
             <span className="cursor-help">Project Information ⓘ</span>
           </Tippy>
         </h2>

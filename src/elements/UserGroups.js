@@ -3,13 +3,12 @@ import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Import Tippy styles
 import Spinner from "../framework/Spinner";
-import ElementDescriptions from "../framework/ElementDescriptions";
 import GroupButton from "./GroupButton"; // Import GroupButton component
 
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
 import { get_base_url } from "../utils/api_config.js"
 
-const UserGroups = () => {
+const UserGroups = ({ description }) => {
   const [groups, setGroups] = useState([]);
   const [quotas, setQuotas] = useState([]);
   const [error, setError] = useState(null);
@@ -69,7 +68,7 @@ const UserGroups = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
           <h2 className="text-2xl font-semibold theme-text-primary">
-            <Tippy content={ElementDescriptions["User Groups"]}>
+            <Tippy content={ description }>
               <span className="cursor-help">User Groups ⓘ</span>
             </Tippy>
           </h2>

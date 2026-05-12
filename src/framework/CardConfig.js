@@ -9,100 +9,84 @@ import Accounts from "../elements/Accounts";
 import UserJobs from "../elements/UserJobs";
 import QuotaButton from '../elements/QuotaButton';
 import Composer from '../elements/Composer';
-import ElementDescriptions from "./ElementDescriptions"; // Import descriptions
 import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
 import Announcement from '../elements/Announcement';
 
+const makeCard = (name, icon) =>
+	React.memo(({ description, category, ...props }) => 
+		<Card {...props} name={name} title={name} description={description} icon={icon} />
+	);
+
 const CardConfig = {
     "Node Utilization": {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="Node Utilization" title="Node Utilization"
-                description={ElementDescriptions["Node Utilization"]}
-                icon={<AiOutlineCluster size={30} />} />
-        )),
-        chartComponent: ClusterInfo,
+	description: "Displays the current and available computing resources across nodes.",
+	icon: <AiOutlineCluster size={30}/>,
+	chartComponent: ClusterInfo,
 	category: "system",
 	minW: 3, minH: 6
     },
 
-    PyVenvManager: {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="PyVenvManager" title="Python Venv Manager"
-                description={ElementDescriptions.PyVenvManager}
-                icon={<AiOutlineCode size={30} />} />
-        )),
-        chartComponent: PyVenvManager,
+    "Python Venv Manager": {
+        description: "Manage Python virtual environments directly from the dashboard.",
+        icon: <AiOutlineCluster size={30}/>,
+	chartComponent: PyVenvManager,
 	category: "system",
         minW: 4, minH: 10
     },
 
-    "Quota Info": {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="Quota Info" title="Quota Information"
-                description={ElementDescriptions["Quota Info"]}
-                icon={<AiOutlinePieChart size={30} />} />
-        )),
+    "Quota Information": {
+        description: "Shows disk quota usage and links for users and groups.",
+        icon: <AiOutlineCluster size={30}/>,
         chartComponent: QuotaInfo,
 	category: "system",
         minW: 3, minH: 8
     },
 
     "User Groups": {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="User Groups" title="User Groups"
-                description={ElementDescriptions["User Groups"]}
-                icon={<AiOutlineUser size={30} />} />
-        )),
+        description: "Lists user groups and their associated storage paths.",
+        icon: <AiOutlineCluster size={30}/>,
         chartComponent: UserGroups,
 	category: "user",
         minW: 3, minH: 6
     },
 
-    Accounts: {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="Accounts" title="Accounts"
-                description={ElementDescriptions.Accounts}
-                icon={<AiOutlineDatabase size={30} />} />
-        )),
-        chartComponent: Accounts,
+    "Accounts": {
+        description: "Provides information on user accounts and their roles.",
+        icon: <AiOutlineCluster size={30}/>,
+	chartComponent: Accounts,
 	category: "user",
         minW: 5, minH: 8
     },
 
     "User Jobs": {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="User Jobs" title="User Jobs"
-                description={ElementDescriptions["User Jobs"]}
-                icon={<AiOutlineProject size={30} />} />
-        )),
-        chartComponent: UserJobs,
+        description: "Displays currently running and queued jobs for the user.",
+        icon: <AiOutlineCluster size={30}/>,
+	chartComponent: UserJobs,
 	category: "user",
         minW: 3, minH: 6
     },
 
-    AcknowledgementForm: {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="AcknowledgementForm" title="Acknowledgement Form"
-                description={ElementDescriptions["Acknowledgement Form"]}
-                icon={<AiOutlineCode size={30} />} />
-        )),
-        chartComponent: AcknowledgementForm,
+    "Acknowledgement Form": {
+        description: "Submit acknowledgements for papers that used HPRC resources.",
+        icon: <AiOutlineCluster size={30}/>,
+	chartComponent: AcknowledgementForm,
 	category: "user",
         minW: 3, minH: 6
     },
 
     "Announcement": {
-        cardComponent: React.memo((props) => (
-            <Card {...props} name="Announcement" title="Announcement"
-                description={ElementDescriptions["Announcement"]}
-                icon={<AiOutlineProject size={30} />}
-            />
-        )),
-        chartComponent: Announcement,
+        description: "The message of the day and other relevant notification popups.",
+        icon: <AiOutlineCluster size={30}/>,
+	chartComponent: Announcement,
 	category: "analytics",
         minW: 5, minH: 4
     },
 };
+
+// Attach cardComponent to each entry using the key as both name and title.
+Object.entries(CardConfig).forEach(([name, entry]) => {
+    entry.cardComponent = makeCard(name, entry.icon);
+});
 
 export default CardConfig;

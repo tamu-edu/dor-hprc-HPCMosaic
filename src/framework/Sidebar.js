@@ -115,10 +115,10 @@ const Sidebar = () => {
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full justify-items-center">
             {filteredList.map((name, id) => {
-              const { cardComponent: CardComponent } = CardConfig[name];
+              const { cardComponent: CardComponent, description, category } = CardConfig[name];
               return (
                 <div key={id} className="w-full transform transition-transform hover:scale-105">
-                  <CardComponent />
+                  <CardComponent description={description} category={category}/>
                 </div>
               );
             })}
@@ -126,10 +126,10 @@ const Sidebar = () => {
         ) : (
           <div className="flex flex-col space-y-4 w-full">
             {filteredList.map((name, id) => {
-              const { cardComponent: CardComponent } = CardConfig[name];
+              const { cardComponent: CardComponent, description, category } = CardConfig[name];
               return (
                 <div key={id} className="w-full transition-colors theme-hover-surface" style={{ borderRadius: "0.375rem" }}>
-                  <CardComponent />
+                  <CardComponent description={description} category={category}/>
                 </div>
               );
             })}

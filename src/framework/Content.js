@@ -28,9 +28,9 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
     { name: "Announcement", i: uuidv4(), x: 0, y: 0, w: 10, h: 6 },
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
-    { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
-    { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
-    { name: "AcknowledgementForm", i: uuidv4(), x: 5, y: 25, w: 5, h: 8 },
+    { name: "Python Venv Manager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
+    { name: "Quota Information", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
+    { name: "Acknowledgement Form", i: uuidv4(), x: 5, y: 25, w: 5, h: 8 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 12 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
   ];
@@ -240,7 +240,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
   if (!config) return <div className = "text-center text-red-500">Unknown widget: {ele.name}</div>;
   const ChartComponent = config.chartComponent;
 
-  return <ChartComponent />;
+  return <ChartComponent description = {config.description} category={config.category} />;
   };
 
   // Create a combined layout that includes both regular items and the placeholder

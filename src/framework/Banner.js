@@ -238,8 +238,8 @@ const Banner = ({ setRunTour }) => {
     const defaultView = [
       { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
       { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
-      { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
-      { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
+      { name: "Python Venv Manager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
+      { name: "Quota Information", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
       { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
       { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
     ];

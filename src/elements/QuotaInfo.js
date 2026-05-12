@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css"; // Default tooltip styling
-import ElementDescriptions from "../framework/ElementDescriptions";
 import Spinner from "../framework/Spinner";
 import QuotaButton from "./QuotaButton"; // Import QuotaButton component
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
 import { useTheme } from "../context/ThemeContext";
 import { get_base_url } from "../utils/api_config.js"
 
-const QuotaInfo = () => {
+const QuotaInfo = ({ description }) => {
   const [quotaData, setQuotaData] = useState([]);
   const [additionalText, setAdditionalText] = useState("");
   const [error, setError] = useState(null);
@@ -113,7 +112,7 @@ const QuotaInfo = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
           <h2 className="text-2xl font-semibold theme-text-primary">
-            <Tippy content={ElementDescriptions["Quota Info"]}>
+            <Tippy content={description}>
               <span className="cursor-help">Quota Information ⓘ</span>
             </Tippy>
           </h2>

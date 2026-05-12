@@ -35,7 +35,7 @@ const createCardPreview = (title, icon) => {
   return canvas.toDataURL();
 };
 
-const Card = ({ name, title, description, icon }) => {
+const Card = ({ name, title, description, icon, category }) => {
   const ref = useRef(null);
   const previewSrc = createCardPreview(title, icon);
   
@@ -93,10 +93,8 @@ const Card = ({ name, title, description, icon }) => {
         
         {/* Add badge/tag to show category */}
         <div className="absolute top-2 right-2 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-          {name.includes("User") ? "User" : 
-           name.includes("Node") || name.includes("PyVenv") || name.includes("Quota") ? "System" : 
-           "Analytics"}
-        </div>
+          {category ? category.charAt(0).toUpperCase()  + category.slice(1) : "Analytics"}
+	</div>
       </div>
     </>
   );
