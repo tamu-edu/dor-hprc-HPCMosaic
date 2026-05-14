@@ -4,11 +4,10 @@ import acknowledgementRequestSchema from '../composer/schemas/acknowledgementReq
 import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
-import ElementDescriptions from "../framework/ElementDescriptions";
 import { useTheme } from "../context/ThemeContext";
 import { get_base_url } from "../utils/api_config.js"
 
-const AcknowledgementForm = () => {
+const AcknowledgementForm = ({ description }) => {
   const baseUrl = config.production.dashboard_url;
   const { theme } = useTheme();
   const clusterName = (config.production.cluster_name || '').toLowerCase();
@@ -102,7 +101,7 @@ const AcknowledgementForm = () => {
   return (
     <div className="p-2 theme-surface rounded-lg overflow-auto w-full h-full">
       <h2 className="text-lg font-semibold mb-2 theme-text-primary">
-        <Tippy content={ElementDescriptions["Acknowledgement Form for Papers using HPRC Resources"]}>
+        <Tippy content={ description }>
           <span className="cursor-help">Acknowledging HPRC ⓘ</span>
         </Tippy>
       </h2>

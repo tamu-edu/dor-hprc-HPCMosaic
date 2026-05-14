@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import config from "../../config.yml";
 import Spinner from "../framework/Spinner";
-import ElementDescriptions from "../framework/ElementDescriptions";
 import "tippy.js/dist/tippy.css"; // Default styling for tooltips
 import Tippy from "@tippyjs/react";
 import { get_base_url } from "../utils/api_config.js"
 import { generate_file_explorer_path_for_jobs } from '../utils/generate_filepath';
 
-const UserJobs = () => {
+const UserJobs = ({ description }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCanceling, setIsCanceling] = useState(null);
   const baseUrl = get_base_url();
+
   // Fetch jobs for the current user
   useEffect(() => {
     fetch(`${baseUrl}/api/jobs`)
@@ -160,7 +160,7 @@ const UserJobs = () => {
       {/* Title with Tooltip */}
       <div className="flex items-center">
         <h2 className="text-2xl font-semibold mb-4 theme-text-primary">
-          <Tippy content={ElementDescriptions["User Jobs"]}>
+          <Tippy content={ description }>
             <span className="cursor-help">Your Jobs ⓘ</span>
           </Tippy>
         </h2>

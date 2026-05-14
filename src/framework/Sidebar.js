@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import CardConfig from "./CardConfig";
 import { MdSearch, MdFilterList, MdGridView, MdViewList } from "react-icons/md";
 
@@ -12,17 +12,6 @@ const Sidebar = () => {
     user: true
   });
 
-  // Categorize components for better organization
-  const componentCategories = {
-    "Node Utilization": "system",
-    "PyVenvManager": "system",
-    "Quota Info": "system",
-    "User Groups": "user",
-    "Accounts": "user",
-    "User Jobs": "user",
-    "AcknowledgementForm": "user"
-  };
-
   const list = Object.keys(CardConfig);
 
   // Filter elements based on search and category filters
@@ -31,7 +20,7 @@ const Sidebar = () => {
                          CardConfig[name].title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          CardConfig[name].description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const category = componentCategories[name] || "analytics";
+    const category = CardConfig[name].category ?? "analytics";
     const matchesCategory = categories.all || categories[category];
 
     return matchesSearch && matchesCategory;
@@ -126,10 +115,10 @@ const Sidebar = () => {
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full justify-items-center">
             {filteredList.map((name, id) => {
-              const { cardComponent: CardComponent } = CardConfig[name];
+              const { cardComponent: CardComponent, description, category } = CardConfig[name];
               return (
                 <div key={id} className="w-full transform transition-transform hover:scale-105">
-                  <CardComponent />
+                  <CardComponent description={description} category={category}/>
                 </div>
               );
             })}
@@ -137,10 +126,10 @@ const Sidebar = () => {
         ) : (
           <div className="flex flex-col space-y-4 w-full">
             {filteredList.map((name, id) => {
-              const { cardComponent: CardComponent } = CardConfig[name];
+              const { cardComponent: CardComponent, description, category } = CardConfig[name];
               return (
                 <div key={id} className="w-full transition-colors theme-hover-surface" style={{ borderRadius: "0.375rem" }}>
-                  <CardComponent />
+                  <CardComponent description={description} category={category}/>
                 </div>
               );
             })}

@@ -142,7 +142,7 @@
    },
 
       "piName":{
-         "type":"textarea",
+         "type":"text",
          "label": "Who is the PI for this project?",
          "name": "piName",
          "required": true

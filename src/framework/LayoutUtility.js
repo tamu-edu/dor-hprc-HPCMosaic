@@ -20,7 +20,7 @@ const LayoutUtility = ({
     const [actionInProgress, setActionInProgress] = useState(null);
     const [localLayouts, setLocalLayouts] = useState(layouts);
     const baseUrl = get_base_url();
-
+	
     // Update local layouts when parent layouts change
     useEffect(() => {
         setLocalLayouts(layouts);

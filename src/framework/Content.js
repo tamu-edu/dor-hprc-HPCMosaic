@@ -9,44 +9,16 @@ import { v4 as uuidv4 } from "uuid";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Import components
-import PyVenvManager from "../elements/PyVenvManager";
-import ClusterInfo from "../elements/ClusterInfo";
-import UserJobs from "../elements/UserJobs";
-import Chatbot from "../elements/Chatbot";
-import QuotaInfo from "../elements/QuotaInfo";
-import UserGroups from "../elements/UserGroups";
-import Accounts from "../elements/Accounts";
-import Composer from "../elements/Composer";
-import QuotaButton from "../elements/QuotaButton";
-import AcknowledgementForm from "../elements/AcknowledgementForm";
-import Announcement from "../elements/Announcement";
+import CardConfig from "./CardConfig"
 import { useTheme } from "../context/ThemeContext";
 
 const ReactGridLayout = WidthProvider(RGL);
 
 // Component-specific minimum size configurations
 const getMinSize = (componentName) => {
-  // Default minimums if no specific values are set
-  const defaultMin = { minW: 3, minH: 5 };
+  const config = CardConfig[componentName];
 
-  // Component-specific minimum sizes
-  const componentMinSizes = {
-    "Accounts": { minW: 5, minH: 8 },
-    "Node Utilization": { minW: 3, minH: 6 },
-    "PyVenvManager": { minW: 4, minH: 10 },
-    "Quota Info": { minW: 3, minH: 8 },
-    "User Groups": { minW: 3, minH: 6 },
-    "User Jobs": { minW: 3, minH: 6 },
-    "Button Testing": { minW: 2, minH: 2 },
-    "Composer": { minW: 2, minH: 2 },
-    "Chatbot": { minW: 4, minH: 8 },
-    "Quota Button": { minW: 2, minH: 2 },
-    "AcknowledgementForm": { minW: 3, minH: 6 },
-    "Announcement": { minW: 5, minH: 4 },
-  };
-
-  return componentMinSizes[componentName] || defaultMin;
+  return config ? { minW: config.minW ?? 3, minH: config.minH ?? 5} : {minW: 3, minH: 5};
 };
 
 const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
@@ -56,9 +28,9 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
     { name: "Announcement", i: uuidv4(), x: 0, y: 0, w: 10, h: 6 },
     { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
     { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
-    { name: "PyVenvManager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
-    { name: "Quota Info", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
-    { name: "AcknowledgementForm", i: uuidv4(), x: 5, y: 25, w: 5, h: 8 },
+    { name: "Python Venv Manager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
+    { name: "Quota Information", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
+    { name: "Acknowledgement Form", i: uuidv4(), x: 5, y: 25, w: 5, h: 8 },
     { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 12 },
     { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
   ];
@@ -262,32 +234,13 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 
   // Function to render correct charts
   const renderChart = (ele) => {
-    switch (ele.name) {
-      case "Node Utilization":
-        return <ClusterInfo />;
-      case "User Jobs":
-        return <UserJobs />;
-      case "PyVenvManager":
-        return <PyVenvManager />;
-      case "Chatbot":
-        return <Chatbot />;
-      case "Composer":
-        return <Composer />;
-      case "Quota Button":
-        return <QuotaButton />;
-      case "Quota Info":
-        return <QuotaInfo />;
-      case "User Groups":
-        return <UserGroups />;
-      case "Accounts":
-        return <Accounts />;
-      case "AcknowledgementForm":
-        return <AcknowledgementForm />;
-      case "Announcement":
-        return <Announcement />;
-      default:
-        return <div className="text-center text-red-500">Unknown Chart</div>;
-    }
+  
+  const config = CardConfig[ele.name];
+
+  if (!config) return <div className = "text-center text-red-500">Unknown widget: {ele.name}</div>;
+  const ChartComponent = config.chartComponent;
+
+  return <ChartComponent description = {config.description} category={config.category} />;
   };
 
   // Create a combined layout that includes both regular items and the placeholder
@@ -308,7 +261,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         drop(node);
         gridRef.current = node;
       }}
-      className={`max-w-full h-auto p-4 relative ${isOver ? "theme-selected" : ""}`}
+      className={`max-w-full h-auto p-0 relative ${isOver ? "theme-selected" : ""}`}
     >
       {/* Toast Notification Container */}
       <ToastContainer />

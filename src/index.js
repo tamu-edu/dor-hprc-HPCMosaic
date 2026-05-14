@@ -76,7 +76,7 @@ const App = () => {
               }
             }}
           />
-          <div className="px-3 py-4 sm:px-4 sm:py-6 md:p-10 min-h-screen theme-surface-alt">
+          <div className="px-2 py-2 md:p-2 min-h-screen theme-surface-alt">
 	    <SandboxGrid setRunTour={setRunTour} />
             <Toaster position="bottom-right" reverseorder={false} toastOptions={{ duration: 30000 }} />
             <EnhancedChatbotComponent />
