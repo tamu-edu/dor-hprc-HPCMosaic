@@ -9,6 +9,104 @@ import re
 import subprocess
 import logging
 
+PREFERENCES_FILENAME = "_preferences.json"
+
+
+def get_layouts_dir(user):
+    """Return the layouts directory path for a user, creating it if needed."""
+    path = f"/scratch/user/{user}/ondemand/layouts"
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def get_preferences_path(user):
+    """Return the path to the user's preferences file."""
+    return os.path.join(get_layouts_dir(user), PREFERENCES_FILENAME)
+
+
+def safe_int(value, default=None):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_float(value, default=None):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def parse_positive_int(value, default, maximum=None):
+    parsed = safe_int(value, default)
+    parsed = max(1, parsed)
+
+    if maximum:
+        parsed = min(parsed, maximum)
+
+    return parsed
+
+
+def percentage(used, limit):
+    if used is None or limit in (None, 0):
+        return None
+    return round((used / limit) * 100, 2)
+
+
+def parse_storage_to_mib(value):
+    match = re.fullmatch(r"\s*([\d.]+)\s*([KMGTPE]?)\s*", str(value or ""), re.IGNORECASE)
+    if not match:
+        return None
+
+    amount = safe_float(match.group(1))
+    if amount is None:
+        return None
+
+    multipliers = {
+        "": 1 / 1024,
+        "K": 1 / 1024,
+        "M": 1,
+        "G": 1024,
+        "T": 1024 * 1024,
+        "P": 1024 * 1024 * 1024,
+        "E": 1024 * 1024 * 1024 * 1024,
+    }
+    return amount * multipliers.get(match.group(2).upper(), 1)
+
+
+def parse_key_value_tokens(output):
+    values = {}
+
+    for token in output.split():
+        if "=" not in token:
+            continue
+
+        key, value = token.split("=", 1)
+        values[key] = value
+
+    return values
+
+
+def split_nonempty_lines(value):
+    return [line.strip() for line in str(value or "").splitlines() if line.strip()]
+
+
+def run_process_output(command, timeout=20):
+    result = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+        timeout=timeout,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip())
+
+    return result.stdout
+
+
 def get_user_email(username):
     """
     Resolve a cluster username to an institutional email address.
@@ -106,5 +204,4 @@ def run_command(command):
     except Exception as e:
         logging.error(f"Command error: {e}")
         raise RuntimeError(str(e))
-
 

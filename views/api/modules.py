@@ -50,33 +50,35 @@ def delete_env(envToDelete):
 
 @api.route('/get_py_versions', methods=['GET'])
 def get_py_versions():
-    output_file = "/tmp/captured-output.txt"
     try:
-        subprocess.run(
-            f"/sw/local/bin/toolchains | grep Python > {output_file}",
-            shell=True
+        result = subprocess.run(
+            ["/sw/local/bin/toolchains"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
         )
 
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() or result.stdout.strip()
+            return jsonify({"error": f"Command failed: {error_msg}"}), 500
+
         versions = {}
+        python_lines = [line for line in result.stdout.splitlines() if "Python" in line]
 
-        with open(output_file, "r") as f:
-            next(f)  # skip header line
+        for line in python_lines[1:]:
+            words = line.split()
 
-            for line in f:
-                words = line.split()
+            if len(words) < 7:
+                continue
 
-                if len(words) < 7:
-                    continue
+            py_version = words[6]
+            if py_version not in versions:
+                versions[py_version] = words[2]
 
-                py_version = words[6]
-                if py_version not in versions:
-                    versions[py_version] = words[2]
-
-        subprocess.run(f"rm {output_file}", shell=True)
         return jsonify(versions), 200
 
     except FileNotFoundError:
-        return jsonify({"error": "Error reading captured Python versions output file"}), 500
+        return jsonify({"error": "toolchains command not found"}), 500
     except Exception as e:
         return jsonify({"error": f"Unexpected error fetching Python versions: {str(e)}"}), 500
 
@@ -120,5 +122,4 @@ def create_venv():
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error creating venv: {str(e)}"}), 500
-
 
