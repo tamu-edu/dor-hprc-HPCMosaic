@@ -434,19 +434,19 @@ export const AccountsUsageSummaryCard = () => {
       {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
         accounts.length === 0 ? <div className={cardClasses.empty}>No account data</div> : (
           <div className="grid min-h-0 gap-2.5 transition-opacity">
-            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+            <div className="relative min-h-[57px]">
               {hasMultipleAccounts && (
-                <button type="button" onClick={showPreviousAccount} className={cardClasses.iconButton} aria-label="Previous account">
+                <button type="button" onClick={showPreviousAccount} className={cx(cardClasses.iconButton, "absolute left-0 top-1/2 -translate-y-1/2")} aria-label="Previous account">
                   <MdChevronLeft />
                 </button>
               )}
-              <div className="grid min-h-[57px] min-w-0 justify-items-center gap-1 text-center">
+              <div className={cx("grid min-h-[57px] min-w-0 justify-items-center gap-1 text-center", hasMultipleAccounts && "px-9")}>
                 <span className="text-card-10 font-bold uppercase text-mosaic-muted">Account number</span>
                 <strong className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-card-22 font-extrabold text-mosaic-primary">{activeAccount.account || "-"}</strong>
                 {activeAccount.default === "Y" && <em className="rounded-full bg-mosaic-success-bg px-[7px] py-[3px] text-card-10 not-italic font-extrabold uppercase text-mosaic-success">Default</em>}
               </div>
               {hasMultipleAccounts && (
-                <button type="button" onClick={showNextAccount} className={cardClasses.iconButton} aria-label="Next account">
+                <button type="button" onClick={showNextAccount} className={cx(cardClasses.iconButton, "absolute right-0 top-1/2 -translate-y-1/2")} aria-label="Next account">
                   <MdChevronRight />
                 </button>
               )}
