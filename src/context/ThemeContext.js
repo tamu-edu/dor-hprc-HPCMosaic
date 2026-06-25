@@ -7,103 +7,133 @@ import React, {
   useCallback,
   useMemo
 } from 'react';
+import config from "../../config.yml";
 
 const ThemeContext = createContext();
 
 const THEME_STORAGE_KEY = 'theme';
-const DEFAULT_THEME_NAME = 'light';
+const CARD_FONT_SIZE_STORAGE_KEY = 'cardFontSize';
+const FONT_FAMILY_STORAGE_KEY = 'dashboardFontFamily';
+const DEFAULT_THEME_NAME = 'dark';
+const DEFAULT_CARD_FONT_SIZE = 'normal';
+const DEFAULT_FONT_FAMILY_KEY = 'inter';
+
+const FALLBACK_FONT_FAMILIES = {
+  inter: {
+    label: 'Inter',
+    family: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  }
+};
+
+const cardFontSizes = {
+  small: {
+    label: 'Small',
+    scale: 0.98
+  },
+  normal: {
+    label: 'Normal',
+    scale: 1.08
+  },
+  large: {
+    label: 'Large',
+    scale: 1.18
+  }
+};
 
 const themes = {
   light: {
     label: 'Light',
     colors: {
-      appBg: '#f9fafb',
+      appBg: '#f6f7f9',
+      bannerColor: '#500000',
       surfaceBg: '#ffffff',
-      surfaceBgHover: '#f3f4f6',
-      textPrimary: '#111827',
-      textSecondary: '#6b7280',
-      textMuted: '#9ca3af',
+      surfaceBgHover: '#eef1f5',
+      textPrimary: '#172033',
+      textSecondary: '#4b5565',
+      textMuted: '#6b7280',
       textInverse: '#ffffff',
-      border: '#e5e7eb',
-      borderStrong: '#d1d5db',
-      tableHeaderBg: '#e5e7eb',
+      border: '#d9dee7',
+      borderStrong: '#b7c0cf',
+      tableHeaderBg: '#edf1f6',
       link: '#003c71',
       primary: '#500000',
-      primaryHover: '#3f0000',
+      primaryHover: '#6b1116',
       primaryText: '#ffffff',
-      selectedBg: '#dbeafe',
-      selectedText: '#1d4ed8',
-      icon: '#6b7280',
-      iconActive: '#374151',
+      selectedBg: 'rgba(80, 0, 0, 0.10)',
+      selectedText: '#500000',
+      icon: '#536072',
+      iconActive: '#172033',
       warningText: '#500000',
-      warningTextSoft: '#fca5a5',
-      successText: '#16a34a',
-      successBg: '#22c55e',
-      successBgHover: '#16a34a',
-      cautionText: '#ca8a04',
-      cautionBg: '#eab308',
-      dangerText: '#dc2626',
-      dangerBg: '#ef4444',
-      dangerBgHover: '#dc2626',
+      warningTextSoft: '#b45309',
+      successText: '#14733f',
+      successBg: '#2f8f55',
+      successBgHover: '#267747',
+      cautionText: '#9a6700',
+      cautionBg: '#d99a12',
+      dangerText: '#b4232a',
+      dangerBg: '#c8373e',
+      dangerBgHover: '#a9272e',
       alertBg: '#fef2f2',
-      alertBorder: '#dc2626',
-      alertText: '#991b1b',
-      alertTextSecondary: '#b91c1c',
-      tooltipBg: '#1f2937',
+      alertBorder: '#c8373e',
+      alertText: '#8f171d',
+      alertTextSecondary: '#a9272e',
+      tooltipBg: '#172033',
       tooltipText: '#ffffff',
       overlay: 'rgba(0, 0, 0, 0.5)',
-      disabledText: '#cccccc',
-      disabledBg: '#9ca3af',
-      focusRing: 'rgba(37, 99, 235, 0.25)'
+      disabledText: '#8b95a5',
+      disabledBg: '#d5dbe4',
+      focusRing: 'rgba(80, 0, 0, 0.22)'
     }
   },
   dark: {
     label: 'Dark',
     colors: {
-      appBg: '#111827',
-      surfaceBg: '#1f2937',
-      surfaceBgHover: '#374151',
-      textPrimary: '#f9fafb',
-      textSecondary: '#d1d5db',
-      textMuted: '#9ca3af',
+      appBg: '#202020',
+      bannerColor: '#1f2933',
+      surfaceBg: '#2A2A2A',
+      surfaceBgHover: '#333333',
+      textPrimary: '#FFFFFF',
+      textSecondary: '#D1D1D1',
+      textMuted: '#A6A6A6',
       textInverse: '#111827',
-      border: '#374151',
-      borderStrong: '#4b5563',
-      tableHeaderBg: '#374151',
-      link: '#60a5fa',
-      primary: '#fca5a5',
-      primaryHover: '#f87171',
-      primaryText: '#111827',
-      selectedBg: 'rgba(37, 99, 235, 0.25)',
-      selectedText: '#bfdbfe',
-      icon: '#d1d5db',
-      iconActive: '#e5e7eb',
-      warningText: '#fca5a5',
+      border: '#3E3E3E',
+      borderStrong: '#505050',
+      tableHeaderBg: '#242424',
+      link: '#F3A6A6',
+      primary: '#500000',
+      primaryHover: '#732F2F',
+      primaryText: '#ffffff',
+      selectedBg: 'rgba(80, 0, 0, 0.42)',
+      selectedText: '#ffffff',
+      icon: '#D1D1D1',
+      iconActive: '#ffffff',
+      warningText: '#F3A6A6',
       warningTextSoft: '#fca5a5',
       successText: '#86efac',
-      successBg: '#22c55e',
-      successBgHover: '#16a34a',
-      cautionText: '#fde047',
-      cautionBg: '#eab308',
+      successBg: '#3F7F33',
+      successBgHover: '#4D9D33',
+      cautionText: '#F3A316',
+      cautionBg: '#D99012',
       dangerText: '#fca5a5',
-      dangerBg: '#ef4444',
-      dangerBgHover: '#dc2626',
+      dangerBg: '#A83232',
+      dangerBgHover: '#C03A3A',
       alertBg: 'rgba(127, 29, 29, 0.2)',
-      alertBorder: '#b91c1c',
+      alertBorder: '#732F2F',
       alertText: '#fca5a5',
       alertTextSecondary: '#f87171',
-      tooltipBg: '#030712',
-      tooltipText: '#f9fafb',
+      tooltipBg: '#151515',
+      tooltipText: '#FFFFFF',
       overlay: 'rgba(0, 0, 0, 0.5)',
-      disabledText: '#9ca3af',
-      disabledBg: '#4b5563',
-      focusRing: 'rgba(96, 165, 250, 0.35)'
+      disabledText: '#888888',
+      disabledBg: '#3E3E3E',
+      focusRing: 'rgba(115, 47, 47, 0.36)'
     }
   },
   darkLavender: {
     label: 'Dark Lavender',
     colors: {
       appBg: '#15121d',
+      bannerColor: '#2b2140',
       surfaceBg: '#211c2b',
       surfaceBgHover: '#2c2540',
       textPrimary: '#f5f3ff',
@@ -147,6 +177,7 @@ const themes = {
     label: 'Dark Pink',
     colors: {
       appBg: '#1a1423',
+      bannerColor: '#6b1f4a',
       surfaceBg: '#241a30',
       surfaceBgHover: '#31213f',
       textPrimary: '#fdf2f8',
@@ -189,6 +220,39 @@ const themes = {
 };
 
 const isThemeName = (themeName) => Object.prototype.hasOwnProperty.call(themes, themeName);
+const isCardFontSizeName = (sizeName) => Object.prototype.hasOwnProperty.call(cardFontSizes, sizeName);
+
+const getConfiguredDashboardFonts = () => (
+  config?.development?.dashboard_fonts ||
+  config?.production?.dashboard_fonts ||
+  {}
+);
+
+const normalizeFontFamilies = () => {
+  const configuredFonts = getConfiguredDashboardFonts();
+  const options = Array.isArray(configuredFonts.options) ? configuredFonts.options : [];
+  const normalizedOptions = options.reduce((accumulator, option) => {
+    if (!option?.key || !option?.family) {
+      return accumulator;
+    }
+
+    accumulator[option.key] = {
+      label: option.label || option.key,
+      family: option.family
+    };
+    return accumulator;
+  }, {});
+
+  return Object.keys(normalizedOptions).length > 0 ? normalizedOptions : FALLBACK_FONT_FAMILIES;
+};
+
+const fontFamilies = normalizeFontFamilies();
+const configuredDefaultFontFamily = getConfiguredDashboardFonts().default;
+const fallbackFontFamily = Object.keys(fontFamilies)[0] || DEFAULT_FONT_FAMILY_KEY;
+const DEFAULT_FONT_FAMILY = Object.prototype.hasOwnProperty.call(fontFamilies, configuredDefaultFontFamily)
+  ? configuredDefaultFontFamily
+  : fallbackFontFamily;
+const isFontFamilyName = (fontFamilyName) => Object.prototype.hasOwnProperty.call(fontFamilies, fontFamilyName);
 
 const themeColorTokens = Array.from(
   new Set(
@@ -220,6 +284,18 @@ const getStoredThemeName = () => {
   return isThemeName(savedTheme) ? savedTheme : DEFAULT_THEME_NAME;
 };
 
+const getStoredCardFontSize = () => {
+  const storage = getStorage();
+  const savedSize = storage?.getItem(CARD_FONT_SIZE_STORAGE_KEY);
+  return isCardFontSizeName(savedSize) ? savedSize : DEFAULT_CARD_FONT_SIZE;
+};
+
+const getStoredFontFamily = () => {
+  const storage = getStorage();
+  const savedFontFamily = storage?.getItem(FONT_FAMILY_STORAGE_KEY);
+  return isFontFamilyName(savedFontFamily) ? savedFontFamily : DEFAULT_FONT_FAMILY;
+};
+
 const applyThemeVariables = (root, activeTheme) => {
   themeColorTokens.forEach((token) => {
     const cssVarName = getCssVariableName(token);
@@ -239,11 +315,37 @@ const persistThemeName = (themeName) => {
   storage?.setItem(THEME_STORAGE_KEY, themeName);
 };
 
+const persistCardFontSize = (sizeName) => {
+  const storage = getStorage();
+  storage?.setItem(CARD_FONT_SIZE_STORAGE_KEY, sizeName);
+};
+
+const persistFontFamily = (fontFamilyName) => {
+  const storage = getStorage();
+  storage?.setItem(FONT_FAMILY_STORAGE_KEY, fontFamilyName);
+};
+
 const setThemeAttribute = (root, themeName) => {
   root.setAttribute('data-theme', themeName);
 };
 
 const resolveTheme = (themeName) => themes[themeName] || themes[DEFAULT_THEME_NAME];
+const resolveCardFontSize = (sizeName) => cardFontSizes[sizeName] || cardFontSizes[DEFAULT_CARD_FONT_SIZE];
+const resolveFontFamily = (fontFamilyName) => fontFamilies[fontFamilyName] || fontFamilies[DEFAULT_FONT_FAMILY];
+
+const applyCardFontSizeVariables = (root, sizeName) => {
+  const fontSize = resolveCardFontSize(sizeName);
+
+  root.style.setProperty('--mosaic-card-font-scale', String(fontSize.scale));
+  root.setAttribute('data-card-font-size', sizeName);
+};
+
+const applyFontFamilyVariables = (root, fontFamilyName) => {
+  const fontFamily = resolveFontFamily(fontFamilyName);
+
+  root.style.setProperty('--mosaic-dashboard-font-family', fontFamily.family);
+  root.setAttribute('data-dashboard-font-family', fontFamilyName);
+};
 
 export const initializeTheme = () => {
   if (!canUseDOM()) {
@@ -251,9 +353,13 @@ export const initializeTheme = () => {
   }
 
   const themeName = getStoredThemeName();
+  const cardFontSize = getStoredCardFontSize();
+  const fontFamily = getStoredFontFamily();
   const root = document.documentElement;
 
   applyThemeVariables(root, resolveTheme(themeName));
+  applyCardFontSizeVariables(root, cardFontSize);
+  applyFontFamilyVariables(root, fontFamily);
   setThemeAttribute(root, themeName);
 
   return themeName;
@@ -272,6 +378,8 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   // Check localStorage or default to the configured default theme.
   const [themeName, setThemeName] = useState(getStoredThemeName);
+  const [cardFontSize, setCardFontSizeName] = useState(getStoredCardFontSize);
+  const [fontFamily, setFontFamilyName] = useState(getStoredFontFamily);
 
   const theme = resolveTheme(themeName);
 
@@ -288,6 +396,24 @@ export const ThemeProvider = ({ children }) => {
     persistThemeName(themeName);
   }, [theme, themeName]);
 
+  useIsomorphicLayoutEffect(() => {
+    if (!canUseDOM()) {
+      return;
+    }
+
+    applyCardFontSizeVariables(document.documentElement, cardFontSize);
+    persistCardFontSize(cardFontSize);
+  }, [cardFontSize]);
+
+  useIsomorphicLayoutEffect(() => {
+    if (!canUseDOM()) {
+      return;
+    }
+
+    applyFontFamilyVariables(document.documentElement, fontFamily);
+    persistFontFamily(fontFamily);
+  }, [fontFamily]);
+
   const setTheme = useCallback((nextThemeName) => {
     if (!isThemeName(nextThemeName)) {
       console.warn(`Unknown theme "${nextThemeName}". Falling back to "${DEFAULT_THEME_NAME}".`);
@@ -299,12 +425,40 @@ export const ThemeProvider = ({ children }) => {
     return true;
   }, []);
 
+  const setCardFontSize = useCallback((nextSizeName) => {
+    if (!isCardFontSizeName(nextSizeName)) {
+      console.warn(`Unknown card font size "${nextSizeName}". Falling back to "${DEFAULT_CARD_FONT_SIZE}".`);
+      setCardFontSizeName(DEFAULT_CARD_FONT_SIZE);
+      return false;
+    }
+
+    setCardFontSizeName(nextSizeName);
+    return true;
+  }, []);
+
+  const setFontFamily = useCallback((nextFontFamilyName) => {
+    if (!isFontFamilyName(nextFontFamilyName)) {
+      console.warn(`Unknown dashboard font "${nextFontFamilyName}". Falling back to "${DEFAULT_FONT_FAMILY}".`);
+      setFontFamilyName(DEFAULT_FONT_FAMILY);
+      return false;
+    }
+
+    setFontFamilyName(nextFontFamilyName);
+    return true;
+  }, []);
+
   const value = useMemo(() => ({
     theme,
     themeName,
     setTheme,
-    themes
-  }), [theme, themeName, setTheme]);
+    themes,
+    cardFontSize,
+    setCardFontSize,
+    cardFontSizes,
+    fontFamily,
+    setFontFamily,
+    fontFamilies
+  }), [theme, themeName, setTheme, cardFontSize, setCardFontSize, fontFamily, setFontFamily]);
 
   return (
     <ThemeContext.Provider value={value}>

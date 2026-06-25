@@ -10,29 +10,34 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import CardConfig from "./CardConfig"
-import { useTheme } from "../context/ThemeContext";
 
 const ReactGridLayout = WidthProvider(RGL);
+const DASHBOARD_COLUMNS = 12;
+const CARD_NAME_ALIASES = {
+  "GPU Utilization": "GPU Resources",
+};
+
+const getCardConfig = (componentName) => CardConfig[CARD_NAME_ALIASES[componentName] || componentName];
 
 // Component-specific minimum size configurations
 const getMinSize = (componentName) => {
-  const config = CardConfig[componentName];
+  const config = getCardConfig(componentName);
 
   return config ? { minW: config.minW ?? 3, minH: config.minH ?? 5} : {minW: 3, minH: 5};
 };
 
 const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
-  const { theme } = useTheme();
   // Default layout (used on first load)
   const defaultLayout = [
-    { name: "Announcement", i: uuidv4(), x: 0, y: 0, w: 10, h: 6 },
-    { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
-    { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
-    { name: "Python Venv Manager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
-    { name: "Quota Information", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
-    { name: "Acknowledgement Form", i: uuidv4(), x: 5, y: 25, w: 5, h: 8 },
-    { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 12 },
-    { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
+    { name: "Announcements Summary", i: uuidv4(), x: 0, y: 0, w: 3, h: 12 },
+    { name: "My Jobs Summary", i: uuidv4(), x: 3, y: 0, w: 3, h: 12 },
+    { name: "My Quotas Summary", i: uuidv4(), x: 6, y: 0, w: 3, h: 12 },
+    { name: "Accounts Usage Summary", i: uuidv4(), x: 9, y: 0, w: 3, h: 12 },
+    { name: "CPU Utilization", i: uuidv4(), x: 0, y: 12, w: 3, h: 7 },
+    { name: "GPU Resources", i: uuidv4(), x: 3, y: 12, w: 3, h: 7 },
+    { name: "Nodes Available", i: uuidv4(), x: 6, y: 12, w: 3, h: 7 },
+    { name: "Jobs Overview", i: uuidv4(), x: 9, y: 12, w: 3, h: 7 },
+    { name: "Cluster Nodes Overview", i: uuidv4(), x: 0, y: 19, w: 12, h: 14 },
   ];
 
   const [showPlaceholder, setShowPlaceholder] = useState(false);
@@ -79,13 +84,13 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
     const relY = clientY - gridRect.top;
 
     // Convert pixel position to grid position
-    const cols = 10; // Grid column count
+    const cols = DASHBOARD_COLUMNS; // Grid column count
     const rowHeight = 20; // Grid row height
 
     const gridX = Math.floor((relX / gridRect.width) * cols);
     const gridY = Math.floor(relY / rowHeight);
 
-    return { x: Math.max(0, Math.min(gridX, cols - 4)), y: Math.max(0, gridY) };
+    return { x: Math.max(0, Math.min(gridX, cols - 2)), y: Math.max(0, gridY) };
   };
 
   // Add a placeholder item to preview element placement
@@ -235,7 +240,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
   // Function to render correct charts
   const renderChart = (ele) => {
   
-  const config = CardConfig[ele.name];
+  const config = getCardConfig(ele.name);
 
   if (!config) return <div className = "text-center text-red-500">Unknown widget: {ele.name}</div>;
   const ChartComponent = config.chartComponent;
@@ -261,7 +266,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         drop(node);
         gridRef.current = node;
       }}
-      className={`max-w-full h-auto p-0 relative ${isOver ? "theme-selected" : ""}`}
+      className={`dashboard-grid-dropzone max-w-full h-auto relative ${isOver ? "theme-selected" : ""}`}
     >
       {/* Toast Notification Container */}
       <ToastContainer />
@@ -269,7 +274,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
       <ReactGridLayout
         layout={combinedLayout}
         onLayoutChange={onLayoutChange}
-        cols={10}
+        cols={DASHBOARD_COLUMNS}
         rowHeight={20}
         isBounded={false}
         isDroppable={!layoutLocked}
@@ -279,7 +284,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         preventCollision={false}
         useCSSTransforms={true}
         autoSize={true}
-	className="bg-gradient-to-b from-transparent via-[#500000] to-transparent rounded-lg"
+	className="dashboard-react-grid"
         draggableCancel=".non-draggable"
       >
         {/* Render actual grid items */}
@@ -289,10 +294,10 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
             <div
               key={ele.i}
               data-grid={{...ele, minW, minH}}
-              className={`resizable-element theme-surface rounded-md border relative h-full w-full overflow-hidden ${
+              className={`resizable-element relative h-full w-full overflow-hidden rounded-[5px] border bg-mosaic-surface shadow-[0_10px_22px_rgba(0,0,0,0.2)] transition-[border-color,box-shadow,background-color] duration-150 hover:border-mosaic-border-strong hover:shadow-[0_14px_28px_rgba(0,0,0,0.28)] ${
 		      layoutLocked
 	                ? 'border-2'
-			: 'theme-border'
+			: 'border-mosaic-border'
 	      }`}
               style={{
 	        borderColor: layoutLocked ? '#500000' : undefined
@@ -300,10 +305,9 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
             >
               {/* Clean, elegant remove button - only show when not locked */}
 	      {!layoutLocked && (
-	        <button
+	                <button
                   onClick={() => removeElement(index) }
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-opacity-80 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center transition-all duration-100 z-20"
-	                style={{ backgroundColor: theme.colors.surfaceBg, color: theme.colors.textSecondary }}
+                  className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-mosaic-secondary opacity-90 transition-all duration-100 hover:border-mosaic-danger-bg hover:bg-mosaic-danger-bg hover:text-white"
                   title="Remove this element"
                 >
                   <span className="text-sm">✕</span>
@@ -311,7 +315,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 	      )}
 
               {/* Component content */}
-              <div className="h-full w-full p-0">{renderChart(ele)}</div>
+              <div className="h-full min-h-0 w-full text-card-14">{renderChart(ele)}</div>
             </div>
           );
         })}
