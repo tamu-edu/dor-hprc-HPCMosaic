@@ -316,14 +316,14 @@ export const MyQuotasSummaryCard = () => {
   };
 
   return (
-    <section className={cardClasses.shellPadded}>
-      <div className={cardClasses.title}>
+    <section className={cx(cardClasses.shellPadded, "box-border flex min-h-0 min-w-0 flex-col")}>
+      <div className={cx(cardClasses.title, "shrink-0")}>
         <span className={cardClasses.icon}><AiOutlineDatabase /></span>
         <h3 className={cardClasses.titleText}>My Quotas</h3>
       </div>
       {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
-        <>
-          <div className="grid gap-[7px]">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="grid min-h-0 flex-1 content-start gap-[7px] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overscroll-behavior:contain]">
             {quotas.map((quota, index) => {
               const { diskPercent, diskUsageLabel, filePercent, fileUsageLabel } = getQuotaUsage(quota);
               const disk = String(quota.disk || "Unknown path");
@@ -366,10 +366,10 @@ export const MyQuotasSummaryCard = () => {
                 </div>
               );
             })}
+            {quotas.length === 0 && <div className={cardClasses.empty}>No quota data</div>}
           </div>
-          {quotas.length === 0 && <div className={cardClasses.empty}>No quota data</div>}
-          <div className="mt-2 flex items-center gap-[5px] border-t border-mosaic-border pt-2 text-card-11-5 text-mosaic-secondary">To increase your quota click Request</div>
-        </>
+          <div className="sticky bottom-0 mt-2 flex shrink-0 items-center gap-[5px] border-t border-mosaic-border bg-mosaic-surface pt-2 text-card-11-5 text-mosaic-secondary">To increase your quota click Request</div>
+        </div>
       )}
     </section>
   );
