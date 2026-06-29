@@ -369,7 +369,7 @@ const ClusterStatus = () => {
         ))}
       </div>
 
-      <div className={cx("grid min-h-0 gap-3 overflow-hidden", selectedNode ? "grid-cols-[minmax(0,1fr)_minmax(220px,280px)]" : "grid-cols-1")}>
+      <div className={cx("grid min-h-0 flex-1 gap-3 overflow-hidden", selectedNode ? "grid-cols-[minmax(0,1fr)_minmax(220px,280px)]" : "grid-cols-1")}>
         <div className="flex min-h-[130px] flex-wrap content-start gap-[6px] overflow-y-auto rounded-[5px] border border-mosaic-border bg-mosaic-app p-2">
           {visibleNodes.map((node) => (
             <button
@@ -389,8 +389,8 @@ const ClusterStatus = () => {
         </div>
 
         {selectedNode && (
-          <aside className="min-h-0 rounded-[5px] border border-mosaic-border bg-mosaic-table p-2.5">
-            <div className="mb-2 flex items-center gap-2 border-b border-mosaic-border pb-2">
+          <aside className="flex min-h-0 flex-col overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-table p-2.5">
+            <div className="mb-2 flex shrink-0 items-center gap-2 border-b border-mosaic-border pb-2">
               <span className={nodeStatusDotClass} style={getNodeStatusStyle(selectedNode.status)} />
               <div>
                 <h4 className="m-0 text-card-14 font-extrabold text-mosaic-primary">{selectedNode.name}</h4>
@@ -398,46 +398,48 @@ const ClusterStatus = () => {
               </div>
             </div>
 
-            {nodeDetailLoading ? (
-              <div className={cardClasses.loading}>Loading node details...</div>
-            ) : nodeDetailError ? (
-              <div className="text-card-12 font-semibold text-mosaic-danger">{nodeDetailError}</div>
-            ) : (
-              <dl className="grid gap-[7px] [&_dd]:m-0 [&_dd]:text-card-11-5 [&_dd]:font-semibold [&_dd]:text-mosaic-primary [&_dt]:text-card-10-5 [&_dt]:font-bold [&_dt]:uppercase [&_dt]:text-mosaic-muted">
-                <div>
-                  <dt>Status</dt>
-                  <dd>{nodeDetail?.status || selectedNode.rawStatus || NODE_STATUS_LABELS[selectedNode.status]}</dd>
-                </div>
-                <div>
-                  <dt>Partitions</dt>
-                  <dd>{(nodeDetail?.partitions || selectedNode.partitions).join(", ") || "Unknown"}</dd>
-                </div>
-                <div>
-                  <dt>CPU Usage</dt>
-                  <dd>{formatUsage(nodeDetail?.cpu_alloc, nodeDetail?.cpu_total)}</dd>
-                </div>
-                <div>
-                  <dt>Memory Usage</dt>
-                  <dd>{formatUsage(nodeDetail?.alloc_memory, nodeDetail?.real_memory, "MB")}</dd>
-                </div>
-                <div>
-                  <dt>Running Jobs</dt>
-                  <dd>
-                    <strong>{nodeJobs.length}</strong>
-                    {nodeJobs.length > 0 && (
-                      <span className="mt-1 grid gap-1 text-card-11 text-mosaic-secondary">
-                        {nodeJobs.slice(0, 3).map((job) => (
-                          <span key={job.job_id}>
-                            {job.job_id}{job.name ? ` ${job.name}` : ""}
-                          </span>
-                        ))}
-                        {nodeJobs.length > 3 && <span>+{nodeJobs.length - 3} more</span>}
-                      </span>
-                    )}
-                  </dd>
-                </div>
-              </dl>
-            )}
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-gutter:stable] [overscroll-behavior:contain]">
+              {nodeDetailLoading ? (
+                <div className={cardClasses.loading}>Loading node details...</div>
+              ) : nodeDetailError ? (
+                <div className="text-card-12 font-semibold text-mosaic-danger">{nodeDetailError}</div>
+              ) : (
+                <dl className="grid gap-[7px] [&_dd]:m-0 [&_dd]:text-card-11-5 [&_dd]:font-semibold [&_dd]:text-mosaic-primary [&_dt]:text-card-10-5 [&_dt]:font-bold [&_dt]:uppercase [&_dt]:text-mosaic-muted">
+                  <div>
+                    <dt>Status</dt>
+                    <dd>{nodeDetail?.status || selectedNode.rawStatus || NODE_STATUS_LABELS[selectedNode.status]}</dd>
+                  </div>
+                  <div>
+                    <dt>Partitions</dt>
+                    <dd>{(nodeDetail?.partitions || selectedNode.partitions).join(", ") || "Unknown"}</dd>
+                  </div>
+                  <div>
+                    <dt>CPU Usage</dt>
+                    <dd>{formatUsage(nodeDetail?.cpu_alloc, nodeDetail?.cpu_total)}</dd>
+                  </div>
+                  <div>
+                    <dt>Memory Usage</dt>
+                    <dd>{formatUsage(nodeDetail?.alloc_memory, nodeDetail?.real_memory, "MB")}</dd>
+                  </div>
+                  <div>
+                    <dt>Running Jobs</dt>
+                    <dd>
+                      <strong>{nodeJobs.length}</strong>
+                      {nodeJobs.length > 0 && (
+                        <span className="mt-1 grid gap-1 text-card-11 text-mosaic-secondary">
+                          {nodeJobs.slice(0, 3).map((job) => (
+                            <span key={job.job_id}>
+                              {job.job_id}{job.name ? ` ${job.name}` : ""}
+                            </span>
+                          ))}
+                          {nodeJobs.length > 3 && <span>+{nodeJobs.length - 3} more</span>}
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+              )}
+            </div>
           </aside>
         )}
       </div>
