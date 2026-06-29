@@ -4,7 +4,7 @@ import quotaRequestSchema from '../composer/schemas/quotaRequest.json';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
 
-const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null }) => {
+const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null, buttonText = null, buttonClassName = "" }) => {
   const baseUrl = get_base_url();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,7 +134,7 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
 
   return (
     <PopupForm
-      buttonText={disk ? "Request" : "Request Quota Increase"}
+      buttonText={buttonText || (disk ? "Request" : "Request Quota Increase")}
       schema={quotaRequestSchema}
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
@@ -151,7 +151,7 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
         fontSize: disk ? '12px' : '14px',
         fontWeight: '500'
       }}
-      buttonClassName={disk ? "inline-button" : ""}
+      buttonClassName={buttonClassName || (disk ? "inline-button" : "")}
       errorMessage="Either Disk Quota or File Limit must be filled."
     />
   );

@@ -21,6 +21,10 @@ All routes are registered under the /api prefix (set in app.py).
     GET    /showquota                 Disk/file quota usage per filesystem
     GET    /groups                    Groups the current user belongs to
     GET    /cpuavail                  Node configuration and CPU availability
+    GET    /system-load               Web server load averages and normalized 5m load
+    GET    /gpu-resources             GPU node and GPU allocation counts for the gpu partition
+    GET    /node/<node_name>          Detailed SLURM node information
+    GET    /node/<node_name>/jobs     Jobs currently running on a node
 
   modules.py      — Python virtual environment management
     GET    /get_env                   List existing venvs from metadata.json
@@ -29,7 +33,11 @@ All routes are registered under the /api prefix (set in app.py).
     POST   /create_venv               Create a new venv via SSH to login node
 
   jobs.py         — SLURM job and project management
-    GET    /jobs                      Active jobs for current user (squeue + scontrol)
+    GET    /jobs                      Active jobs for current user (squeue only)
+    GET    /jobs/list                 Paginated Job Explorer rows (squeue or scoped sacct)
+    GET    /jobs/<job_id>             Lazy single-job details (scontrol)
+    GET    /jobs/details              Legacy active Slurm job records for Job Explorer
+    GET    /jobs/summary              Aggregate Slurm job counts for Job Explorer
     POST   /cancel_job/<job_id>       Cancel a job via scancel
     GET    /projectinfo               Project accounts, job history, or pending jobs
     POST   /set_default_account       Set default myproject account

@@ -13,13 +13,37 @@ const UserJobs = ({ description }) => {
   const [isCanceling, setIsCanceling] = useState(null);
   const baseUrl = get_base_url();
 
+  const normalizeJob = (job) => ({
+    ...job,
+    job_name: job.job_name || job.name || "",
+    submit_dir: job.submit_dir || job.working_directory || "",
+    time_elapsed: job.time_elapsed || job.runtime || "",
+    time_requested: job.time_requested || job.time_limit || "",
+    state: normalizeJobState(job.state || job.state_raw),
+    state_label: getJobStateLabel(job.state || job.state_raw),
+  });
+
+  const normalizeJobState = (state) => {
+    const value = String(state || "").trim().toUpperCase();
+    if (value === "R" || value === "RUNNING") return "R";
+    if (value === "PD" || value === "PENDING") return "PD";
+    return value || "UNKNOWN";
+  };
+
+  const getJobStateLabel = (state) => {
+    const normalized = normalizeJobState(state);
+    if (normalized === "R") return "Running";
+    if (normalized === "PD") return "Pending";
+    return String(state || "Unknown").trim() || "Unknown";
+  };
+
   // Fetch jobs for the current user
   useEffect(() => {
     fetch(`${baseUrl}/api/jobs`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
-	setJobs(data.jobs || []);
+	setJobs((data.jobs || []).map(normalizeJob));
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -76,9 +100,11 @@ const UserJobs = ({ description }) => {
 
   // Format SLURM time for display
   const formatTime = (timeStr) => {
-    if (!timeStr) return "N/A";
+    if (!timeStr || timeStr === "N/A" || timeStr === "UNLIMITED") return "N/A";
     const [dayPart, timePart] = timeStr.includes("-") ? timeStr.split("-") : [null, timeStr];
     const [hours, minutes, seconds] = timePart.split(":").map(Number);
+    if (![hours, minutes, seconds].every(Number.isFinite)) return timeStr;
+
     const days = dayPart ? parseInt(dayPart, 10) : Math.floor(hours / 24);
     const remainingHours = dayPart ? hours : hours % 24;
 
@@ -105,6 +131,7 @@ const UserJobs = ({ description }) => {
         }
         
         const [h, m , s] = timePart.split(":").map(Number)
+        if (![h, m, s].every(Number.isFinite)) return 0;
         return days * 86400 + h * 3600 + m * 60 + s;
     };
     
@@ -195,7 +222,7 @@ const UserJobs = ({ description }) => {
                 </td>
 			        <td className={`py-3 px-4 ${job.state === "R" ? "theme-status-success" : "theme-status-caution"}`}>
                   {job.state === "R" ? (
-                    "Running"
+                    job.state_label
                   ) : (
                     <Tippy
                       theme="job-tooltip"
@@ -231,7 +258,7 @@ const UserJobs = ({ description }) => {
                       }
                     >
                       <span className="cursor-pointer inline-flex items-center gap-1 underline decoration-dotted">
-                        Pending <span className="text-xs">ⓘ</span>
+                        {job.state_label} <span className="text-xs">ⓘ</span>
                       </span>
                     </Tippy>
                   )}

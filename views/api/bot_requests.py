@@ -20,7 +20,7 @@ from flask import request, jsonify
 
 from . import api
 from .config import cluster_name, request_email, help_email, hprcbot_route
-from .utils import get_user_email, clean_number, get_group_directory_info
+from .utils import clean_number, get_group_directory_info, get_user_email, split_nonempty_lines
 
 def _post_to_bot(params, timeout=15):
     """POST params to the HPRC Bot OOD endpoint. Raises on non-200."""
@@ -144,9 +144,6 @@ def request_quota():
 @api.route('/group', methods=['POST'])
 def request_group():
     try:
-        def _split_netids(s):
-            return [l.strip() for l in s.strip().splitlines() if l.strip()]
-
         group_type    = request.form.get('groupRequest')
         group_name    = request.form.get('groupName', '').strip()
         group_members = request.form.get('groupMembers', '')
@@ -169,9 +166,9 @@ def request_group():
             params['directory']  = dir_info['directory']
 
         action_map = {
-            'cgroup':  ('createGroup',   _split_netids(group_members)),
-            'madd':    ('addMembers',    _split_netids(group_add)),
-            'mremove': ('deleteMembers', _split_netids(group_remove)),
+            'cgroup':  ('createGroup',   split_nonempty_lines(group_members)),
+            'madd':    ('addMembers',    split_nonempty_lines(group_add)),
+            'mremove': ('deleteMembers', split_nonempty_lines(group_remove)),
             'rgroup':  ('requestAccess', []),
         }
 
@@ -355,5 +352,4 @@ def get_announcement():
     except Exception as e:
         logging.error(f"Failed to fetch announcement: {e}")
         return jsonify({"error": "Unable to fetch announcement"}), 500
-
 

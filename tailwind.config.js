@@ -1,5 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-const colors = require('tailwindcss/colors')
+const cardFontSize = (size, lineHeight = '1.25') => [
+  `calc(${size}px * var(--mosaic-card-font-scale, 1))`,
+  { lineHeight },
+];
+
 module.exports = {
   darkMode: 'class',
   content: [
@@ -7,11 +11,65 @@ module.exports = {
     './templates/*.html'],
   theme: {
     extend: {
-		colors: {
-			maroon: '#5c0025',
-		}
-	},
+      colors: {
+        maroon: '#5c0025',
+        mosaic: {
+          app: 'var(--mosaic-color-app-bg)',
+          banner: 'var(--mosaic-color-banner-color)',
+          surface: 'var(--mosaic-color-surface-bg)',
+          'surface-hover': 'var(--mosaic-color-surface-bg-hover)',
+          primary: 'var(--mosaic-color-text-primary)',
+          secondary: 'var(--mosaic-color-text-secondary)',
+          muted: 'var(--mosaic-color-text-muted)',
+          inverse: 'var(--mosaic-color-text-inverse)',
+          border: 'var(--mosaic-color-border)',
+          'border-strong': 'var(--mosaic-color-border-strong)',
+          table: 'var(--mosaic-color-table-header-bg)',
+          link: 'var(--mosaic-color-link)',
+          accent: 'var(--mosaic-color-primary)',
+          'accent-hover': 'var(--mosaic-color-primary-hover)',
+          'accent-text': 'var(--mosaic-color-primary-text)',
+          selected: 'var(--mosaic-color-selected-bg)',
+          'selected-text': 'var(--mosaic-color-selected-text)',
+          icon: 'var(--mosaic-color-icon)',
+          'icon-active': 'var(--mosaic-color-icon-active)',
+          success: 'var(--mosaic-color-success-text)',
+          'success-bg': 'var(--mosaic-color-success-bg)',
+          caution: 'var(--mosaic-color-caution-text)',
+          'caution-bg': 'var(--mosaic-color-caution-bg)',
+          danger: 'var(--mosaic-color-danger-text)',
+          'danger-bg': 'var(--mosaic-color-danger-bg)',
+          'danger-hover': 'var(--mosaic-color-danger-bg-hover)',
+          disabled: 'var(--mosaic-color-disabled-text)',
+          'disabled-bg': 'var(--mosaic-color-disabled-bg)',
+          focus: 'var(--mosaic-color-focus-ring)',
+        },
+      },
+      fontFamily: {
+        sans: ['var(--mosaic-dashboard-font-family)', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+      },
+      fontSize: {
+        'card-9': cardFontSize(9, '1'),
+        'card-10': cardFontSize(10, '1.15'),
+        'card-10-5': cardFontSize(10.5, '1.15'),
+        'card-11': cardFontSize(11, '1.2'),
+        'card-11-5': cardFontSize(11.5, '1.3'),
+        'card-12': cardFontSize(12, '1.3'),
+        'card-12-5': cardFontSize(12.5, '1.35'),
+        'card-13': cardFontSize(13, '1.2'),
+        'card-14': cardFontSize(14, '1.25'),
+        'card-15': cardFontSize(15, '1.2'),
+        'card-16': cardFontSize(16, '1.2'),
+        'card-18': cardFontSize(18, '1.1'),
+        'card-19': cardFontSize(19, '1.1'),
+        'card-22': cardFontSize(22, '1'),
+        'card-24': cardFontSize(24, '1'),
+        'card-26': cardFontSize(26, '1'),
+        'card-28': cardFontSize(28, '1'),
+        'card-30': cardFontSize(30, '1'),
+        'card-34': cardFontSize(34, '1'),
+      },
+    },
   },
   plugins: [],
 }
-

@@ -16,14 +16,7 @@ import os
 import json
 from flask import request, jsonify
 from . import api
-
-_PREFERENCES_FILENAME = '_preferences.json'
-
-def _get_preferences_path(user):
-    """Return the path to the user's preferences file, creating the directory if needed."""
-    layouts_dir = f"/scratch/user/{user}/ondemand/layouts"
-    os.makedirs(layouts_dir, exist_ok=True)
-    return os.path.join(layouts_dir, _PREFERENCES_FILENAME)
+from .utils import get_preferences_path
 
 
 @api.route('/get_preferences', methods=['GET'])
@@ -31,7 +24,7 @@ def get_preferences():
     """Return the user's saved preferences, or an empty object if none exist yet."""
     try:
         user = os.getenv("USER", "default_user")
-        prefs_path = _get_preferences_path(user)
+        prefs_path = get_preferences_path(user)
 
         if not os.path.exists(prefs_path):
             return jsonify({"preferences": {}}), 200
@@ -53,7 +46,7 @@ def save_preferences():
             return jsonify({"error": "No preference data provided"}), 400
 
         user = os.getenv("USER", "default_user")
-        prefs_path = _get_preferences_path(user)
+        prefs_path = get_preferences_path(user)
 
         existing = {}
         if os.path.exists(prefs_path):
@@ -69,5 +62,4 @@ def save_preferences():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
