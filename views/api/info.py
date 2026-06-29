@@ -171,6 +171,9 @@ def get_quota():
             parts = line.split()
             if len(parts) < 5:
                 continue
+            disk = parts[0]
+            if not disk.startswith("/"):
+                continue
 
             disk_usage_mib = parse_storage_to_mib(parts[1])
             disk_limit_mib = parse_storage_to_mib(parts[2])
