@@ -11,6 +11,7 @@ import {
 } from "./dashboardUtils";
 
 const summaryStatuses = NODE_STATUS_ORDER;
+const hiddenPartitionFilters = new Set(["STAFF"]);
 const nodeCardClass = cx(cardClasses.shell, "flex min-h-0 flex-col gap-2.5");
 const nodeHeaderClass = "flex items-start justify-between gap-3 border-b border-mosaic-border pb-2.5 pr-10";
 const nodeSubtitleClass = "mt-1 block text-card-11-5 text-mosaic-muted";
@@ -55,6 +56,14 @@ const getNodeMemory = (node) =>
 
 const getNodeUtilization = (node) =>
   Number(getFirstValue(node, ["utilization", "cpu_utilization", "cpuUtilization"]) || 0);
+
+const compareNodeNames = (a, b) =>
+  a.name.localeCompare(b.name, undefined, { numeric: true });
+
+const shouldShowNodeReason = (status) => ["down", "drained"].includes(status);
+
+const getNodeReason = (nodeDetail, selectedNode) =>
+  nodeDetail?.reason || selectedNode?.reason || selectedNode?.rawReason || "Not reported";
 
 const formatUsage = (used, total, unit = "") => {
   const usedValue = Number(used);
@@ -128,9 +137,7 @@ const dedupeNodes = (rawNodes) => {
       ...node,
       partitions: node.partitions.sort(),
     }))
-    .sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { numeric: true })
-    );
+    .sort(compareNodeNames);
 };
 
 const ClusterStatus = () => {
@@ -138,6 +145,7 @@ const ClusterStatus = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPartition, setSelectedPartition] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState(null);
   const [selectedNodeName, setSelectedNodeName] = useState(null);
   const [nodeDetail, setNodeDetail] = useState(null);
   const [nodeJobs, setNodeJobs] = useState([]);
@@ -156,10 +164,15 @@ const ClusterStatus = () => {
       });
     });
 
-    return ["ALL", ...Array.from(partitionSet).sort()];
+    return [
+      "ALL",
+      ...Array.from(partitionSet)
+        .filter((partition) => !hiddenPartitionFilters.has(partition))
+        .sort(),
+    ];
   }, [nodes]);
 
-  const filteredNodes = useMemo(() => {
+  const partitionSearchFilteredNodes = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return nodes.filter((node) => {
@@ -178,18 +191,21 @@ const ClusterStatus = () => {
     });
   }, [nodes, searchTerm, selectedPartition]);
 
+  const filteredNodes = useMemo(() => {
+    if (!selectedStatusFilter) return partitionSearchFilteredNodes;
+    return partitionSearchFilteredNodes.filter((node) => node.status === selectedStatusFilter);
+  }, [partitionSearchFilteredNodes, selectedStatusFilter]);
+
   const visibleNodes = useMemo(() => {
-    return [...filteredNodes].sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { numeric: true })
-    );
+    return [...filteredNodes].sort(compareNodeNames);
   }, [filteredNodes]);
 
   const statusSummary = useMemo(() => {
-    return filteredNodes.reduce((summary, node) => {
+    return partitionSearchFilteredNodes.reduce((summary, node) => {
       summary[node.status] = (summary[node.status] || 0) + 1;
       return summary;
     }, {});
-  }, [filteredNodes]);
+  }, [partitionSearchFilteredNodes]);
 
   const selectedNode = useMemo(() => {
     if (!selectedNodeName) return null;
@@ -289,6 +305,10 @@ const ClusterStatus = () => {
     setSelectedNodeName((currentName) => currentName === node.name ? null : node.name);
   };
 
+  const handleStatusSortClick = (status) => {
+    setSelectedStatusFilter((currentStatus) => currentStatus === status ? null : status);
+  };
+
   const getNodeTooltip = (node) => [
     `Node: ${node.name}`,
     `Partitions: ${node.partitions.length ? node.partitions.join(", ") : "Unknown"}`,
@@ -362,10 +382,21 @@ const ClusterStatus = () => {
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(86px,1fr))] gap-[7px]" aria-label="Status summary">
         {summaryStatuses.map((status) => (
-          <span key={status} className="grid gap-0.5 rounded-[5px] border border-[var(--node-status-color)] bg-mosaic-table px-2 py-[7px]" style={getNodeStatusStyle(status)}>
+          <button
+            key={status}
+            className={cx(
+              "non-draggable grid gap-0.5 rounded-[5px] border border-[var(--node-status-color)] bg-mosaic-table px-2 py-[7px] text-left transition-colors hover:bg-mosaic-surface-hover",
+              selectedStatusFilter === status && "ring-2 ring-mosaic-accent ring-offset-1 ring-offset-mosaic-surface"
+            )}
+            style={getNodeStatusStyle(status)}
+            type="button"
+            onClick={() => handleStatusSortClick(status)}
+            aria-pressed={selectedStatusFilter === status}
+            title={`Show only ${NODE_STATUS_LABELS[status]} nodes`}
+          >
             <span className="text-card-11 text-mosaic-muted">{NODE_STATUS_LABELS[status]}</span>
             <strong className="text-card-14 font-extrabold text-mosaic-primary">{statusSummary[status] || 0}</strong>
-          </span>
+          </button>
         ))}
       </div>
 
@@ -409,6 +440,12 @@ const ClusterStatus = () => {
                     <dt>Status</dt>
                     <dd>{nodeDetail?.status || selectedNode.rawStatus || NODE_STATUS_LABELS[selectedNode.status]}</dd>
                   </div>
+                  {shouldShowNodeReason(selectedNode.status) && (
+                    <div>
+                      <dt>Reason</dt>
+                      <dd>{getNodeReason(nodeDetail, selectedNode)}</dd>
+                    </div>
+                  )}
                   <div>
                     <dt>Partitions</dt>
                     <dd>{(nodeDetail?.partitions || selectedNode.partitions).join(", ") || "Unknown"}</dd>
