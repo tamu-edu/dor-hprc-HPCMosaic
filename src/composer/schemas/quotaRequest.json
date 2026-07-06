@@ -4,6 +4,7 @@
       "type": "radioGroup",
       "label": "Is this request more than 10TB or for longer than 6 months?",
       "name": "isLongRequest",
+      "required": true,
       "options": [
          { "value": "No", "label": "No" },
          { "value": "Yes", "label": "Yes" }
@@ -16,6 +17,7 @@
       "label": "Are you a principal investigator (PI)?",
       "name": "isPIRequest",
       "condition" : "isLongRequest.Yes",
+      "required": true,
       "options": [
          { "value": "No", "label": "No" },
          { "value": "Yes", "label": "Yes" }
@@ -28,6 +30,7 @@
       "label": "Do you want to buy-in quota?",
       "name": "isBuyRequest",
       "condition" : "isPIRequest.Yes",
+      "required" : true,
       "options": [
          { "value": "No", "label": "No" },
          { "value": "Yes", "label": "Yes" }
@@ -64,14 +67,16 @@
             "type": "text",
             "label": "Expiration data for quota request (YYYY-MM-DD)",
             "name": "expiration",
-            "value": ""
+            "value": "",
+            "required": true
          },
    
          "account": {
             "type": "text",
             "label": "Please provide account number to use",
             "name": "account",
-            "value": ""
+            "value": "",
+            "required": true
           }
       }
 

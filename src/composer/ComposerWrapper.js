@@ -15,23 +15,56 @@ const ComposerWrapper = ({
   onFileChange,
   className = "",
   defaultValues = {},
-  isSubmitting = false
+  isSubmitting = false,
+  validateFormReady
 }) => {
   const [error, setError] = useState(null);
   const [globalFiles, setGlobalFiles] = useState([]);
   const [showRequiredFieldsModal, setShowRequiredFieldsModal] = useState(false);
   const [missingRequiredFields, setMissingRequiredFields] = useState([]);
+  const [isFormReady, setIsFormReady] = useState(false);
   
   const formRef = useRef(null);
   const composerRef = useRef(null);
   const memoizedSchema = useMemo(() => schema, []);
   const defaultsAppliedRef = useRef(false);
+  const readinessTimerRef = useRef(null);
+
+  const updateFormReadiness = () => {
+    if (!composerRef.current) {
+      setIsFormReady(false);
+      return;
+    }
+
+    const currentFields = composerRef.current.getFields();
+    const validation = validateRequiredFields(currentFields);
+    const customValidation = validateFormReady?.(currentFields);
+
+    setIsFormReady(validation.isValid && customValidation !== false);
+  };
+
+  const scheduleReadinessUpdate = () => {
+    if (readinessTimerRef.current) {
+      clearTimeout(readinessTimerRef.current);
+    }
+
+    readinessTimerRef.current = setTimeout(() => {
+      updateFormReadiness();
+      readinessTimerRef.current = null;
+    }, 0);
+  };
 
   useEffect(() => {
     if (composerRef.current && Object.keys(defaultValues).length > 0 && !defaultsAppliedRef.current) {
       composerRef.current.setValues(defaultValues);
       defaultsAppliedRef.current = true;
     }
+    scheduleReadinessUpdate();
+    return () => {
+      if (readinessTimerRef.current) {
+        clearTimeout(readinessTimerRef.current);
+      }
+    };
   }, []);
 
   const handleUploadedFiles = (files) => {
@@ -52,9 +85,13 @@ const ComposerWrapper = ({
     if (composerRef.current) {
       const currentFields = composerRef.current.getFields();
       const validation = validateRequiredFields(currentFields);
-      if (!validation.isValid) {
+      const customValidation = validateFormReady?.(currentFields);
+      if (!validation.isValid || customValidation === false) {
         setMissingRequiredFields(validation.missingFields);
-        setShowRequiredFieldsModal(true);
+        if (!validation.isValid) {
+          setShowRequiredFieldsModal(true);
+        }
+        setIsFormReady(false);
         return;
       }
     }
@@ -105,6 +142,8 @@ const ComposerWrapper = ({
           <form
             ref={formRef}
             onSubmit={handleSubmit}
+            onChange={scheduleReadinessUpdate}
+            onInput={scheduleReadinessUpdate}
             encType="multipart/form-data"
             className="form-content"
           >
@@ -121,10 +160,10 @@ const ComposerWrapper = ({
                 type="submit"
                 onClick={handleSubmit}
                 className="btn btn-primary"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isFormReady}
                 style={{
-                  opacity: isSubmitting ? 0.6 : 1,
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                  opacity: (isSubmitting || !isFormReady) ? 0.6 : 1,
+                  cursor: (isSubmitting || !isFormReady) ? 'not-allowed' : 'pointer'
                 }}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
