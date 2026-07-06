@@ -7,7 +7,7 @@ import ComposerWrapper from './ComposerWrapper';
 import { useLayoutLock } from '../context/LayoutLockContext';
 import { useTheme } from '../context/ThemeContext';
 
-const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting }) => {
+const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting, validateFormReady }) => {
   const modalRef = useRef(null);
   const { theme } = useTheme();
 
@@ -146,6 +146,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
             defaultValues={defaultValues}
             onSubmit={onSubmit}
 	    isSubmitting={isSubmitting}
+            validateFormReady={validateFormReady}
             onClose={onClose}
             title={title}
             className="popup-form"
@@ -168,7 +169,8 @@ const PopupForm = ({
   isSubmitting = false,
   title = "Form",
   disclaimerText,
-  errorMessage
+  errorMessage,
+  validateFormReady
 }) => {
   const [showModal, setShowModal] = useState(false);
 
@@ -186,8 +188,10 @@ const PopupForm = ({
 
   const handleSubmit = async (formData) => {
     try {
-      await onSubmit(formData);
-      setShowModal(false);
+      const result = await onSubmit(formData);
+      if (result !== false) {
+        setShowModal(false);
+      }
     } catch (error) {
       console.error('Form submission error:', error);
     }
@@ -213,6 +217,7 @@ const PopupForm = ({
           defaultValues={defaultValues}
           onSubmit={handleSubmit}
 	  isSubmitting={isSubmitting}
+          validateFormReady={validateFormReady}
           onClose={handleClose}
           title={title}
           disclaimerText={disclaimerText}

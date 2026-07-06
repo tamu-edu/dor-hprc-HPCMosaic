@@ -69,6 +69,11 @@ def _parse_scontrol_nodes_output(output):
     return nodes
 
 
+def _get_scontrol_value(output, key):
+    match = re.search(rf"(?:^|\s){re.escape(key)}=(.*?)(?=\s+\S+=|\s*$)", output, re.DOTALL)
+    return match.group(1).strip() if match else None
+
+
 def _parse_scontrol_node_output(output):
     node_info = parse_key_value_tokens(output)
 
@@ -95,6 +100,9 @@ def _parse_scontrol_node_output(output):
         "boot_time": node_info.get("BootTime"),
         "slurmd_start_time": node_info.get("SlurmdStartTime"),
         "version": node_info.get("Version"),
+        "reason": _get_scontrol_value(output, "Reason"),
+        "reason_user": _get_scontrol_value(output, "ReasonUid"),
+        "reason_time": _get_scontrol_value(output, "ReasonTime"),
         "configured_tres": node_info.get("CfgTRES"),
         "allocated_tres": node_info.get("AllocTRES"),
     }
@@ -170,6 +178,9 @@ def get_quota():
         for line in lines[2:]:
             parts = line.split()
             if len(parts) < 5:
+                continue
+            disk = parts[0]
+            if not disk.startswith("/"):
                 continue
 
             disk_usage_mib = parse_storage_to_mib(parts[1])

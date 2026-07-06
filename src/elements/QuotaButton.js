@@ -1,22 +1,43 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import PopupForm from '../composer/PopupForm';
 import quotaRequestSchema from '../composer/schemas/quotaRequest.json';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
+import { getFieldValue } from "../composer/schemaRendering/utils/fieldUtils";
 
 const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null, buttonText = null, buttonClassName = "" }) => {
   const baseUrl = get_base_url();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+
+  const isBlockedNonPiLongRequest = (isLongRequest, isPIRequest) => {
+    return isLongRequest === 'Yes' && isPIRequest === 'No';
+  };
+
+  const validateQuotaReady = (fields) => {
+    const isLongRequest = getFieldValue(fields, 'isLongRequest');
+    const isPIRequest = getFieldValue(fields, 'isPIRequest');
+
+    return !isBlockedNonPiLongRequest(isLongRequest, isPIRequest);
+  };
 
   const handleSubmit = async (formData) => {
 
-    if (isSubmitting) {
+    if (isSubmitting || submittingRef.current) {
       console.log('Quota submission processing, ignoring duplicate click');
       return false;
     }
 
+    const isLongRequest = formData.get('isLongRequest');
+    const isPIRequest = formData.get('isPIRequest');
 
+    if (isBlockedNonPiLongRequest(isLongRequest, isPIRequest)) {
+      alert('Only PIs can request quota increases for more than 10TB, longer than 6 months, or buy-in quota. Please ask your PI to make the request.');
+      return false;
+    }
+
+    submittingRef.current = true;
     setIsSubmitting(true);
     console.log('Form submitted:', formData);
     
@@ -102,6 +123,7 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
       // Return false to indicate failure
       return false;
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -141,6 +163,7 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
       title={disk ? `Quota Increase for ${disk}` : "Quota Increase Request"}
       disclaimerText={disclaimerText}
       defaultValues={defaultValues}
+      validateFormReady={validateQuotaReady}
       buttonStyle={{
         backgroundColor: 'var(--mosaic-color-primary)',
         color: 'var(--mosaic-color-primary-text)',
