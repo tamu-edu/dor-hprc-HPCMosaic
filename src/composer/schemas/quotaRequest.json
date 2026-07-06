@@ -65,7 +65,7 @@
 
          "expirationDate": {
             "type": "text",
-            "label": "Expiration data for quota request (YYYY-MM-DD)",
+            "label": "Expiration date for quota request (YYYY-MM-DD)",
             "name": "expiration",
             "value": "",
             "required": true
