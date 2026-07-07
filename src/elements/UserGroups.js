@@ -7,6 +7,7 @@ import GroupButton from "./GroupButton"; // Import GroupButton component
 
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
 import { get_base_url } from "../utils/api_config.js"
+import { cardClasses, cx } from "./dashboardUtils";
 
 const UserGroups = ({ description }) => {
   const [groups, setGroups] = useState([]);
@@ -67,10 +68,8 @@ const UserGroups = ({ description }) => {
       {/* Header section with title and action button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <div className="mb-2 sm:mb-0">
-          <h2 className="text-2xl font-semibold theme-text-primary">
-            <Tippy content={ description }>
-              <span className="cursor-help">User Groups ⓘ</span>
-            </Tippy>
+          <h2 className={cardClasses.titleText}>
+              User Groups
           </h2>
         </div>
         

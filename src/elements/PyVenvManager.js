@@ -3,6 +3,7 @@ import config from '../../config.yml';
 import CreateVenvForm from "./CreateVenvForm.js"
 import Spinner from "../framework/Spinner.js"
 import { get_base_url } from "../utils/api_config.js"
+import { cardClasses, cx } from "./dashboardUtils";
 
 const PyVenvManager = () => {
   
@@ -109,7 +110,7 @@ const PyVenvManager = () => {
 	  }
 	  {((envData && envData != "NO ENVIRONMENTS") && envKeys) && 
 	  <div className="overflow-auto w-full h-full flex-grow flex-col">
-	  	<h2 className="text-2xl font-semibold mb-4 theme-text-primary"> Virtual Env Management </h2>
+	  	<h2 className={cardClasses.titleText}>Environment Management</h2>
 			<table className="table-auto w-full border-collapse border theme-border m-2">
 				<thead>
 				<tr className="theme-table-header">
