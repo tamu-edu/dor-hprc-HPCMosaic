@@ -71,12 +71,12 @@ export const normalizeNodeState = (state = "") => {
 };
 
 export const NODE_STATUS_COLORS = {
-  idle: "#0072B2",
-  allocated: "#009E73",
-  mixed: "#D8C84A",
-  drained: "#E69F00",
-  down: "#D55E00",
-  maintenance: "#CC79A7",
+  idle: "#277DA1",
+  allocated: "#43AA8B",
+  mixed: "#90BE6D",
+  drained: "#F9844A",
+  down: "#DC2626",
+  maintenance: "#F9C74F",
   unknown: "#6B7280",
 };
 

@@ -414,12 +414,12 @@ const ClusterStatus = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(86px,1fr))] gap-[7px]" aria-label="Status summary">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(104px,1fr))] gap-[7px]" aria-label="Status summary">
         {summaryStatuses.map((status) => (
           <button
             key={status}
             className={cx(
-              "non-draggable grid gap-0.5 rounded-[5px] border border-[var(--node-status-color)] bg-mosaic-table px-2 py-[7px] text-left transition-colors hover:bg-mosaic-surface-hover",
+              "non-draggable grid min-w-0 gap-0.5 rounded-[5px] border border-[var(--node-status-color)] bg-mosaic-table px-2 py-[7px] text-left transition-colors hover:bg-mosaic-surface-hover",
               selectedStatusFilter === status && "ring-2 ring-mosaic-accent ring-offset-1 ring-offset-mosaic-surface"
             )}
             style={getNodeStatusStyle(status)}
@@ -428,11 +428,11 @@ const ClusterStatus = () => {
             aria-pressed={selectedStatusFilter === status}
             title={`Show only ${NODE_STATUS_LABELS[status]} nodes`}
           >
-            <span className="inline-flex items-center gap-[6px] text-card-11 text-mosaic-muted">
+            <span className="inline-flex min-w-0 items-center gap-[6px] text-card-11 text-mosaic-muted">
               <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} aria-hidden="true">
                 {getStatusSymbol(status)}
               </span>
-              {NODE_STATUS_LABELS[status]}
+              <span className="min-w-0 truncate">{NODE_STATUS_LABELS[status]}</span>
             </span>
             <strong className="text-card-14 font-extrabold text-mosaic-primary">{statusSummary[status] || 0}</strong>
           </button>
@@ -548,13 +548,13 @@ const ClusterStatus = () => {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-card-11-5 text-mosaic-secondary">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 text-card-11-5 text-mosaic-secondary">
         {summaryStatuses.map((status) => (
-          <span key={status} className="inline-flex items-center gap-[7px]">
+          <span key={status} className="inline-flex min-w-0 items-center gap-[7px]">
             <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} aria-hidden="true">
               {getStatusSymbol(status)}
             </span>
-            {NODE_STATUS_LABELS[status]}
+            <span className="min-w-0 truncate">{NODE_STATUS_LABELS[status]}</span>
           </span>
         ))}
       </div>
