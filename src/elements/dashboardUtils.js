@@ -114,7 +114,7 @@ export const cardClasses = {
   shell: "h-full w-full overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-surface p-3 font-sans text-mosaic-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors duration-200",
   shellPadded: "h-full w-full overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-surface px-3.5 py-3 font-sans text-mosaic-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors duration-200",
   title: "mb-[9px] flex min-h-6 items-center gap-[9px] border-b border-mosaic-border pb-2 text-mosaic-primary",
-  titleText: "m-0 min-w-0 text-card-13 font-bold uppercase tracking-normal",
+  titleText: "m-0 min-w-0 text-card-15 font-bold uppercase tracking-normal",
   titleSubtext: "text-card-12 text-mosaic-muted",
   icon: "inline-flex shrink-0 items-center justify-center text-card-18 text-mosaic-secondary",
   loading: "flex min-h-11 items-center text-card-12 font-semibold text-mosaic-muted",
