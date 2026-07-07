@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { FaWrench } from "react-icons/fa";
 import {
   cardClasses,
   cx,
@@ -6,6 +7,7 @@ import {
   NODE_STATUS_LABELS,
   NODE_STATUS_ORDER,
   NODE_STATUS_PRIORITY,
+  NODE_STATUS_SYMBOLS,
   normalizeNodeState,
   refreshEventName,
 } from "./dashboardUtils";
@@ -17,6 +19,12 @@ const nodeHeaderClass = "flex items-start justify-between gap-3 border-b border-
 const nodeSubtitleClass = "mt-1 block text-card-11-5 text-mosaic-muted";
 const nodeInputClass = "non-draggable min-h-[29px] w-full rounded-[5px] border border-mosaic-border-strong bg-mosaic-app py-[5px] pl-8 pr-2.5 text-card-12 text-mosaic-secondary outline-none hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover focus:border-mosaic-accent focus:shadow-[0_0_0_3px_var(--mosaic-color-focus-ring)]";
 const nodeRefreshClass = "non-draggable min-h-[29px] cursor-pointer rounded-[5px] border border-mosaic-border-strong bg-mosaic-app px-[9px] py-[5px] text-card-12 font-semibold text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover";
+const nodeViewButtonClass = (active) => cx(
+  "non-draggable min-h-[29px] cursor-pointer rounded-[5px] border px-[9px] py-[5px] text-card-12 font-semibold transition-colors",
+  active
+    ? "border-mosaic-accent bg-mosaic-accent text-mosaic-accent-text"
+    : "border-mosaic-border-strong bg-mosaic-app text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover"
+);
 const nodeTabClass = (active) => cx(
   "non-draggable min-h-[29px] rounded-[5px] border px-3 py-[5px] text-card-11-5 font-bold transition-colors",
   active
@@ -24,10 +32,11 @@ const nodeTabClass = (active) => cx(
     : "border-mosaic-border bg-mosaic-surface text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover"
 );
 const nodeTileClass = (selected) => cx(
-  "non-draggable flex h-[34px] min-w-[48px] cursor-pointer items-center justify-center rounded-[5px] border border-[var(--node-status-color)] bg-[var(--node-status-color)] px-2 text-card-10 font-extrabold leading-none text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition-transform hover:-translate-y-px",
+  "non-draggable flex h-[34px] min-w-[48px] cursor-pointer items-center justify-center rounded-[5px] border border-mosaic-border bg-[var(--node-status-color)] px-2 text-card-11 font-extrabold leading-none text-[var(--node-status-text-color)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] transition-transform hover:-translate-y-px hover:border-mosaic-border-strong",
   selected && "ring-2 ring-mosaic-accent ring-offset-1 ring-offset-mosaic-surface"
 );
-const nodeStatusDotClass = "h-2.5 w-2.5 rounded-full bg-[var(--node-status-color)]";
+const nodeStatusDotClass = "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--node-status-color)] text-[10px] font-extrabold leading-none text-[var(--node-status-text-color)]";
+const nodeStatusIconClass = "h-2.5 w-2.5";
 
 const cleanPartition = (partition) => {
   if (!partition) return "";
@@ -146,6 +155,7 @@ const ClusterStatus = () => {
   const [selectedPartition, setSelectedPartition] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatusFilter, setSelectedStatusFilter] = useState(null);
+  const [viewMode, setViewMode] = useState("grid");
   const [selectedNodeName, setSelectedNodeName] = useState(null);
   const [nodeDetail, setNodeDetail] = useState(null);
   const [nodeJobs, setNodeJobs] = useState([]);
@@ -313,9 +323,13 @@ const ClusterStatus = () => {
     `Node: ${node.name}`,
     `Partitions: ${node.partitions.length ? node.partitions.join(", ") : "Unknown"}`,
     `Status: ${node.rawStatus || NODE_STATUS_LABELS[node.status] || "Unknown"}`,
-    `CPU Count: ${node.cpuCount || "Not reported"}`,
-    `Memory: ${node.memory || "Not reported"}`,
   ].join("\n");
+
+  const getStatusSymbol = (status) => (
+    status === "maintenance"
+      ? <FaWrench className={nodeStatusIconClass} aria-hidden="true" focusable="false" />
+      : NODE_STATUS_SYMBOLS[status] || NODE_STATUS_SYMBOLS.unknown
+  );
 
   if (loading) {
     return (
@@ -347,6 +361,26 @@ const ClusterStatus = () => {
               {lastFetchedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
+          <div className="inline-flex gap-1" aria-label="Node view mode">
+            <button
+              className={nodeViewButtonClass(viewMode === "grid")}
+              type="button"
+              onClick={() => setViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
+              title="Grid view"
+            >
+              Grid
+            </button>
+            <button
+              className={nodeViewButtonClass(viewMode === "list")}
+              type="button"
+              onClick={() => setViewMode("list")}
+              aria-pressed={viewMode === "list"}
+              title="List view"
+            >
+              List
+            </button>
+          </div>
           <button className={nodeRefreshClass} onClick={fetchNodes}>
             ⟳ Refresh
           </button>
@@ -394,25 +428,50 @@ const ClusterStatus = () => {
             aria-pressed={selectedStatusFilter === status}
             title={`Show only ${NODE_STATUS_LABELS[status]} nodes`}
           >
-            <span className="text-card-11 text-mosaic-muted">{NODE_STATUS_LABELS[status]}</span>
+            <span className="inline-flex items-center gap-[6px] text-card-11 text-mosaic-muted">
+              <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} aria-hidden="true">
+                {getStatusSymbol(status)}
+              </span>
+              {NODE_STATUS_LABELS[status]}
+            </span>
             <strong className="text-card-14 font-extrabold text-mosaic-primary">{statusSummary[status] || 0}</strong>
           </button>
         ))}
       </div>
 
-      <div className={cx("grid min-h-0 flex-1 gap-3 overflow-hidden", selectedNode ? "grid-cols-[minmax(0,1fr)_minmax(220px,280px)]" : "grid-cols-1")}>
-        <div className="flex min-h-[130px] flex-wrap content-start gap-[6px] overflow-y-auto rounded-[5px] border border-mosaic-border bg-mosaic-app p-2">
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden">
+        <div className={cx(
+          "min-h-[130px] overflow-y-auto rounded-[5px] border border-mosaic-border bg-mosaic-app p-2",
+          viewMode === "grid" ? "flex flex-wrap content-start gap-[6px]" : "grid content-start gap-[6px]"
+        )}>
           {visibleNodes.map((node) => (
-            <button
-              key={node.name}
-              className={nodeTileClass(selectedNodeName === node.name)}
-              style={getNodeStatusStyle(node.status)}
-              type="button"
-              onClick={() => handleNodeClick(node)}
-              title={getNodeTooltip(node)}
-            >
-              {node.name}
-            </button>
+            viewMode === "grid" ? (
+              <button
+                key={node.name}
+                className={nodeTileClass(selectedNodeName === node.name)}
+                style={getNodeStatusStyle(node.status)}
+                type="button"
+                onClick={() => handleNodeClick(node)}
+                title={getNodeTooltip(node)}
+              >
+                <span>{node.name}</span>
+              </button>
+            ) : (
+              <button
+                key={node.name}
+                className={cx(
+                  "non-draggable grid min-h-[34px] cursor-pointer grid-cols-[minmax(90px,1fr)_minmax(85px,0.8fr)_minmax(120px,1.4fr)] items-center gap-2 rounded-[5px] border border-mosaic-border bg-mosaic-table px-2 py-1.5 text-left text-card-11-5 text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover",
+                  selectedNodeName === node.name && "ring-2 ring-mosaic-accent ring-offset-1 ring-offset-mosaic-surface"
+                )}
+                type="button"
+                onClick={() => handleNodeClick(node)}
+                title={getNodeTooltip(node)}
+              >
+                <span className="font-extrabold text-mosaic-primary">{node.name}</span>
+                <span className="font-semibold text-mosaic-secondary">{NODE_STATUS_LABELS[node.status] || "Unknown"}</span>
+                <span className="truncate text-mosaic-muted">{node.partitions.join(", ") || "Unknown"}</span>
+              </button>
+            )
           ))}
           {visibleNodes.length === 0 && (
             <div className={cardClasses.empty}>No nodes match the current filters.</div>
@@ -420,13 +479,21 @@ const ClusterStatus = () => {
         </div>
 
         {selectedNode && (
-          <aside className="flex min-h-0 flex-col overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-table p-2.5">
-            <div className="mb-2 flex shrink-0 items-center gap-2 border-b border-mosaic-border pb-2">
-              <span className={nodeStatusDotClass} style={getNodeStatusStyle(selectedNode.status)} />
+          <aside className="relative z-20 flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-table p-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.22)] sm:absolute sm:inset-y-0 sm:right-0 sm:w-[280px]">
+            <div className="mb-2 flex shrink-0 items-start justify-between gap-2 border-b border-mosaic-border pb-2">
               <div>
                 <h4 className="m-0 text-card-14 font-extrabold text-mosaic-primary">{selectedNode.name}</h4>
                 <p className="m-0 text-card-11 text-mosaic-muted">{NODE_STATUS_LABELS[selectedNode.status] || "Unknown"}</p>
               </div>
+              <button
+                className="non-draggable inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[5px] border border-mosaic-border-strong bg-mosaic-app text-card-14 font-extrabold leading-none text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover hover:text-mosaic-primary"
+                type="button"
+                onClick={() => setSelectedNodeName(null)}
+                aria-label="Close node details"
+                title="Close node details"
+              >
+                ×
+              </button>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-gutter:stable] [overscroll-behavior:contain]">
@@ -484,7 +551,9 @@ const ClusterStatus = () => {
       <div className="flex flex-wrap items-center gap-2 text-card-11-5 text-mosaic-secondary">
         {summaryStatuses.map((status) => (
           <span key={status} className="inline-flex items-center gap-[7px]">
-            <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} />
+            <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} aria-hidden="true">
+              {getStatusSymbol(status)}
+            </span>
             {NODE_STATUS_LABELS[status]}
           </span>
         ))}

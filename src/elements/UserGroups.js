@@ -7,6 +7,7 @@ import GroupButton from "./GroupButton"; // Import GroupButton component
 
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
 import { get_base_url } from "../utils/api_config.js"
+import { cardClasses, cx } from "./dashboardUtils";
 
 const UserGroups = ({ description }) => {
   const [groups, setGroups] = useState([]);
@@ -64,25 +65,23 @@ const UserGroups = ({ description }) => {
 
   return (
     <div className="p-4 theme-surface w-full flex flex-col">
-      {/* Header section with title and action button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
-        <div className="mb-2 sm:mb-0">
-          <h2 className="text-2xl font-semibold theme-text-primary">
-            <Tippy content={ description }>
-              <span className="cursor-help">User Groups ⓘ</span>
-            </Tippy>
+      {/* Header section */}
+      <div className="mb-4 pr-10">
+        <div>
+          <h2 className={cardClasses.titleText}>
+              User Groups
           </h2>
-        </div>
-        
-        {/* Request Group Access Button */}
-        <div className="flex items-center">
-          <div className="group-request-action">
-            <GroupButton />
-          </div>
         </div>
       </div>
 
       <hr className="theme-border mb-4" />
+
+      {/* Request Group Access Button */}
+      <div className="mb-4 flex items-center">
+        <div className="group-request-action">
+          <GroupButton />
+        </div>
+      </div>
 
       {/*User's Groups*/}
       <div className="overflow-auto w-full h-full flex-grow">
@@ -101,7 +100,7 @@ const UserGroups = ({ description }) => {
       {/* Additional note at the bottom */}
       <div className="mt-4 pt-3 border-t theme-border">
         <p className="text-sm theme-text-secondary">
-          Need access to additional groups? Use the "Group Request" button above to submit a request.
+          Need access to additional groups? Use the "Group Management" button to submit a request.
         </p>
       </div>
     </div>

@@ -36,6 +36,22 @@ def _is_gpu_partition_member(partitions):
     return any(_normalize_partition_name(partition) == GPU_PARTITION for partition in partitions)
 
 
+def _normalize_slurm_node_state(state):
+    value = str(state or "").lower().replace("*", "").replace("+", "").replace("#", "").replace("-", "")
+
+    if "down" in value or "drain" in value or "fail" in value:
+        return "down"
+    if "maint" in value or "reserv" in value:
+        return "maintenance"
+    if "mix" in value:
+        return "mixed"
+    if "alloc" in value or "comp" in value:
+        return "allocated"
+    if "idle" in value:
+        return "idle"
+    return "unknown"
+
+
 def _parse_gpu_tres_count(value):
     if not value:
         return 0
@@ -276,7 +292,7 @@ def get_gpu_resources():
             if not _is_gpu_partition_member(partitions):
                 continue
 
-            state = (node.get("State") or "").lower()
+            state = _normalize_slurm_node_state(node.get("State"))
             configured_gpus = _parse_gpu_tres_count(node.get("CfgTRES")) or _parse_gpu_tres_count(node.get("Gres"))
             allocated_node_gpus = _parse_gpu_tres_count(node.get("AllocTRES"))
 
@@ -284,9 +300,9 @@ def get_gpu_resources():
             total_gpus += configured_gpus
             allocated_gpus += allocated_node_gpus
 
-            if "alloc" in state or "mix" in state:
+            if state in ("allocated", "mixed"):
                 busy_nodes += 1
-            elif "idle" in state:
+            elif state == "idle":
                 available_nodes += 1
 
         return jsonify({

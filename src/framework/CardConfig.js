@@ -120,7 +120,7 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: ClusterStatus,
         category: "system",
-        minW: 6,
+        minW: 4,
         minH: 10
     },
     "Node Utilization": {
@@ -136,7 +136,7 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: PyVenvManager,
 	category: "system",
-        minW: 4, minH: 10
+        minW: 6, minH: 10
     },
 
     "Quota Information": {
@@ -152,7 +152,7 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: UserGroups,
 	category: "user",
-        minW: 3, minH: 6
+        minW: 6, minH: 7
     },
 
     "Accounts": {

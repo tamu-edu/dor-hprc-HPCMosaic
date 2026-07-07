@@ -71,13 +71,13 @@ export const normalizeNodeState = (state = "") => {
 };
 
 export const NODE_STATUS_COLORS = {
-  idle: "#16a34a",
-  allocated: "#15803d",
-  mixed: "#eab308",
-  down: "#dc2626",
-  drained: "#f97316",
-  maintenance: "#f97316",
-  unknown: "#6b7280",
+  idle: "#0072B2",
+  allocated: "#009E73",
+  mixed: "#D8C84A",
+  drained: "#E69F00",
+  down: "#D55E00",
+  maintenance: "#CC79A7",
+  unknown: "#6B7280",
 };
 
 export const NODE_STATUS_LABELS = {
@@ -88,6 +88,26 @@ export const NODE_STATUS_LABELS = {
   drained: "Drained",
   maintenance: "Maintenance",
   unknown: "Unknown",
+};
+
+export const NODE_STATUS_SYMBOLS = {
+  idle: "✓",
+  allocated: "●",
+  mixed: "◐",
+  drained: "⏸",
+  down: "✕",
+  maintenance: "M",
+  unknown: "?",
+};
+
+export const NODE_STATUS_TEXT_COLORS = {
+  idle: "#ffffff",
+  allocated: "#ffffff",
+  mixed: "#111827",
+  drained: "#111827",
+  down: "#ffffff",
+  maintenance: "#ffffff",
+  unknown: "#ffffff",
 };
 
 export const NODE_STATUS_PRIORITY = {
@@ -103,9 +123,11 @@ export const NODE_STATUS_PRIORITY = {
 export const NODE_STATUS_ORDER = ["idle", "allocated", "mixed", "drained", "down", "maintenance", "unknown"];
 
 export const getNodeStatusColor = (status) => NODE_STATUS_COLORS[status] || NODE_STATUS_COLORS.unknown;
+export const getNodeStatusTextColor = (status) => NODE_STATUS_TEXT_COLORS[status] || NODE_STATUS_TEXT_COLORS.unknown;
 
 export const getNodeStatusStyle = (status) => ({
   "--node-status-color": getNodeStatusColor(status),
+  "--node-status-text-color": getNodeStatusTextColor(status),
 });
 
 export const cx = (...classes) => classes.filter(Boolean).join(" ");
@@ -114,7 +136,7 @@ export const cardClasses = {
   shell: "h-full w-full overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-surface p-3 font-sans text-mosaic-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors duration-200",
   shellPadded: "h-full w-full overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-surface px-3.5 py-3 font-sans text-mosaic-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors duration-200",
   title: "mb-[9px] flex min-h-6 items-center gap-[9px] border-b border-mosaic-border pb-2 text-mosaic-primary",
-  titleText: "m-0 min-w-0 text-card-13 font-bold uppercase tracking-normal",
+  titleText: "m-0 min-w-0 text-card-15 font-bold uppercase tracking-normal",
   titleSubtext: "text-card-12 text-mosaic-muted",
   icon: "inline-flex shrink-0 items-center justify-center text-card-18 text-mosaic-secondary",
   loading: "flex min-h-11 items-center text-card-12 font-semibold text-mosaic-muted",
@@ -226,7 +248,7 @@ export const KpiCard = ({ icon, title, value, suffix, detail, tone = "red", load
             <div className="block h-2 overflow-hidden rounded-full bg-mosaic-border">
               <span
                 className={cardClasses.progressFill}
-                style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
+                style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%`, backgroundColor: "#16a34a", }}
               />
             </div>
             <span className="text-card-11 text-mosaic-muted">{progressLabel}</span>

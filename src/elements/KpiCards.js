@@ -74,6 +74,20 @@ export const GpuResourcesCard = () => {
   const availableNodes = data?.nodes?.available || 0;
   const allocatedGpus = data?.gpus?.allocated || 0;
   const totalGpus = data?.gpus?.total || 0;
+  const gpuStats = [
+    {
+      label: "Busy",
+      value: `${formatNumber(busyNodes)} / ${formatNumber(totalNodes)}`,
+    },
+    {
+      label: "Allocated",
+      value: `${formatNumber(allocatedGpus)} / ${formatNumber(totalGpus)}`,
+    },
+    {
+      label: "Idle",
+      value: formatNumber(availableNodes),
+    },
+  ];
 
   return (
     <section className={cx(cardClasses.shell, "relative")}>
@@ -86,23 +100,20 @@ export const GpuResourcesCard = () => {
       ) : error ? (
         <div className={cardClasses.empty}>Unavailable</div>
       ) : (
-        <div className="grid gap-[7px]">
-          <div className="grid gap-0.5">
-            <span className="text-card-11 font-semibold text-mosaic-secondary">GPU Nodes Busy</span>
-            <strong className="text-card-24 font-extrabold text-mosaic-primary">
-              {formatNumber(busyNodes)} <em className="text-[0.68em] not-italic font-bold text-mosaic-secondary">/ {formatNumber(totalNodes)}</em>
-            </strong>
-          </div>
-          <div className="grid gap-0.5">
-            <span className="text-card-11 font-semibold text-mosaic-secondary">GPUs Allocated</span>
-            <strong className="text-card-24 font-extrabold text-mosaic-primary">
-              {formatNumber(allocatedGpus)} <em className="text-[0.68em] not-italic font-bold text-mosaic-secondary">/ {formatNumber(totalGpus)}</em>
-            </strong>
-          </div>
-          <div className="grid gap-0.5">
-            <span className="text-card-11 font-semibold text-mosaic-secondary">Available GPU Nodes</span>
-            <strong className="text-card-24 font-extrabold text-mosaic-primary">{formatNumber(availableNodes)}</strong>
-          </div>
+        <div className="grid grid-cols-3 gap-[7px]">
+          {gpuStats.map((stat) => (
+            <div
+              key={stat.label}
+              className="grid min-w-0 gap-1 rounded-[5px] border border-mosaic-border bg-mosaic-table px-2 py-2 text-center"
+            >
+              <strong className="min-w-0 whitespace-nowrap text-card-22 font-extrabold leading-none text-mosaic-primary">
+                {stat.value}
+              </strong>
+              <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-10 font-bold uppercase text-mosaic-secondary">
+                {stat.label}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </section>
