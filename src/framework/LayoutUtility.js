@@ -41,6 +41,19 @@ const LayoutUtility = ({
         }
     }, []);
 
+    useEffect(() => {
+        const clearActiveLayout = () => {
+            setActiveLayout(null);
+            localStorage.removeItem('activeLayout');
+        };
+
+        window.addEventListener("mosaic-dashboard-layout-modified", clearActiveLayout);
+
+        return () => {
+            window.removeEventListener("mosaic-dashboard-layout-modified", clearActiveLayout);
+        };
+    }, []);
+
     // Improved function to refresh layouts
     const refreshLayouts = async () => {
         try {

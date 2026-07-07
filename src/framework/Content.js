@@ -6,8 +6,7 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { debounce } from "lodash";
 import { v4 as uuidv4 } from "uuid";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-hot-toast";
 
 import CardConfig from "./CardConfig"
 import { createDefaultLayout } from "./DefaultLayout";
@@ -27,7 +26,7 @@ const getMinSize = (componentName) => {
   return config ? { minW: config.minW ?? 3, minH: config.minH ?? 5} : {minW: 3, minH: 5};
 };
 
-const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
+const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutEdited, layoutLocked }) => {
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [placeholderPos, setPlaceholderPos] = useState({ x: 0, y: 0 });
   const [placeholderSize, setPlaceholderSize] = useState({ w: 4, h: 10 });
@@ -36,9 +35,9 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
   const gridRef = useRef(null);
   const layoutRef = useRef([]);
 
-  const [row, setRow] = useState(() => layoutData?.length > 0 ? layoutData : createDefaultLayout());
+  const [row, setRow] = useState(() => Array.isArray(layoutData) ? layoutData : createDefaultLayout());
   const [layout, setLayout] = useState(() =>
-    (layoutData?.length > 0 ? layoutData : row).map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name }))
+    (Array.isArray(layoutData) ? layoutData : row).map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name }))
   );
 
   // Capture latest layout when saving
@@ -53,7 +52,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 
   // Listen for changes to layoutData and update the state
   useEffect(() => {
-    if (layoutData && Array.isArray(layoutData) && layoutData.length > 0) {
+    if (Array.isArray(layoutData)) {
       //console.log("🔄 Updating Content.js with new layoutData:", layoutData);
       setRow(layoutData);
       setLayout(layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
@@ -96,18 +95,15 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
   const addNewElement = (item, dropPosition) => {
     if (layoutLocked) {
       toast.error('Cannot add elements - layout is locked', {
-        autoClose: 2000,
-	position: "top-right",
-	hideProgressBar: true,
+        duration: 2000,
       });
       return;
     }
 
     if (row.some((ele) => ele.name === item.name)) {
-      toast.warn(`"${item.name}" is already added!`, {
-        autoClose: 2000,
-        position: "top-right",
-        hideProgressBar: true,
+      toast(`"${item.name}" is already added!`, {
+        duration: 2000,
+        icon: "❗",
       });
       return;
     }
@@ -126,15 +122,14 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
     };
 
     const newRow = [...row, newItem];
+    onLayoutEdited?.();
     setRow(newRow);
     setLayout(newRow.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
     setLayoutData(newRow);
 
     // Show a success toast
     toast.success(`Added ${item.name} to dashboard`, {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: true,
+      duration: 2000,
     });
   };
 
@@ -189,14 +184,14 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
     const newRow = row.filter((_, i) => i !== index);
     const newLayout = layout.filter((item) => item.i !== row[index].i);
 
+    onLayoutEdited?.();
     setRow(newRow);
     setLayout(newLayout);
     setLayoutData(newRow);
 
-    toast.info(`Removed ${deletedName}`, {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: true,
+    toast(`Removed ${deletedName}`, {
+      duration: 2000,
+      icon: "❌",
     });
   };
 
@@ -216,6 +211,27 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
                 h: newItem.h
               }
             : item;
+    });
+
+    setRow(updatedRow);
+    setLayoutData(updatedRow);
+  };
+
+  const commitUserLayoutChange = (committedLayout) => {
+    onLayoutEdited?.();
+    setLayout(committedLayout);
+
+    const updatedRow = row.map((item) => {
+      const newItem = committedLayout.find((l) => l.i === item.i);
+      return newItem
+        ? {
+            ...item,
+            x: newItem.x,
+            y: newItem.y,
+            w: newItem.w,
+            h: newItem.h,
+          }
+        : item;
     });
 
     setRow(updatedRow);
@@ -253,9 +269,6 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
       }}
       className={`dashboard-grid-dropzone max-w-full h-auto relative ${isOver ? "theme-selected" : ""}`}
     >
-      {/* Toast Notification Container */}
-      <ToastContainer />
-
       <ReactGridLayout
         layout={combinedLayout}
         onLayoutChange={onLayoutChange}
@@ -271,6 +284,8 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         autoSize={true}
 	className="dashboard-react-grid"
         draggableCancel=".non-draggable"
+        onDragStop={commitUserLayoutChange}
+        onResizeStop={commitUserLayoutChange}
       >
         {/* Render actual grid items */}
         {row.map((ele, index) => {

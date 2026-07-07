@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import Joyride, { STATUS, ACTIONS } from 'react-joyride';
 import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdPalette, MdCheck, MdFormatSize, MdTextFields } from "react-icons/md";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdRefresh } from "react-icons/md";
 
 //Context Imports
@@ -16,9 +16,17 @@ import Sidebar from "./Sidebar";
 import LayoutUtility from "./LayoutUtility";
 import HelpButton from "../elements/HelpButton";
 import BannerBackground from "./BannerBackground";
+import CardConfig from "./CardConfig";
 import { createDefaultLayout } from "./DefaultLayout";
 
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
+import {
+  getSavedLayoutItems,
+  loadDashboardLayoutPreference,
+  mergeDashboardLayout,
+  normalizeDashboardLayout,
+  saveDashboardLayoutPreference,
+} from "./dashboardLayoutPersistence";
 import { useChatbotVisibility } from "./ChatbotVisibilityContext";
 import config from "../../config.yml";
 
@@ -33,6 +41,7 @@ const Banner = ({ setRunTour }) => {
   const [sidebarMaximized, setSidebarMaximized] = useState(false);
   const [layoutData, setLayoutData] = useState(null);
   const [layouts, setLayouts] = useState([]);
+  const [layoutHydrated, setLayoutHydrated] = useState(false);
   const rawClusterName = config?.development?.cluster_name || config?.production?.cluster_name || "";
   const clusterName = String(rawClusterName).trim();
   const dashboardTitle = clusterName ? `${clusterName} Dashboard` : "Dashboard";
@@ -46,6 +55,9 @@ const Banner = ({ setRunTour }) => {
   const themeOptions = Object.entries(themes);
   const cardFontSizeOptions = Object.entries(cardFontSizes);
   const fontFamilyOptions = Object.entries(fontFamilies);
+  const defaultLayoutRef = useRef(createDefaultLayout());
+  const layoutSaveTimerRef = useRef(null);
+  const layoutPersistenceEnabledRef = useRef(false);
 
   // Tour steps configuration
   const tourSteps = [
@@ -172,6 +184,66 @@ const Banner = ({ setRunTour }) => {
   }, [layoutData]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const hydrateDashboardLayout = async () => {
+      const defaultLayout = defaultLayoutRef.current;
+      const validCardNames = new Set(Object.keys(CardConfig));
+
+      try {
+        const savedLayoutPreference = await loadDashboardLayoutPreference();
+        const hasSavedLayout = savedLayoutPreference && Array.isArray(savedLayoutPreference.layout);
+        const restoredLayout = mergeDashboardLayout(
+          savedLayoutPreference,
+          defaultLayout,
+          validCardNames
+        );
+
+        if (!cancelled) {
+          setLayoutData(hasSavedLayout ? restoredLayout : defaultLayout);
+        }
+      } catch (error) {
+        console.error("Error restoring dashboard layout:", error);
+        if (!cancelled) {
+          setLayoutData(defaultLayout);
+        }
+      } finally {
+        if (!cancelled) {
+          setLayoutHydrated(true);
+        }
+      }
+    };
+
+    hydrateDashboardLayout();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!layoutHydrated || !Array.isArray(layoutData) || !layoutPersistenceEnabledRef.current) {
+      return undefined;
+    }
+
+    if (layoutSaveTimerRef.current) {
+      clearTimeout(layoutSaveTimerRef.current);
+    }
+
+    layoutSaveTimerRef.current = setTimeout(() => {
+      saveDashboardLayoutPreference(layoutData, defaultLayoutRef.current).catch((error) => {
+        console.error("Error saving dashboard layout preference:", error);
+      });
+    }, 600);
+
+    return () => {
+      if (layoutSaveTimerRef.current) {
+        clearTimeout(layoutSaveTimerRef.current);
+      }
+    };
+  }, [layoutData, layoutHydrated]);
+
+  useEffect(() => {
     const loadAvailableLayouts = async () => {
       try {
         const fetchedLayouts = await fetchLayouts();
@@ -190,6 +262,19 @@ const Banner = ({ setRunTour }) => {
   };
 
   let getLatestLayoutRef = useRef(() => []);
+
+  const markLayoutEdited = () => {
+    layoutPersistenceEnabledRef.current = true;
+    window.dispatchEvent(new Event("mosaic-dashboard-layout-modified"));
+  };
+
+  const updateLayoutData = (nextLayout, options = {}) => {
+    if (options.persist) {
+      layoutPersistenceEnabledRef.current = true;
+    }
+
+    setLayoutData(nextLayout);
+  };
 
   const saveCurrentLayout = async () => {
     const latestLayout = getLatestLayoutRef.current();
@@ -239,19 +324,29 @@ const Banner = ({ setRunTour }) => {
     if (!userConfirmed) return;
 
     const defaultView = createDefaultLayout();
+    defaultLayoutRef.current = defaultView;
+    layoutPersistenceEnabledRef.current = true;
 
     console.log("Applying Default View:", defaultView);
     setLayoutData([...defaultView]);
-
-    toast.success("Applied default layout!");
   };
 
 
   const applySavedLayout = async (layoutName) => {
     try {
       const fetchedLayout = await loadLayout(layoutName);
-      if (fetchedLayout && Array.isArray(fetchedLayout[0])) {
-        setLayoutData(fetchedLayout[0]);
+      const hasLoadableLayout =
+        Array.isArray(fetchedLayout) ||
+        Array.isArray(fetchedLayout?.[0]) ||
+        Array.isArray(fetchedLayout?.["0"]);
+      const validCardNames = new Set(Object.keys(CardConfig));
+      const normalizedLayout = normalizeDashboardLayout(
+        getSavedLayoutItems(fetchedLayout),
+        validCardNames
+      );
+
+      if (hasLoadableLayout) {
+        updateLayoutData(normalizedLayout, { persist: true });
         toast.success(`Loaded layout "${layoutName}"`);
       } else {
         console.warn("Invalid layout format received:", fetchedLayout);
@@ -315,9 +410,6 @@ const Banner = ({ setRunTour }) => {
         }}
       />
       
-      {/* Toast Notifications */}
-      <Toaster position="top-right" />
-
       {/* Header */}
       <BannerBackground>
 	<div className="flex justify-between w-full h-full items-center space-x-3 pr-4">
@@ -537,12 +629,19 @@ const Banner = ({ setRunTour }) => {
         {/* Main Content Area */}
         <div className={`flex-1 flex flex-col transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
           <div className="dashboard-grid-shell theme-surface border theme-border">
-              <Content
-                change={(data) => changeHandler(0, data)}
-                layoutData={layoutData} setLayoutData={setLayoutData}
-                getLatestLayout={(fn) => (getLatestLayoutRef.current = fn)}
-	        layoutLocked={layoutLocked}
-              />
+              {layoutHydrated ? (
+                <Content
+                  change={(data) => changeHandler(0, data)}
+                  layoutData={layoutData} setLayoutData={updateLayoutData}
+                  getLatestLayout={(fn) => (getLatestLayoutRef.current = fn)}
+                  onLayoutEdited={markLayoutEdited}
+	          layoutLocked={layoutLocked}
+                />
+              ) : (
+                <div className="flex min-h-[240px] items-center justify-center text-card-14 font-semibold text-mosaic-secondary">
+                  Loading dashboard layout...
+                </div>
+              )}
             </div>
         </div>
       </LayoutLockProvider>
