@@ -46,7 +46,6 @@ const Banner = ({ setRunTour }) => {
   const themeOptions = Object.entries(themes);
   const cardFontSizeOptions = Object.entries(cardFontSizes);
   const fontFamilyOptions = Object.entries(fontFamilies);
-  const activeThemeLabel = theme.label || themeName;
 
   // Tour steps configuration
   const tourSteps = [
@@ -355,46 +354,6 @@ const Banner = ({ setRunTour }) => {
               <span className="hidden md:inline">Refresh</span>
             </button>
 
-            {/* Theme Selector */}
-            <Menu as="div" className="relative inline-block text-left">
-              <Menu.Button
-                className="mosaic-topbar-button min-w-[48px]"
-                title={`Current theme: ${activeThemeLabel}`}
-                aria-label="Select dashboard theme"
-              >
-                <MdPalette className="text-xl flex-shrink-0" />
-                <span className="hidden lg:inline">
-                  {activeThemeLabel}
-                </span>
-              </Menu.Button>
-
-              <Transition
-                enter="transition duration-100 ease-out"
-                enterFrom="transform scale-95 opacity-0"
-                enterTo="transform scale-100 opacity-100"
-                leave="transition duration-75 ease-in"
-                leaveFrom="transform scale-100 opacity-100"
-                leaveTo="transform scale-95 opacity-0"
-              >
-                <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right theme-surface border theme-border rounded-md shadow-lg focus:outline-none z-50 py-1">
-                  {themeOptions.map(([name, optionTheme]) => (
-                    <Menu.Item key={name}>
-                      {({ active }) => (
-                        <button
-                          type="button"
-                          onClick={() => setTheme(name)}
-                          className={`${themeName === name ? 'theme-selected' : active ? 'theme-surface-hover' : ''} flex w-full items-center justify-between px-4 py-2 text-sm text-left theme-text-secondary`}
-                        >
-                          <span>{optionTheme.label || name}</span>
-                          {themeName === name && <MdCheck className="text-lg ml-3 flex-shrink-0" />}
-                        </button>
-                      )}
-                    </Menu.Item>
-                  ))}
-                </Menu.Items>
-              </Transition>
-            </Menu>
-            
             {/* Settings Dropdown - Contains Layout controls */}
             <Menu as="div" className="relative inline-block text-left">
               <Menu.Button className="mosaic-topbar-button min-w-[48px] md:min-w-auto">
@@ -426,6 +385,35 @@ const Banner = ({ setRunTour }) => {
 	            </Menu.Item>
 
 	          </div>
+                  <div className="px-4 py-3">
+                    <div className="mb-2 flex items-center text-sm font-semibold theme-text-secondary">
+                      <MdPalette className="mr-2 text-lg" />
+                      Theme
+                    </div>
+                    <div className="rounded-md border theme-border p-1">
+                      {themeOptions.map(([name, optionTheme]) => (
+                        <Menu.Item key={name}>
+                          {({ active }) => (
+                            <button
+                              type="button"
+                              onClick={() => setTheme(name)}
+                              className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs font-semibold transition-colors ${
+                                themeName === name
+                                  ? 'theme-selected'
+                                  : active
+                                    ? 'theme-surface-hover theme-text-secondary'
+                                    : 'theme-text-secondary theme-hover-surface'
+                              }`}
+                              aria-pressed={themeName === name}
+                            >
+                              <span>{optionTheme.label || name}</span>
+                              {themeName === name && <MdCheck className="ml-2 text-base flex-shrink-0" />}
+                            </button>
+                          )}
+                        </Menu.Item>
+                      ))}
+                    </div>
+                  </div>
                   <div className="px-4 py-3">
                     <div className="mb-2 flex items-center text-sm font-semibold theme-text-secondary">
                       <MdFormatSize className="mr-2 text-lg" />
