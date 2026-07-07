@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { FaWrench } from "react-icons/fa";
 import {
   cardClasses,
   cx,
@@ -6,6 +7,7 @@ import {
   NODE_STATUS_LABELS,
   NODE_STATUS_ORDER,
   NODE_STATUS_PRIORITY,
+  NODE_STATUS_SYMBOLS,
   normalizeNodeState,
   refreshEventName,
 } from "./dashboardUtils";
@@ -30,10 +32,11 @@ const nodeTabClass = (active) => cx(
     : "border-mosaic-border bg-mosaic-surface text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover"
 );
 const nodeTileClass = (selected) => cx(
-  "non-draggable flex h-[34px] min-w-[48px] cursor-pointer items-center justify-center rounded-[5px] border border-[var(--node-status-color)] bg-[var(--node-status-color)] px-2 text-card-10 font-extrabold leading-none text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition-transform hover:-translate-y-px",
+  "non-draggable flex h-[34px] min-w-[48px] cursor-pointer items-center justify-center rounded-[5px] border border-mosaic-border bg-[var(--node-status-color)] px-2 text-card-11 font-extrabold leading-none text-[var(--node-status-text-color)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] transition-transform hover:-translate-y-px hover:border-mosaic-border-strong",
   selected && "ring-2 ring-mosaic-accent ring-offset-1 ring-offset-mosaic-surface"
 );
-const nodeStatusDotClass = "h-2.5 w-2.5 rounded-full bg-[var(--node-status-color)]";
+const nodeStatusDotClass = "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--node-status-color)] text-[10px] font-extrabold leading-none text-[var(--node-status-text-color)]";
+const nodeStatusIconClass = "h-2.5 w-2.5";
 
 const cleanPartition = (partition) => {
   if (!partition) return "";
@@ -322,6 +325,12 @@ const ClusterStatus = () => {
     `Status: ${node.rawStatus || NODE_STATUS_LABELS[node.status] || "Unknown"}`,
   ].join("\n");
 
+  const getStatusSymbol = (status) => (
+    status === "maintenance"
+      ? <FaWrench className={nodeStatusIconClass} aria-hidden="true" focusable="false" />
+      : NODE_STATUS_SYMBOLS[status] || NODE_STATUS_SYMBOLS.unknown
+  );
+
   if (loading) {
     return (
       <div className={nodeCardClass}>
@@ -419,7 +428,12 @@ const ClusterStatus = () => {
             aria-pressed={selectedStatusFilter === status}
             title={`Show only ${NODE_STATUS_LABELS[status]} nodes`}
           >
-            <span className="text-card-11 text-mosaic-muted">{NODE_STATUS_LABELS[status]}</span>
+            <span className="inline-flex items-center gap-[6px] text-card-11 text-mosaic-muted">
+              <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} aria-hidden="true">
+                {getStatusSymbol(status)}
+              </span>
+              {NODE_STATUS_LABELS[status]}
+            </span>
             <strong className="text-card-14 font-extrabold text-mosaic-primary">{statusSummary[status] || 0}</strong>
           </button>
         ))}
@@ -440,7 +454,7 @@ const ClusterStatus = () => {
                 onClick={() => handleNodeClick(node)}
                 title={getNodeTooltip(node)}
               >
-                {node.name}
+                <span>{node.name}</span>
               </button>
             ) : (
               <button
@@ -454,10 +468,7 @@ const ClusterStatus = () => {
                 title={getNodeTooltip(node)}
               >
                 <span className="font-extrabold text-mosaic-primary">{node.name}</span>
-                <span className="inline-flex items-center gap-[7px]">
-                  <span className={nodeStatusDotClass} style={getNodeStatusStyle(node.status)} />
-                  {NODE_STATUS_LABELS[node.status] || "Unknown"}
-                </span>
+                <span className="font-semibold text-mosaic-secondary">{NODE_STATUS_LABELS[node.status] || "Unknown"}</span>
                 <span className="truncate text-mosaic-muted">{node.partitions.join(", ") || "Unknown"}</span>
               </button>
             )
@@ -470,7 +481,6 @@ const ClusterStatus = () => {
         {selectedNode && (
           <aside className="flex min-h-0 flex-col overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-table p-2.5">
             <div className="mb-2 flex shrink-0 items-center gap-2 border-b border-mosaic-border pb-2">
-              <span className={nodeStatusDotClass} style={getNodeStatusStyle(selectedNode.status)} />
               <div>
                 <h4 className="m-0 text-card-14 font-extrabold text-mosaic-primary">{selectedNode.name}</h4>
                 <p className="m-0 text-card-11 text-mosaic-muted">{NODE_STATUS_LABELS[selectedNode.status] || "Unknown"}</p>
@@ -532,7 +542,9 @@ const ClusterStatus = () => {
       <div className="flex flex-wrap items-center gap-2 text-card-11-5 text-mosaic-secondary">
         {summaryStatuses.map((status) => (
           <span key={status} className="inline-flex items-center gap-[7px]">
-            <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} />
+            <span className={nodeStatusDotClass} style={getNodeStatusStyle(status)} aria-hidden="true">
+              {getStatusSymbol(status)}
+            </span>
             {NODE_STATUS_LABELS[status]}
           </span>
         ))}

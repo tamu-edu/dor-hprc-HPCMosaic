@@ -71,13 +71,13 @@ export const normalizeNodeState = (state = "") => {
 };
 
 export const NODE_STATUS_COLORS = {
-  idle: "#16a34a",
-  allocated: "#15803d",
-  mixed: "#eab308",
-  down: "#dc2626",
-  drained: "#f97316",
-  maintenance: "#f97316",
-  unknown: "#6b7280",
+  idle: "#0072B2",
+  allocated: "#009E73",
+  mixed: "#D8C84A",
+  drained: "#E69F00",
+  down: "#D55E00",
+  maintenance: "#CC79A7",
+  unknown: "#6B7280",
 };
 
 export const NODE_STATUS_LABELS = {
@@ -88,6 +88,26 @@ export const NODE_STATUS_LABELS = {
   drained: "Drained",
   maintenance: "Maintenance",
   unknown: "Unknown",
+};
+
+export const NODE_STATUS_SYMBOLS = {
+  idle: "✓",
+  allocated: "●",
+  mixed: "◐",
+  drained: "⏸",
+  down: "✕",
+  maintenance: "M",
+  unknown: "?",
+};
+
+export const NODE_STATUS_TEXT_COLORS = {
+  idle: "#ffffff",
+  allocated: "#ffffff",
+  mixed: "#111827",
+  drained: "#111827",
+  down: "#ffffff",
+  maintenance: "#ffffff",
+  unknown: "#ffffff",
 };
 
 export const NODE_STATUS_PRIORITY = {
@@ -103,9 +123,11 @@ export const NODE_STATUS_PRIORITY = {
 export const NODE_STATUS_ORDER = ["idle", "allocated", "mixed", "drained", "down", "maintenance", "unknown"];
 
 export const getNodeStatusColor = (status) => NODE_STATUS_COLORS[status] || NODE_STATUS_COLORS.unknown;
+export const getNodeStatusTextColor = (status) => NODE_STATUS_TEXT_COLORS[status] || NODE_STATUS_TEXT_COLORS.unknown;
 
 export const getNodeStatusStyle = (status) => ({
   "--node-status-color": getNodeStatusColor(status),
+  "--node-status-text-color": getNodeStatusTextColor(status),
 });
 
 export const cx = (...classes) => classes.filter(Boolean).join(" ");
