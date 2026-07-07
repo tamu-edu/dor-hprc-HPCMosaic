@@ -10,6 +10,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import CardConfig from "./CardConfig"
+import { createDefaultLayout } from "./DefaultLayout";
 
 const ReactGridLayout = WidthProvider(RGL);
 const DASHBOARD_COLUMNS = 12;
@@ -27,19 +28,6 @@ const getMinSize = (componentName) => {
 };
 
 const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
-  // Default layout (used on first load)
-  const defaultLayout = [
-    { name: "Announcements Summary", i: uuidv4(), x: 0, y: 0, w: 3, h: 12 },
-    { name: "My Jobs Summary", i: uuidv4(), x: 3, y: 0, w: 3, h: 12 },
-    { name: "My Quotas Summary", i: uuidv4(), x: 6, y: 0, w: 3, h: 12 },
-    { name: "Accounts Usage Summary", i: uuidv4(), x: 9, y: 0, w: 3, h: 12 },
-    { name: "CPU Utilization", i: uuidv4(), x: 0, y: 12, w: 3, h: 7 },
-    { name: "GPU Resources", i: uuidv4(), x: 3, y: 12, w: 3, h: 7 },
-    { name: "Nodes Available", i: uuidv4(), x: 6, y: 12, w: 3, h: 7 },
-    { name: "Jobs Overview", i: uuidv4(), x: 9, y: 12, w: 3, h: 7 },
-    { name: "Cluster Nodes Overview", i: uuidv4(), x: 0, y: 19, w: 12, h: 14 },
-  ];
-
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [placeholderPos, setPlaceholderPos] = useState({ x: 0, y: 0 });
   const [placeholderSize, setPlaceholderSize] = useState({ w: 4, h: 10 });
@@ -48,12 +36,9 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
   const gridRef = useRef(null);
   const layoutRef = useRef([]);
 
-  // Ensure the initial layout is set correctly
-  const [row, setRow] = useState(layoutData?.length > 0 ? layoutData : defaultLayout);
-  const [layout, setLayout] = useState(
-    layoutData?.length > 0
-    ? layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name }))
-    : []
+  const [row, setRow] = useState(() => layoutData?.length > 0 ? layoutData : createDefaultLayout());
+  const [layout, setLayout] = useState(() =>
+    (layoutData?.length > 0 ? layoutData : row).map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name }))
   );
 
   // Capture latest layout when saving

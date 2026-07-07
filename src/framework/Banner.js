@@ -4,7 +4,6 @@ import { Menu, Transition } from '@headlessui/react';
 import Joyride, { STATUS, ACTIONS } from 'react-joyride';
 import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdPalette, MdCheck, MdFormatSize, MdTextFields } from "react-icons/md";
 import { Toaster, toast } from "react-hot-toast";
-import { v4 as uuidv4 } from "uuid";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdRefresh } from "react-icons/md";
 
 //Context Imports
@@ -17,6 +16,7 @@ import Sidebar from "./Sidebar";
 import LayoutUtility from "./LayoutUtility";
 import HelpButton from "../elements/HelpButton";
 import BannerBackground from "./BannerBackground";
+import { createDefaultLayout } from "./DefaultLayout";
 
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
 import { useChatbotVisibility } from "./ChatbotVisibilityContext";
@@ -213,7 +213,7 @@ const Banner = ({ setRunTour }) => {
 
       return {
         ...item,
-        name: originalItem ? originalItem.name : "Unnamed",
+        name: originalItem ? originalItem.name : item.name || "Unnamed",
       };
     });
 
@@ -239,17 +239,7 @@ const Banner = ({ setRunTour }) => {
     const userConfirmed = window.confirm("Are you sure you want to apply the default layout? This will remove all changes.");
     if (!userConfirmed) return;
 
-    const defaultView = [
-      { name: "Announcements Summary", i: uuidv4(), x: 0, y: 0, w: 3, h: 12 },
-      { name: "My Jobs Summary", i: uuidv4(), x: 3, y: 0, w: 3, h: 12 },
-      { name: "My Quotas Summary", i: uuidv4(), x: 6, y: 0, w: 3, h: 12 },
-      { name: "Accounts Usage Summary", i: uuidv4(), x: 9, y: 0, w: 3, h: 12 },
-      { name: "CPU Utilization", i: uuidv4(), x: 0, y: 12, w: 3, h: 7 },
-      { name: "GPU Resources", i: uuidv4(), x: 3, y: 12, w: 3, h: 7 },
-      { name: "Nodes Available", i: uuidv4(), x: 6, y: 12, w: 3, h: 7 },
-      { name: "Jobs Overview", i: uuidv4(), x: 9, y: 12, w: 3, h: 7 },
-      { name: "Cluster Nodes Overview", i: uuidv4(), x: 0, y: 19, w: 12, h: 14 },
-    ];
+    const defaultView = createDefaultLayout();
 
     console.log("Applying Default View:", defaultView);
     setLayoutData([...defaultView]);
