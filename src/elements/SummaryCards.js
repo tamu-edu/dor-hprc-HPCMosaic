@@ -75,13 +75,19 @@ const dotButtonClass = (active) => cx(
 
 const statusDotClass = "h-2.5 w-2.5 rounded-full bg-[var(--node-status-color)]";
 
+const usageFillColor = (tone) => {
+    if (tone === "warning") return "#f59e0b";
+    if (tone === "danger") return "#dc2626";
+    return "#16a34a";
+};
+
 const usageBar = (percent, tone, label, extraClass = "") => (
   <span
     className={cx("block h-2.5 overflow-hidden rounded-full bg-mosaic-border", extraClass)}
     title={label}
     aria-label={label}
   >
-    <span className={cx("block h-full rounded-full", getUsageFillClass(tone))} style={{ width: `${percent}%` }} />
+    <span className={cx("block h-full rounded-full", getUsageFillClass(tone))} style={{ width: `${percent}%`, backgroundColor: usageFillColor(tone), }} />
   </span>
 );
 
@@ -202,11 +208,9 @@ export const MyJobsSummaryCard = () => {
       </div>
       {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable] [overscroll-behavior:contain]">
-          <div className="mb-2 grid shrink-0 grid-cols-4 gap-2 border-b border-mosaic-border px-0 pb-2 pt-px">
+          <div className="mb-2 grid shrink-0 grid-cols-2 gap-2 border-b border-mosaic-border px-0 pb-2 pt-px">
             <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("green"))}>{counts.running || 0}</strong>Running</span>
             <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("amber"))}>{counts.pending || 0}</strong>Pending</span>
-            <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("red"))}>{counts.failed || 0}</strong>Failed</span>
-            <span className="text-center text-card-11 text-mosaic-muted"><strong className="block text-card-19 text-mosaic-primary">{counts.completed || 0}</strong>Completed</span>
           </div>
           {localError && <div className="mb-2 shrink-0 text-card-12 font-semibold text-mosaic-danger">{localError}</div>}
           {jobs.length > 0 ? (

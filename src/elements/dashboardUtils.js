@@ -226,7 +226,7 @@ export const KpiCard = ({ icon, title, value, suffix, detail, tone = "red", load
             <div className="block h-2 overflow-hidden rounded-full bg-mosaic-border">
               <span
                 className={cardClasses.progressFill}
-                style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
+                style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%`, backgroundColor: "#16a34a", }}
               />
             </div>
             <span className="text-card-11 text-mosaic-muted">{progressLabel}</span>
