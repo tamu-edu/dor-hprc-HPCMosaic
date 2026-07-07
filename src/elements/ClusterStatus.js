@@ -17,6 +17,12 @@ const nodeHeaderClass = "flex items-start justify-between gap-3 border-b border-
 const nodeSubtitleClass = "mt-1 block text-card-11-5 text-mosaic-muted";
 const nodeInputClass = "non-draggable min-h-[29px] w-full rounded-[5px] border border-mosaic-border-strong bg-mosaic-app py-[5px] pl-8 pr-2.5 text-card-12 text-mosaic-secondary outline-none hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover focus:border-mosaic-accent focus:shadow-[0_0_0_3px_var(--mosaic-color-focus-ring)]";
 const nodeRefreshClass = "non-draggable min-h-[29px] cursor-pointer rounded-[5px] border border-mosaic-border-strong bg-mosaic-app px-[9px] py-[5px] text-card-12 font-semibold text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover";
+const nodeViewButtonClass = (active) => cx(
+  "non-draggable min-h-[29px] cursor-pointer rounded-[5px] border px-[9px] py-[5px] text-card-12 font-semibold transition-colors",
+  active
+    ? "border-mosaic-accent bg-mosaic-accent text-mosaic-accent-text"
+    : "border-mosaic-border-strong bg-mosaic-app text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover"
+);
 const nodeTabClass = (active) => cx(
   "non-draggable min-h-[29px] rounded-[5px] border px-3 py-[5px] text-card-11-5 font-bold transition-colors",
   active
@@ -146,6 +152,7 @@ const ClusterStatus = () => {
   const [selectedPartition, setSelectedPartition] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatusFilter, setSelectedStatusFilter] = useState(null);
+  const [viewMode, setViewMode] = useState("grid");
   const [selectedNodeName, setSelectedNodeName] = useState(null);
   const [nodeDetail, setNodeDetail] = useState(null);
   const [nodeJobs, setNodeJobs] = useState([]);
@@ -313,8 +320,6 @@ const ClusterStatus = () => {
     `Node: ${node.name}`,
     `Partitions: ${node.partitions.length ? node.partitions.join(", ") : "Unknown"}`,
     `Status: ${node.rawStatus || NODE_STATUS_LABELS[node.status] || "Unknown"}`,
-    `CPU Count: ${node.cpuCount || "Not reported"}`,
-    `Memory: ${node.memory || "Not reported"}`,
   ].join("\n");
 
   if (loading) {
@@ -347,6 +352,26 @@ const ClusterStatus = () => {
               {lastFetchedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
+          <div className="inline-flex gap-1" aria-label="Node view mode">
+            <button
+              className={nodeViewButtonClass(viewMode === "grid")}
+              type="button"
+              onClick={() => setViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
+              title="Grid view"
+            >
+              Grid
+            </button>
+            <button
+              className={nodeViewButtonClass(viewMode === "list")}
+              type="button"
+              onClick={() => setViewMode("list")}
+              aria-pressed={viewMode === "list"}
+              title="List view"
+            >
+              List
+            </button>
+          </div>
           <button className={nodeRefreshClass} onClick={fetchNodes}>
             ⟳ Refresh
           </button>
@@ -401,18 +426,41 @@ const ClusterStatus = () => {
       </div>
 
       <div className={cx("grid min-h-0 flex-1 gap-3 overflow-hidden", selectedNode ? "grid-cols-[minmax(0,1fr)_minmax(220px,280px)]" : "grid-cols-1")}>
-        <div className="flex min-h-[130px] flex-wrap content-start gap-[6px] overflow-y-auto rounded-[5px] border border-mosaic-border bg-mosaic-app p-2">
+        <div className={cx(
+          "min-h-[130px] overflow-y-auto rounded-[5px] border border-mosaic-border bg-mosaic-app p-2",
+          viewMode === "grid" ? "flex flex-wrap content-start gap-[6px]" : "grid content-start gap-[6px]"
+        )}>
           {visibleNodes.map((node) => (
-            <button
-              key={node.name}
-              className={nodeTileClass(selectedNodeName === node.name)}
-              style={getNodeStatusStyle(node.status)}
-              type="button"
-              onClick={() => handleNodeClick(node)}
-              title={getNodeTooltip(node)}
-            >
-              {node.name}
-            </button>
+            viewMode === "grid" ? (
+              <button
+                key={node.name}
+                className={nodeTileClass(selectedNodeName === node.name)}
+                style={getNodeStatusStyle(node.status)}
+                type="button"
+                onClick={() => handleNodeClick(node)}
+                title={getNodeTooltip(node)}
+              >
+                {node.name}
+              </button>
+            ) : (
+              <button
+                key={node.name}
+                className={cx(
+                  "non-draggable grid min-h-[34px] cursor-pointer grid-cols-[minmax(90px,1fr)_minmax(85px,0.8fr)_minmax(120px,1.4fr)] items-center gap-2 rounded-[5px] border border-mosaic-border bg-mosaic-table px-2 py-1.5 text-left text-card-11-5 text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover",
+                  selectedNodeName === node.name && "ring-2 ring-mosaic-accent ring-offset-1 ring-offset-mosaic-surface"
+                )}
+                type="button"
+                onClick={() => handleNodeClick(node)}
+                title={getNodeTooltip(node)}
+              >
+                <span className="font-extrabold text-mosaic-primary">{node.name}</span>
+                <span className="inline-flex items-center gap-[7px]">
+                  <span className={nodeStatusDotClass} style={getNodeStatusStyle(node.status)} />
+                  {NODE_STATUS_LABELS[node.status] || "Unknown"}
+                </span>
+                <span className="truncate text-mosaic-muted">{node.partitions.join(", ") || "Unknown"}</span>
+              </button>
+            )
           ))}
           {visibleNodes.length === 0 && (
             <div className={cardClasses.empty}>No nodes match the current filters.</div>
