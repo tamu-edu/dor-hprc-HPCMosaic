@@ -100,7 +100,7 @@ const UserGroups = ({ description }) => {
       {/* Additional note at the bottom */}
       <div className="mt-4 pt-3 border-t theme-border">
         <p className="text-sm theme-text-secondary">
-          Need access to additional groups? Use the "Group Request" button above to submit a request.
+          Need access to additional groups? Use the "Group Management" button above to submit a request.
         </p>
       </div>
     </div>
