@@ -439,7 +439,7 @@ const ClusterStatus = () => {
         ))}
       </div>
 
-      <div className={cx("grid min-h-0 flex-1 gap-3 overflow-hidden", selectedNode ? "grid-cols-[minmax(0,1fr)_minmax(220px,280px)]" : "grid-cols-1")}>
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden">
         <div className={cx(
           "min-h-[130px] overflow-y-auto rounded-[5px] border border-mosaic-border bg-mosaic-app p-2",
           viewMode === "grid" ? "flex flex-wrap content-start gap-[6px]" : "grid content-start gap-[6px]"
@@ -479,12 +479,21 @@ const ClusterStatus = () => {
         </div>
 
         {selectedNode && (
-          <aside className="flex min-h-0 flex-col overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-table p-2.5">
-            <div className="mb-2 flex shrink-0 items-center gap-2 border-b border-mosaic-border pb-2">
+          <aside className="relative z-20 flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[5px] border border-mosaic-border bg-mosaic-table p-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.22)] sm:absolute sm:inset-y-0 sm:right-0 sm:w-[280px]">
+            <div className="mb-2 flex shrink-0 items-start justify-between gap-2 border-b border-mosaic-border pb-2">
               <div>
                 <h4 className="m-0 text-card-14 font-extrabold text-mosaic-primary">{selectedNode.name}</h4>
                 <p className="m-0 text-card-11 text-mosaic-muted">{NODE_STATUS_LABELS[selectedNode.status] || "Unknown"}</p>
               </div>
+              <button
+                className="non-draggable inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[5px] border border-mosaic-border-strong bg-mosaic-app text-card-14 font-extrabold leading-none text-mosaic-secondary hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover hover:text-mosaic-primary"
+                type="button"
+                onClick={() => setSelectedNodeName(null)}
+                aria-label="Close node details"
+                title="Close node details"
+              >
+                ×
+              </button>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-gutter:stable] [overscroll-behavior:contain]">

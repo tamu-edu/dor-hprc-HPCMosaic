@@ -65,23 +65,23 @@ const UserGroups = ({ description }) => {
 
   return (
     <div className="p-4 theme-surface w-full flex flex-col">
-      {/* Header section with title and action button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
-        <div className="mb-2 sm:mb-0">
+      {/* Header section */}
+      <div className="mb-4 pr-10">
+        <div>
           <h2 className={cardClasses.titleText}>
               User Groups
           </h2>
         </div>
-        
-        {/* Request Group Access Button */}
-        <div className="flex items-center">
-          <div className="group-request-action">
-            <GroupButton />
-          </div>
-        </div>
       </div>
 
       <hr className="theme-border mb-4" />
+
+      {/* Request Group Access Button */}
+      <div className="mb-4 flex items-center">
+        <div className="group-request-action">
+          <GroupButton />
+        </div>
+      </div>
 
       {/*User's Groups*/}
       <div className="overflow-auto w-full h-full flex-grow">
@@ -100,7 +100,7 @@ const UserGroups = ({ description }) => {
       {/* Additional note at the bottom */}
       <div className="mt-4 pt-3 border-t theme-border">
         <p className="text-sm theme-text-secondary">
-          Need access to additional groups? Use the "Group Management" button above to submit a request.
+          Need access to additional groups? Use the "Group Management" button to submit a request.
         </p>
       </div>
     </div>
