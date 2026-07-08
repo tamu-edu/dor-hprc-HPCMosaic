@@ -102,11 +102,11 @@ export const NODE_STATUS_SYMBOLS = {
 
 export const NODE_STATUS_TEXT_COLORS = {
   idle: "#ffffff",
-  allocated: "#ffffff",
+  allocated: "#111827",
   mixed: "#111827",
   drained: "#111827",
   down: "#ffffff",
-  maintenance: "#ffffff",
+  maintenance: "#111827",
   unknown: "#ffffff",
 };
 
