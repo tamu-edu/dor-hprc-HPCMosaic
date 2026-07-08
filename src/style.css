@@ -12,9 +12,118 @@ body,
 }
 
 body {
-  background-color: var(--mosaic-color-app-bg, #f9fafb);
-  color: var(--mosaic-color-text-primary, #111827);
+  background-color: var(--mosaic-color-app-bg, #202020);
+  color: var(--mosaic-color-text-primary, #FFFFFF);
+  font-family: var(--mosaic-dashboard-font-family, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   transition: background-color 200ms ease, color 200ms ease;
+}
+
+.mosaic-dashboard-root {
+  min-height: 100vh;
+  padding-left: 0;
+  background:
+    linear-gradient(180deg, rgba(80, 0, 0, 0.12), transparent 180px),
+    var(--mosaic-color-app-bg, #202020);
+}
+
+.mosaic-topbar {
+  height: 56px;
+  border-radius: 0;
+  background-color: var(--mosaic-color-banner-color, #500000);
+  background-size: 42px 32px, 42px 32px, cover;
+  box-shadow: 0 1px 0 var(--mosaic-color-border);
+}
+
+.mosaic-topbar .tracking-tight {
+  letter-spacing: 0;
+}
+
+.mosaic-top-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #ffffff;
+}
+
+.mosaic-top-title h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.mosaic-top-title span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 18px;
+}
+
+.mosaic-topbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--mosaic-color-border-strong);
+  border-radius: 8px;
+  background: var(--mosaic-color-surface-bg);
+  color: var(--mosaic-color-text-secondary);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.mosaic-topbar-button:hover {
+  background: var(--mosaic-color-surface-bg-hover);
+  border-color: var(--mosaic-color-primary-hover);
+  color: var(--mosaic-color-text-primary);
+}
+
+.dashboard-grid-shell {
+  margin: 16px 16px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dashboard-grid-dropzone {
+  padding: 0;
+  border-radius: 6px;
+}
+
+.dashboard-react-grid {
+  min-height: 240px;
+  border-radius: 6px;
+}
+
+.react-grid-item.react-grid-placeholder {
+  background: var(--mosaic-color-primary) !important;
+  border-radius: 8px;
+  opacity: 0.14;
+}
+
+.react-resizable-handle::after {
+  border-right-color: var(--mosaic-color-text-muted) !important;
+  border-bottom-color: var(--mosaic-color-text-muted) !important;
+}
+
+@media (max-width: 768px) {
+  .mosaic-dashboard-root {
+    padding-left: 0;
+  }
+
+  .mosaic-topbar {
+    height: auto;
+    min-height: 56px;
+  }
 }
 
 .theme-surface {
@@ -78,15 +187,15 @@ body {
 }
 
 .theme-progress-success {
-  background-color: var(--mosaic-color-success-bg);
+  background-color: #16a34a;
 }
 
 .theme-progress-caution {
-  background-color: var(--mosaic-color-caution-bg);
+  background-color: #f59e0b;
 }
 
 .theme-progress-danger {
-  background-color: var(--mosaic-color-danger-bg);
+  background-color: #dc2626;
 }
 
 .theme-input {

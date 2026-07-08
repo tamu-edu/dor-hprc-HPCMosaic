@@ -12,13 +12,7 @@ import os
 import json
 from flask import request, jsonify
 from . import api
-
-
-def _get_layouts_dir(user):
-    """Return the layouts directory path for a user, creating it if needed."""
-    path = f"/scratch/user/{user}/ondemand/layouts"
-    os.makedirs(path, exist_ok=True)
-    return path
+from .utils import get_layouts_dir
 
 
 @api.route('/save_layout', methods=['POST'])
@@ -32,7 +26,7 @@ def save_layout():
             return jsonify({"error": "Missing layout_name or layout_data"}), 400
 
         user = os.getenv("USER", "default_user")
-        layouts_dir = _get_layouts_dir(user)
+        layouts_dir = get_layouts_dir(user)
         layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
 
         with open(layout_file_path, 'w') as f:
@@ -48,7 +42,7 @@ def save_layout():
 def get_layouts():
     try:
         user = os.getenv("USER", "default_user")
-        layouts_dir = _get_layouts_dir(user)
+        layouts_dir = get_layouts_dir(user)
 
         # Exclude internal config files (prefixed with '_', e.g. _preferences.json)
         layout_files = [
@@ -71,7 +65,7 @@ def load_layout():
             return jsonify({"error": "Missing layout_name"}), 400
 
         user = os.getenv("USER", "default_user")
-        layouts_dir = _get_layouts_dir(user)
+        layouts_dir = get_layouts_dir(user)
         layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
 
         if not os.path.exists(layout_file_path):
@@ -95,7 +89,7 @@ def delete_layout():
             return jsonify({"error": "Missing layout_name"}), 400
 
         user = os.getenv("USER", "default_user")
-        layouts_dir = _get_layouts_dir(user)
+        layouts_dir = get_layouts_dir(user)
         layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
 
         if not os.path.exists(layout_file_path):
@@ -119,7 +113,7 @@ def rename_layout():
             return jsonify({"error": "Missing old_name or new_name"}), 400
 
         user = os.getenv("USER", "default_user")
-        layouts_dir = _get_layouts_dir(user)
+        layouts_dir = get_layouts_dir(user)
         old_path = os.path.join(layouts_dir, f"{old_name}.json")
         new_path = os.path.join(layouts_dir, f"{new_name}.json")
 

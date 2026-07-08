@@ -2,22 +2,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import Joyride, { STATUS, ACTIONS } from 'react-joyride';
-import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdPalette, MdCheck } from "react-icons/md";
+import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdPalette, MdCheck, MdFormatSize, MdTextFields } from "react-icons/md";
 import { Toaster, toast } from "react-hot-toast";
-import { v4 as uuidv4 } from "uuid";
-import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdAddChart } from "react-icons/md";
+import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdRefresh } from "react-icons/md";
 
 //Context Imports
 import { LayoutLockProvider } from '../context/LayoutLockContext';
 import { useTheme } from '../context/ThemeContext';
 
 //Component Imports
-import ClusterLogo from "./ClusterLogo";
 import Content from "./Content";
 import Sidebar from "./Sidebar";
 import LayoutUtility from "./LayoutUtility";
 import HelpButton from "../elements/HelpButton";
 import BannerBackground from "./BannerBackground";
+import { createDefaultLayout } from "./DefaultLayout";
 
 import { saveLayout, fetchLayouts, loadLayout } from './layoutUtils';
 import { useChatbotVisibility } from "./ChatbotVisibilityContext";
@@ -34,15 +33,19 @@ const Banner = ({ setRunTour }) => {
   const [sidebarMaximized, setSidebarMaximized] = useState(false);
   const [layoutData, setLayoutData] = useState(null);
   const [layouts, setLayouts] = useState([]);
-  const clusterName = config.development.cluster_name;
+  const rawClusterName = config?.development?.cluster_name || config?.production?.cluster_name || "";
+  const clusterName = String(rawClusterName).trim();
+  const dashboardTitle = clusterName ? `${clusterName} Dashboard` : "Dashboard";
   const [userData, setUserData] = useState({});
   const [loadingLayouts, setLoadingLayouts] = useState(true);
   const [layoutLocked, setLayoutLocked] = useState(false);
+  const [dashboardUpdatedAt, setDashboardUpdatedAt] = useState(new Date());
 
   const { hideChatbot, showChatbot } = useChatbotVisibility();
-  const { theme, themeName, setTheme, themes } = useTheme();
+  const { theme, themeName, setTheme, themes, cardFontSize, setCardFontSize, cardFontSizes, fontFamily, setFontFamily, fontFamilies } = useTheme();
   const themeOptions = Object.entries(themes);
-  const activeThemeLabel = theme.label || themeName;
+  const cardFontSizeOptions = Object.entries(cardFontSizes);
+  const fontFamilyOptions = Object.entries(fontFamilies);
 
   // Tour steps configuration
   const tourSteps = [
@@ -209,7 +212,7 @@ const Banner = ({ setRunTour }) => {
 
       return {
         ...item,
-        name: originalItem ? originalItem.name : "Unnamed",
+        name: originalItem ? originalItem.name : item.name || "Unnamed",
       };
     });
 
@@ -235,14 +238,7 @@ const Banner = ({ setRunTour }) => {
     const userConfirmed = window.confirm("Are you sure you want to apply the default layout? This will remove all changes.");
     if (!userConfirmed) return;
 
-    const defaultView = [
-      { name: "Accounts", i: uuidv4(), x: 0, y: 0, w: 10, h: 10 },
-      { name: "Node Utilization", i: uuidv4(), x: 0, y: 6, w: 5, h: 18 },
-      { name: "Python Venv Manager", i: uuidv4(), x: 5, y: 5, w: 5, h: 20 },
-      { name: "Quota Information", i: uuidv4(), x: 0, y: 18, w: 5, h: 18 },
-      { name: "User Groups", i: uuidv4(), x: 5, y: 16, w: 5, h: 18 },
-      { name: "User Jobs", i: uuidv4(), x: 5, y: 20, w: 5, h: 10 },
-    ];
+    const defaultView = createDefaultLayout();
 
     console.log("Applying Default View:", defaultView);
     setLayoutData([...defaultView]);
@@ -272,8 +268,14 @@ const Banner = ({ setRunTour }) => {
     setSidebarMaximized(!sidebarMaximized);
   };
 
+  const handleDashboardRefresh = () => {
+    setDashboardUpdatedAt(new Date());
+    window.dispatchEvent(new Event("mosaic-dashboard-refresh"));
+    toast.success("Dashboard refresh requested");
+  };
+
   return (
-    <div className="min-h-screen w-full flex flex-col theme-surface-alt overflow-x-hidden">
+    <div className="mosaic-dashboard-root min-h-screen w-full flex flex-col theme-surface-alt overflow-x-hidden">
       {/* Tour Component */}
       <Joyride
         steps={tourSteps}
@@ -321,66 +323,42 @@ const Banner = ({ setRunTour }) => {
 	<div className="flex justify-between w-full h-full items-center space-x-3 pr-4">
 	  
           {/*Logo*/}
-    <div className="hidden md:flex bg-white rounded-l-md h-full w-[130px] items-center justify-center overflow-hidden">
-      <ClusterLogo className="block w-[108px] h-[108px] object-contain" />
-          </div>
+          <div className="hidden md:flex h-full w-[18px]" />
 
 	  {/*Dashboard Name*/}
-          <div className="text-center flex-1">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-              {clusterName.toUpperCase()} DASHBOARD
+          <div className="mosaic-top-title flex-1">
+            <h1>
+              {dashboardTitle}
             </h1>
-            <p className="text-sm md:text-base text-white/80 font-medium tracking-wider uppercase">
-              Texas A&M University
-            </p>
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-3">
-            {/* Theme Selector */}
-            <Menu as="div" className="relative inline-block text-left">
-              <Menu.Button
-                className="flex items-center justify-center px-3 py-2 theme-surface border theme-border rounded-lg shadow theme-hover-surface transition-all duration-200 min-w-[48px]"
-                title={`Current theme: ${activeThemeLabel}`}
-                aria-label="Select dashboard theme"
-              >
-                <MdPalette className="text-xl" style={{ color: theme.colors.iconActive }} />
-                <span className="hidden lg:inline ml-2 font-semibold theme-text-secondary text-base whitespace-nowrap">
-                  {activeThemeLabel}
-                </span>
-              </Menu.Button>
+            <button
+              type="button"
+              onClick={openPopup}
+              className="add-element-btn mosaic-topbar-button"
+              title="Add dashboard elements"
+            >
+              <MdAddchart className="text-xl flex-shrink-0" />
+              <span className="hidden md:inline">Add Element</span>
+            </button>
 
-              <Transition
-                enter="transition duration-100 ease-out"
-                enterFrom="transform scale-95 opacity-0"
-                enterTo="transform scale-100 opacity-100"
-                leave="transition duration-75 ease-in"
-                leaveFrom="transform scale-100 opacity-100"
-                leaveTo="transform scale-95 opacity-0"
-              >
-                <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right theme-surface border theme-border rounded-md shadow-lg focus:outline-none z-50 py-1">
-                  {themeOptions.map(([name, optionTheme]) => (
-                    <Menu.Item key={name}>
-                      {({ active }) => (
-                        <button
-                          type="button"
-                          onClick={() => setTheme(name)}
-                          className={`${themeName === name ? 'theme-selected' : active ? 'theme-surface-hover' : ''} flex w-full items-center justify-between px-4 py-2 text-sm text-left theme-text-secondary`}
-                        >
-                          <span>{optionTheme.label || name}</span>
-                          {themeName === name && <MdCheck className="text-lg ml-3 flex-shrink-0" />}
-                        </button>
-                      )}
-                    </Menu.Item>
-                  ))}
-                </Menu.Items>
-              </Transition>
-            </Menu>
-            
-            {/* Settings Dropdown - Contains Add Element, Layout, Feedback */}
+            <button
+              type="button"
+              onClick={handleDashboardRefresh}
+              className="mosaic-topbar-button"
+              title={`Refresh dashboard. Last updated ${dashboardUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+              aria-label="Refresh dashboard"
+            >
+              <MdRefresh className="text-xl flex-shrink-0" />
+              <span className="hidden md:inline">Refresh</span>
+            </button>
+
+            {/* Settings Dropdown - Contains Layout controls */}
             <Menu as="div" className="relative inline-block text-left">
-              <Menu.Button className="flex items-center justify-center md:justify-start px-3 py-2 md:px-4 md:py-2 theme-surface border theme-border rounded-lg shadow theme-hover-surface transition-all duration-200 min-w-[48px] md:min-w-auto">
-                <MdSettings className="text-xl theme-text-secondary md:mr-2 flex-shrink-0" />
-                <span className="hidden md:inline font-semibold theme-text-secondary text-base whitespace-nowrap">Settings</span>
+              <Menu.Button className="mosaic-topbar-button min-w-[48px] md:min-w-auto">
+                <MdSettings className="text-xl flex-shrink-0" />
+                <span className="hidden md:inline">Settings</span>
               </Menu.Button>  
 
 	      <Transition
@@ -392,20 +370,8 @@ const Banner = ({ setRunTour }) => {
 	        leaveTo="transform scale-95 opacity-0"
 	      >
 
-                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right theme-surface border theme-border divide-y divide-gray-200 rounded-md shadow-lg focus:outline-none z-50">
+                <Menu.Items className="absolute right-0 mt-2 w-64 origin-top-right theme-surface border theme-border divide-y theme-border rounded-md shadow-lg focus:outline-none z-50">
 	          <div className="py-1">
-
-	            {/*Add Element Menu Option*/}
-	            <Menu.Item>
-	              {({ active }) => (
-      <button onClick={openPopup}
-        className={`${active ? 'theme-surface-hover' : ''} flex w-full px-4 py-2 text-sm text-left theme-text-secondary`}
-			>
-			  <MdAddchart className="text-lg mr-2" />
-			  Add Dashboard Element
-		        </button> )}
-	            </Menu.Item>
-
 
  	            {/*Layout Utility*/}
 	            <Menu.Item>
@@ -419,6 +385,88 @@ const Banner = ({ setRunTour }) => {
 	            </Menu.Item>
 
 	          </div>
+                  <div className="px-4 py-3">
+                    <div className="mb-2 flex items-center text-sm font-semibold theme-text-secondary">
+                      <MdPalette className="mr-2 text-lg" />
+                      Theme
+                    </div>
+                    <div className="rounded-md border theme-border p-1">
+                      {themeOptions.map(([name, optionTheme]) => (
+                        <Menu.Item key={name}>
+                          {({ active }) => (
+                            <button
+                              type="button"
+                              onClick={() => setTheme(name)}
+                              className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs font-semibold transition-colors ${
+                                themeName === name
+                                  ? 'theme-selected'
+                                  : active
+                                    ? 'theme-surface-hover theme-text-secondary'
+                                    : 'theme-text-secondary theme-hover-surface'
+                              }`}
+                              aria-pressed={themeName === name}
+                            >
+                              <span>{optionTheme.label || name}</span>
+                              {themeName === name && <MdCheck className="ml-2 text-base flex-shrink-0" />}
+                            </button>
+                          )}
+                        </Menu.Item>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <div className="mb-2 flex items-center text-sm font-semibold theme-text-secondary">
+                      <MdFormatSize className="mr-2 text-lg" />
+                      Card font size
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 rounded-md border theme-border p-1">
+                      {cardFontSizeOptions.map(([sizeName, sizeOption]) => (
+                        <button
+                          key={sizeName}
+                          type="button"
+                          onClick={() => setCardFontSize(sizeName)}
+                          className={`rounded px-2 py-1.5 text-xs font-semibold transition-colors ${
+                            cardFontSize === sizeName
+                              ? 'theme-selected'
+                              : 'theme-text-secondary theme-hover-surface'
+                          }`}
+                          aria-pressed={cardFontSize === sizeName}
+                        >
+                          {sizeOption.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <div className="mb-2 flex items-center text-sm font-semibold theme-text-secondary">
+                      <MdTextFields className="mr-2 text-lg" />
+                      Font style
+                    </div>
+                    <div className="rounded-md border theme-border p-1">
+                      {fontFamilyOptions.map(([fontFamilyName, fontFamilyOption]) => (
+                        <Menu.Item key={fontFamilyName}>
+                          {({ active }) => (
+                            <button
+                              type="button"
+                              onClick={() => setFontFamily(fontFamilyName)}
+                              className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs font-semibold transition-colors ${
+                                fontFamily === fontFamilyName
+                                  ? 'theme-selected'
+                                  : active
+                                    ? 'theme-surface-hover theme-text-secondary'
+                                    : 'theme-text-secondary theme-hover-surface'
+                              }`}
+                              style={{ fontFamily: fontFamilyOption.family }}
+                              aria-pressed={fontFamily === fontFamilyName}
+                            >
+                              <span>{fontFamilyOption.label}</span>
+                              {fontFamily === fontFamilyName && <MdCheck className="ml-2 text-base flex-shrink-0" />}
+                            </button>
+                          )}
+                        </Menu.Item>
+                      ))}
+                    </div>
+                  </div>
 	        </Menu.Items>
 	      </Transition>
             </Menu>
@@ -487,8 +535,8 @@ const Banner = ({ setRunTour }) => {
 
       <LayoutLockProvider layoutLocked={layoutLocked} setLayoutLocked={setLayoutLocked}>
         {/* Main Content Area */}
-        <div className={`flex-1 flex flex-col mt-5 transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
-      <div className="theme-surface rounded-lg border theme-border shadow-sm mx-1">
+        <div className={`flex-1 flex flex-col transition-all ${isPopupOpen ? 'pb-64' : 'pb-4'}`}>
+          <div className="dashboard-grid-shell theme-surface border theme-border">
               <Content
                 change={(data) => changeHandler(0, data)}
                 layoutData={layoutData} setLayoutData={setLayoutData}
@@ -545,49 +593,32 @@ const Banner = ({ setRunTour }) => {
 	       className={`w-full pointer-events-auto theme-surface shadow-2xl rounded-t-xl border-t theme-border transition-all duration-300 ease-in-out transform ${sidebarMaximized ? 'h-[80vh]' : 'max-h-[40vh]'
               }`}
               >
-            {/* Improved Sidebar Header with better maximize/minimize button */}
 	    <div className="sticky top-0 z-10 flex justify-between items-center px-6 py-4 border-b theme-border theme-surface rounded-t-xl">
-	
               <h3 className="text-2xl font-semibold theme-text-primary flex items-center">
-                <MdAddchart className="text-blue-500 mr-2" />
+                <MdAddchart className="mr-2" style={{ color: theme.colors.primary }} />
                 Add Dashboard Elements
               </h3>
-	      
-	        
-              <div className="flex items-center space-x-3"> 
-                {/* Enhanced maximize/minimize button */}
+              <div className="flex items-center space-x-3">
                 <button
                   onClick={toggleSidebarSize}
-	                  className={`p-2 flex items-center theme-text-secondary theme-hover-surface rounded-md transition-colors ${sidebarMaximized ? 'theme-selected' : ''}`}
+	          className={`p-2 flex items-center theme-text-secondary theme-hover-surface rounded-md transition-colors ${sidebarMaximized ? 'theme-selected' : ''}`}
                   title={sidebarMaximized ? "Minimize panel" : "Maximize panel"}
                 >
                   {sidebarMaximized ? (
                     <>
-                      {/* Option 1: Arrow icons */}
                       <MdKeyboardArrowDown className="text-xl" />
                       <span className="ml-1 text-sm">Minimize</span>
-                      
-                      {/* Option 2: Full screen / close full screen icons 
-                      <MdOutlineCloseFullscreen className="text-xl" />
-                      <span className="ml-1 text-sm">Minimize</span>
-                      */}
                     </>
                   ) : (
                     <>
-                      {/* Option 1: Arrow icons */}
                       <MdKeyboardArrowUp className="text-xl" />
                       <span className="ml-1 text-sm">Maximize</span>
-                      
-                      {/* Option 2: Full screen / close full screen icons 
-                      <MdOutlineOpenInFull className="text-xl" />
-                      <span className="ml-1 text-sm">Maximize</span>
-                      */}
                     </>
                   )}
                 </button>
                 <button
                   onClick={closePopup}
-	                  className="p-2 theme-text-secondary theme-hover-danger rounded-md transition-colors"
+	          className="p-2 theme-text-secondary theme-hover-danger rounded-md transition-colors"
                   title="Close panel"
                 >
                   <MdClose className="text-xl" />
@@ -595,14 +626,13 @@ const Banner = ({ setRunTour }) => {
               </div>
             </div>
 
-            {/* Sidebar Content */}
             <div className={`${sidebarMaximized ? 'h-[calc(80vh-64px)]' : 'h-[calc(40vh-64px)]'} transition-all duration-300`}>
 	      <Sidebar />
-            </div> 
+            </div>
 	  </div>
         </div>
       )}
-      
+
       <button
         onClick={() => {
 	  setLayoutLocked(!layoutLocked);

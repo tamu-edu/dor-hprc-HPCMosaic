@@ -7,11 +7,26 @@ import QuotaInfo from "../elements/QuotaInfo";
 import UserGroups from "../elements/UserGroups";
 import Accounts from "../elements/Accounts";
 import UserJobs from "../elements/UserJobs";
+// import JobExplorer from "../elements/JobExplorer"; TODO make Job Explorer more efficient
 import QuotaButton from '../elements/QuotaButton';
 import Composer from '../elements/Composer';
-import Chatbot from '../elements/Chatbot';
+// import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
 import Announcement from '../elements/Announcement';
+import ClusterStatus from '../elements/ClusterStatus';
+import {
+    AccountsUsageSummaryCard,
+    AnnouncementsSummaryCard,
+    MyJobsSummaryCard,
+    MyQuotasSummaryCard,
+} from '../elements/SummaryCards';
+import {
+	CpuUtilizationCard,
+	GpuResourcesCard, 
+	JobsOverviewCard, 
+	NodesAvailableCard,
+	SystemLoadCard,
+} from "../elements/KpiCards";
 
 const makeCard = (name, icon) =>
 	React.memo(({ description, category, ...props }) => 
@@ -19,6 +34,95 @@ const makeCard = (name, icon) =>
 	);
 
 const CardConfig = {
+    "CPU Utilization": {
+        description: "Compact CPU usage summary with a recent utilization trend.",
+        icon: <AiOutlinePieChart size={30}/>,
+        chartComponent: CpuUtilizationCard,
+        category: "analytics",
+        minW: 2,
+        minH: 7
+    },
+
+    "GPU Resources": {
+        description: "GPU node and allocation counts for the gpu partition.",
+        icon: <AiOutlinePieChart size={30}/>,
+        chartComponent: GpuResourcesCard,
+        category: "analytics",
+        minW: 2,
+        minH: 7
+    },
+
+    "Nodes Available": {
+        description: "Cluster node availability with up, down, and drain counts.",
+        icon: <AiOutlineCluster size={30}/>,
+        chartComponent: NodesAvailableCard,
+        category: "system",
+        minW: 2,
+        minH: 7
+    },
+
+    "Jobs Overview": {
+        description: "Total scheduler jobs with running and pending counts.",
+        icon: <AiOutlineProject size={30}/>,
+        chartComponent: JobsOverviewCard,
+        category: "analytics",
+        minW: 4,
+        minH: 7
+    },
+
+    "System Load": {
+        description: "Normalized five-minute system load with a recent trend.",
+        icon: <AiOutlinePieChart size={30}/>,
+        chartComponent: SystemLoadCard,
+        category: "analytics",
+        minW: 2,
+        minH: 8
+    },
+
+    "My Jobs Summary": {
+        description: "Dashboard-style summary of current user jobs.",
+        icon: <AiOutlineProject size={30}/>,
+        chartComponent: MyJobsSummaryCard,
+        category: "user",
+        minW: 4,
+        minH: 10
+    },
+
+    "My Quotas Summary": {
+        description: "Dashboard-style summary of storage quota usage.",
+        icon: <AiOutlineDatabase size={30}/>,
+        chartComponent: MyQuotasSummaryCard,
+        category: "user",
+        minW: 3,
+        minH: 10
+    },
+
+    "Accounts Usage Summary": {
+        description: "Dashboard-style table of account usage against limits.",
+        icon: <AiOutlineUser size={30}/>,
+        chartComponent: AccountsUsageSummaryCard,
+        category: "user",
+        minW: 4,
+        minH: 10
+    },
+
+    "Announcements Summary": {
+        description: "Dashboard-style list of cluster announcements.",
+        icon: <AiOutlineCode size={30}/>,
+        chartComponent: AnnouncementsSummaryCard,
+        category: "analytics",
+        minW: 4,
+        minH: 10
+    },
+
+    "Cluster Nodes Overview": {
+        description: "Dashboard-style node inventory overview with status legend.",
+        icon: <AiOutlineCluster size={30}/>,
+        chartComponent: ClusterStatus,
+        category: "system",
+        minW: 4,
+        minH: 10
+    },
     "Node Utilization": {
 	description: "Displays the current and available computing resources across nodes.",
 	icon: <AiOutlineCluster size={30}/>,
@@ -32,7 +136,7 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: PyVenvManager,
 	category: "system",
-        minW: 4, minH: 10
+        minW: 6, minH: 10
     },
 
     "Quota Information": {
@@ -48,7 +152,7 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: UserGroups,
 	category: "user",
-        minW: 3, minH: 6
+        minW: 6, minH: 7
     },
 
     "Accounts": {
@@ -66,6 +170,14 @@ const CardConfig = {
 	category: "user",
         minW: 3, minH: 6
     },
+
+ // "Job Explorer": {
+   //     description: "Advanced job monitoring, filtering, and management for Slurm jobs.",
+     //   icon: <AiOutlineProject size={30}/>,
+//	chartComponent: JobExplorer,
+//	category: "user",
+  //      minW: 8, minH: 24
+   // },
 
     "Acknowledgement Form": {
         description: "Submit acknowledgements for papers that used HPRC resources.",

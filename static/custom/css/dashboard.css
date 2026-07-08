@@ -1,7 +1,7 @@
 /* Assume that browser does a decent job for caching fonts */
 
 body {
-  font-family: "Open Sans", sans-serif;
+  font-family: var(--mosaic-dashboard-font-family, "Open Sans", sans-serif);
 }
 
 h4,
