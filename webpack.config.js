@@ -1,4 +1,6 @@
 const path = require("path");
+const webpack = require("webpack");
+
 module.exports = {
   mode: "development",
   entry: "./src/index.js",
@@ -56,4 +58,7 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+      new webpack.DefinePlugin({"process.env.DRAGGABLE_DEBUG": JSON.stringify(false)})
+  ],
 };
