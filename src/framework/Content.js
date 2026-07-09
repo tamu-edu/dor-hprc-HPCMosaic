@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ItemTypes } from "./ItemTypes";
 import { useDrop } from "react-dnd";
 import RGL, { WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { debounce } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "react-hot-toast";
 
 import CardConfig from "./CardConfig"
-import { createDefaultLayout } from "./DefaultLayout";
 
 const ReactGridLayout = WidthProvider(RGL);
 const DASHBOARD_COLUMNS = 12;
@@ -46,38 +44,18 @@ const getInitialSize = (componentName) => {
 
 const clampXForWidth = (x, w) => Math.max(0, Math.min(x, DASHBOARD_COLUMNS - w));
 
-const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutEdited, layoutLocked }) => {
+const toGridLayout = (items) =>
+  items.map(({ i, x, y, w, h }) => ({ i, x, y, w, h }));
+
+const Content = ({ layoutData, onAddItem, onRemoveItem, onCommitGridLayout, layoutLocked }) => {
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [placeholderPos, setPlaceholderPos] = useState({ x: 0, y: 0 });
   const [placeholderSize, setPlaceholderSize] = useState({ w: 4, h: 10 });
   const [currentDragItem, setCurrentDragItem] = useState(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const gridRef = useRef(null);
-  const layoutRef = useRef([]);
-
-  const [row, setRow] = useState(() => Array.isArray(layoutData) ? layoutData : createDefaultLayout());
-  const [layout, setLayout] = useState(() =>
-    (Array.isArray(layoutData) ? layoutData : row).map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name }))
-  );
-
-  // Capture latest layout when saving
-  useEffect(() => {
-    layoutRef.current = layout;
-  }, [layout]);
-
-  // Provide the latest layout when needed
-  useEffect(() => {
-    getLatestLayout(() => layoutRef.current);
-  }, [getLatestLayout]);
-
-  // Listen for changes to layoutData and update the state
-  useEffect(() => {
-    if (Array.isArray(layoutData)) {
-      //console.log("🔄 Updating Content.js with new layoutData:", layoutData);
-      setRow(layoutData);
-      setLayout(layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
-    }
-  }, [layoutData]);
+  const items = Array.isArray(layoutData) ? layoutData : [];
+  const gridLayout = toGridLayout(items);
 
   // Calculate grid position based on mouse position
   const calculateGridPosition = (clientX, clientY) => {
@@ -115,7 +93,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
       return;
     }
 
-    if (row.some((ele) => ele.name === item.name)) {
+    if (items.some((ele) => ele.name === item.name)) {
       toast(`"${item.name}" is already added!`, {
         duration: 2000,
         icon: "❗",
@@ -135,11 +113,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
       h,
     };
 
-    const newRow = [...row, newItem];
-    onLayoutEdited?.();
-    setRow(newRow);
-    setLayout(newRow.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
-    setLayoutData(newRow);
+    onAddItem(newItem);
 
     // Show a success toast
     toast.success(`Added ${item.name} to dashboard`, {
@@ -180,76 +154,18 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
     }
   }, [isOver]);
 
-  // Debounced state update
-  const debouncedChange = useCallback(
-    debounce((newRow) => {
-      change(newRow);
-    }, 100),
-    [change]
-  );
-
-  useEffect(() => {
-    debouncedChange(row);
-  }, [row, debouncedChange]);
-
   // Function to remove an element
-  const removeElement = (index) => {
-    const deletedName = row[index].name;
-    const newRow = row.filter((_, i) => i !== index);
-    const newLayout = layout.filter((item) => item.i !== row[index].i);
-
-    onLayoutEdited?.();
-    setRow(newRow);
-    setLayout(newLayout);
-    setLayoutData(newRow);
-
+  const removeElement = (item) => {
+    const deletedName = item.name;
+    onRemoveItem(item.i);
     toast(`Removed ${deletedName}`, {
       duration: 2000,
       icon: "❌",
     });
   };
 
-  const onLayoutChange = (newLayout) => {
-    //console.log("📌 Layout Changed:", newLayout);
-    setLayout(newLayout);
-
-    // Preserve the name when updating layout
-    const updatedRow = row.map((item) => {
-        const newItem = newLayout.find((l) => l.i === item.i);
-        return newItem
-            ? {
-                ...item,
-                x: newItem.x,
-                y: newItem.y,
-                w: newItem.w,
-                h: newItem.h
-              }
-            : item;
-    });
-
-    setRow(updatedRow);
-    setLayoutData(updatedRow);
-  };
-
   const commitUserLayoutChange = (committedLayout) => {
-    onLayoutEdited?.();
-    setLayout(committedLayout);
-
-    const updatedRow = row.map((item) => {
-      const newItem = committedLayout.find((l) => l.i === item.i);
-      return newItem
-        ? {
-            ...item,
-            x: newItem.x,
-            y: newItem.y,
-            w: newItem.w,
-            h: newItem.h,
-          }
-        : item;
-    });
-
-    setRow(updatedRow);
-    setLayoutData(updatedRow);
+    onCommitGridLayout(committedLayout);
   };
 
   // Function to render correct charts
@@ -265,7 +181,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
 
   // Create a combined layout that includes both regular items and the placeholder
   const combinedLayout = showPlaceholder
-    ? [...layout, {
+    ? [...gridLayout, {
         i: 'placeholder',
         x: placeholderPos.x,
         y: placeholderPos.y,
@@ -273,7 +189,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
         h: placeholderSize.h,
         isPlaceholder: true
       }]
-    : layout;
+    : gridLayout;
 
   return (
     <div
@@ -285,7 +201,6 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
     >
       <ReactGridLayout
         layout={combinedLayout}
-        onLayoutChange={onLayoutChange}
         cols={DASHBOARD_COLUMNS}
         rowHeight={20}
         isBounded={false}
@@ -302,7 +217,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
         onResizeStop={commitUserLayoutChange}
       >
         {/* Render actual grid items */}
-        {row.map((ele, index) => {
+        {items.map((ele, index) => {
           const { minW, minH } = getMinSize(ele.name);
           return (
             <div
@@ -320,8 +235,12 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, onLayoutE
               {/* Clean, elegant remove button - only show when not locked */}
 	      {!layoutLocked && (
 	                <button
-                  onClick={() => removeElement(index) }
-                  className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-mosaic-secondary opacity-90 transition-all duration-100 hover:border-mosaic-danger-bg hover:bg-mosaic-danger-bg hover:text-white"
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    removeElement(ele);
+                  }}
+                  className="non-draggable absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-mosaic-secondary opacity-90 transition-all duration-100 hover:border-mosaic-danger-bg hover:bg-mosaic-danger-bg hover:text-white"
                   title="Remove this element"
                 >
                   <span className="text-sm">✕</span>
