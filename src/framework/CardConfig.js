@@ -39,6 +39,8 @@ const CardConfig = {
         icon: <AiOutlinePieChart size={30}/>,
         chartComponent: CpuUtilizationCard,
         category: "analytics",
+        defaultW: 3,
+        defaultH: 7,
         minW: 1,
         minH: 1
     },
@@ -48,6 +50,8 @@ const CardConfig = {
         icon: <AiOutlinePieChart size={30}/>,
         chartComponent: GpuResourcesCard,
         category: "analytics",
+        defaultW: 3,
+        defaultH: 7,
         minW: 1,
         minH: 1
     },
@@ -57,6 +61,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: NodesAvailableCard,
         category: "system",
+        defaultW: 3,
+        defaultH: 7,
         minW: 1,
         minH: 1
     },
@@ -66,6 +72,8 @@ const CardConfig = {
         icon: <AiOutlineProject size={30}/>,
         chartComponent: JobsOverviewCard,
         category: "analytics",
+        defaultW: 3,
+        defaultH: 7,
         minW: 1,
         minH: 1
     },
@@ -75,6 +83,8 @@ const CardConfig = {
         icon: <AiOutlinePieChart size={30}/>,
         chartComponent: SystemLoadCard,
         category: "analytics",
+        defaultW: 3,
+        defaultH: 7,
         minW: 1,
         minH: 1
     },
@@ -84,6 +94,8 @@ const CardConfig = {
         icon: <AiOutlineProject size={30}/>,
         chartComponent: MyJobsSummaryCard,
         category: "user",
+        defaultW: 3,
+        defaultH: 12,
         minW: 1,
         minH: 1
     },
@@ -93,6 +105,8 @@ const CardConfig = {
         icon: <AiOutlineDatabase size={30}/>,
         chartComponent: MyQuotasSummaryCard,
         category: "user",
+        defaultW: 3,
+        defaultH: 12,
         minW: 1,
         minH: 1
     },
@@ -102,6 +116,8 @@ const CardConfig = {
         icon: <AiOutlineUser size={30}/>,
         chartComponent: AccountsUsageSummaryCard,
         category: "user",
+        defaultW: 3,
+        defaultH: 12,
         minW: 1,
         minH: 1
     },
@@ -111,6 +127,8 @@ const CardConfig = {
         icon: <AiOutlineCode size={30}/>,
         chartComponent: AnnouncementsSummaryCard,
         category: "analytics",
+        defaultW: 3,
+        defaultH: 12,
         minW: 1,
         minH: 1
     },
@@ -120,6 +138,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: ClusterStatus,
         category: "system",
+        defaultW: 9,
+        defaultH: 19,
         minW: 1,
         minH: 1
     },
@@ -128,6 +148,8 @@ const CardConfig = {
 	icon: <AiOutlineCluster size={30}/>,
 	chartComponent: ClusterInfo,
 	category: "system",
+	defaultW: 6,
+	defaultH: 12,
 	minW: 1, minH: 1
     },
 
@@ -136,6 +158,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: PyVenvManager,
 	category: "system",
+        defaultW: 6,
+        defaultH: 10,
         minW: 1, minH: 1
     },
 
@@ -144,6 +168,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: QuotaInfo,
 	category: "system",
+        defaultW: 6,
+        defaultH: 12,
         minW: 1, minH: 1
     },
 
@@ -152,6 +178,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: UserGroups,
 	category: "user",
+        defaultW: 6,
+        defaultH: 10,
         minW: 1, minH: 1
     },
 
@@ -160,6 +188,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: Accounts,
 	category: "user",
+        defaultW: 6,
+        defaultH: 12,
         minW: 1, minH: 1
     },
 
@@ -168,6 +198,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: UserJobs,
 	category: "user",
+        defaultW: 6,
+        defaultH: 12,
         minW: 1, minH: 1
     },
 
@@ -184,6 +216,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: AcknowledgementForm,
 	category: "user",
+        defaultW: 6,
+        defaultH: 12,
         minW: 1, minH: 1
     },
 
@@ -192,6 +226,8 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: Announcement,
 	category: "analytics",
+        defaultW: 6,
+        defaultH: 12,
         minW: 1, minH: 1
     },
 };
