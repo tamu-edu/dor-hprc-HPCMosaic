@@ -141,11 +141,11 @@ export const cardClasses = {
   icon: "inline-flex shrink-0 items-center justify-center text-card-18 text-mosaic-secondary",
   loading: "flex min-h-11 items-center text-card-12 font-semibold text-mosaic-muted",
   empty: "flex min-h-11 items-center text-card-12 font-semibold text-mosaic-muted",
-  link: "ml-auto whitespace-nowrap text-card-12 font-semibold text-mosaic-link no-underline",
+  link: "non-draggable ml-auto whitespace-nowrap text-card-12 font-semibold text-mosaic-link no-underline",
   progressTrack: "block h-2.5 overflow-hidden rounded-full bg-mosaic-border",
   progressFill: "block h-full rounded-full bg-gradient-to-r from-green-600 to-green-500",
   subtlePanel: "rounded-[5px] border border-mosaic-border bg-mosaic-table",
-  iconButton: "inline-flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-card-18 text-mosaic-secondary hover:border-mosaic-accent hover:text-mosaic-primary",
+  iconButton: "non-draggable inline-flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-card-18 text-mosaic-secondary hover:border-mosaic-accent hover:text-mosaic-primary",
 };
 
 export const getToneTextClass = (tone) => {

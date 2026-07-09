@@ -94,6 +94,7 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
         <button
           onClick={onClose}
 	  disabled={isSubmitting}
+          className="non-draggable"
           style={{
             position: 'absolute',
             top: '12px',
@@ -206,7 +207,7 @@ const PopupForm = ({
       <button
         onClick={() => setShowModal(true)}
         style={defaultButtonStyle}
-        className={buttonClassName}
+        className={`non-draggable ${buttonClassName}`.trim()}
       >
         {buttonText}
       </button>

@@ -292,7 +292,7 @@ const UserJobs = ({ description }) => {
                     {/* <div> */}
                       <button
                         onClick={() => cancelJob(job.job_id)}
-	                        className={`px-3 py-1 rounded ${
+	                        className={`non-draggable px-3 py-1 rounded ${
 	                          isCanceling === job.job_id
 	                            ? "theme-button-disabled"
 	                            : "theme-button-danger"

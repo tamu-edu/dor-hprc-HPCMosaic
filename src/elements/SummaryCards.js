@@ -69,7 +69,7 @@ const statusBadgeClass = (state) => {
 };
 
 const dotButtonClass = (active) => cx(
-  "h-[7px] rounded-full border-0 p-0 transition-all",
+  "non-draggable h-[7px] rounded-full border-0 p-0 transition-all",
   active ? "w-[18px] bg-mosaic-accent" : "w-[7px] bg-mosaic-border"
 );
 
@@ -223,7 +223,7 @@ export const MyJobsSummaryCard = () => {
                 return (
                   <div
                     className={cx(
-                      "grid min-w-0 cursor-pointer gap-0 overflow-hidden rounded-[5px] border border-l-[3px] bg-mosaic-table transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-mosaic-accent-hover",
+                      "non-draggable grid min-w-0 cursor-pointer gap-0 overflow-hidden rounded-[5px] border border-l-[3px] bg-mosaic-table transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-mosaic-accent-hover",
                       isExpanded
                         ? "border-mosaic-border-strong border-l-mosaic-accent-hover bg-mosaic-surface-hover"
                         : "border-mosaic-border border-l-transparent hover:border-mosaic-border-strong hover:bg-mosaic-surface-hover"
@@ -261,7 +261,7 @@ export const MyJobsSummaryCard = () => {
                         )}
                         <button
                           type="button"
-                          className="w-auto justify-self-start rounded-[5px] bg-mosaic-danger-bg px-2.5 py-2 text-card-12 font-extrabold text-mosaic-accent-text hover:bg-mosaic-danger-hover disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled"
+                          className="non-draggable w-auto justify-self-start rounded-[5px] bg-mosaic-danger-bg px-2.5 py-2 text-card-12 font-extrabold text-mosaic-accent-text hover:bg-mosaic-danger-hover disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled"
                           onClick={(event) => {
                             event.stopPropagation();
                             cancelJob(job.job_id);
