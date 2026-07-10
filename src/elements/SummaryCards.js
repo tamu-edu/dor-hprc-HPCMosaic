@@ -207,7 +207,7 @@ export const MyJobsSummaryCard = () => {
         </button>
       </div>
       {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable] [overscroll-behavior:contain]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable]">
           <div className="mb-2 grid shrink-0 grid-cols-2 gap-2 border-b border-mosaic-border px-0 pb-2 pt-px">
             <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("green"))}>{counts.running || 0}</strong>Running</span>
             <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("amber"))}>{counts.pending || 0}</strong>Pending</span>
@@ -327,7 +327,7 @@ export const MyQuotasSummaryCard = () => {
       </div>
       {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="grid min-h-0 flex-1 content-start gap-[7px] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overscroll-behavior:contain]">
+          <div className="grid min-h-0 flex-1 content-start gap-[7px] overflow-y-auto pr-1 [scrollbar-gutter:stable]">
             {quotas.map((quota, index) => {
               const { diskPercent, diskUsageLabel, filePercent, fileUsageLabel } = getQuotaUsage(quota);
               const disk = String(quota.disk || "Unknown path");
