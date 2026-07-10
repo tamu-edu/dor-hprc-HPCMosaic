@@ -118,25 +118,25 @@ const CreateVenvForm = ({ fetchEnvs, setIsFormOpen }) => {
 			</div>
 			}
 			<div>
-				<label htmlFor='envName' className='block text-sm font-medium theme-text-secondary'>
+					<label htmlFor='envName' className='block text-sm font-medium theme-text-secondary non-draggable'>
 					Virtual environment&apos;s name
 				</label>
 				<input type='text' id='envName' value={envName} placeholder='What would you like to name your environment?'
-					onChange={(e) => {setEnvName(e.target.value)}} className='mt-1 block w-full rounded-md shadow-sm theme-input placeholder-gray-500'/>
+						onChange={(e) => {setEnvName(e.target.value)}} className='non-draggable mt-1 block w-full rounded-md shadow-sm theme-input placeholder-gray-500'/>
 			</div>
 			
 			<div>
-				<label htmlFor='description' className='block text-sm font-medium theme-text-secondary'>
+					<label htmlFor='description' className='block text-sm font-medium theme-text-secondary non-draggable'>
 					Description of virtual environment
 				</label>
 				<input type='text' id='description' value={description} placeholder='What will this virtual environment be used for? (optional)'
 				onChange={(e) => {setDescription(e.target.value)}} 
-					className='mt-1 block w-full rounded-md shadow-sm theme-input placeholder-gray-500'/>
+						className='non-draggable mt-1 block w-full rounded-md shadow-sm theme-input placeholder-gray-500'/>
 			</div>
 
 			{!waitingForCreation &&
 			<div className="flex flex-col">
-					<button type='submit' className='w-full theme-button-primary py-2 px-4 rounded focus:outline-none'>
+					<button type='submit' className='non-draggable w-full theme-button-primary py-2 px-4 rounded focus:outline-none'>
 					Submit
 				</button>
 			</div>

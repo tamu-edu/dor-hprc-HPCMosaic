@@ -145,7 +145,7 @@ const ProjectInfo = ({ description }) => {
                     <span className="theme-status-success font-semibold">Y</span>
                   ) : (
                     <button
-	                      className="theme-button-success px-2 py-1 rounded transition-colors"
+	                      className="non-draggable theme-button-success px-2 py-1 rounded transition-colors"
                       onClick={() => setDefaultAccount(project.account)}
                     >
                       Set as Default

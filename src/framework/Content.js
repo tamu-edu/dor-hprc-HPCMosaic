@@ -1,19 +1,17 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ItemTypes } from "./ItemTypes";
 import { useDrop } from "react-dnd";
 import RGL, { WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { debounce } from "lodash";
 import { v4 as uuidv4 } from "uuid";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-hot-toast";
 
 import CardConfig from "./CardConfig"
-import { createDefaultLayout } from "./DefaultLayout";
 
 const ReactGridLayout = WidthProvider(RGL);
 const DASHBOARD_COLUMNS = 12;
+const DEFAULT_CARD_SIZE = { w: 4, h: 10 };
 const CARD_NAME_ALIASES = {
   "GPU Utilization": "GPU Resources",
 };
@@ -27,38 +25,37 @@ const getMinSize = (componentName) => {
   return config ? { minW: config.minW ?? 3, minH: config.minH ?? 5} : {minW: 3, minH: 5};
 };
 
-const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLocked }) => {
+const toGridSize = (value, fallback) => {
+  const size = Number(value);
+  return Number.isFinite(size) && size > 0 ? size : fallback;
+};
+
+const getInitialSize = (componentName) => {
+  const config = getCardConfig(componentName);
+  const { minW, minH } = getMinSize(componentName);
+  const defaultW = toGridSize(config?.defaultW, DEFAULT_CARD_SIZE.w);
+  const defaultH = toGridSize(config?.defaultH, DEFAULT_CARD_SIZE.h);
+
+  return {
+    w: Math.min(DASHBOARD_COLUMNS, Math.max(defaultW, minW)),
+    h: Math.max(defaultH, minH),
+  };
+};
+
+const clampXForWidth = (x, w) => Math.max(0, Math.min(x, DASHBOARD_COLUMNS - w));
+
+const toGridLayout = (items) =>
+  items.map(({ i, x, y, w, h }) => ({ i, x, y, w, h }));
+
+const Content = ({ layoutData, onAddItem, onRemoveItem, onCommitGridLayout, layoutLocked }) => {
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [placeholderPos, setPlaceholderPos] = useState({ x: 0, y: 0 });
   const [placeholderSize, setPlaceholderSize] = useState({ w: 4, h: 10 });
   const [currentDragItem, setCurrentDragItem] = useState(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const gridRef = useRef(null);
-  const layoutRef = useRef([]);
-
-  const [row, setRow] = useState(() => layoutData?.length > 0 ? layoutData : createDefaultLayout());
-  const [layout, setLayout] = useState(() =>
-    (layoutData?.length > 0 ? layoutData : row).map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name }))
-  );
-
-  // Capture latest layout when saving
-  useEffect(() => {
-    layoutRef.current = layout;
-  }, [layout]);
-
-  // Provide the latest layout when needed
-  useEffect(() => {
-    getLatestLayout(() => layoutRef.current);
-  }, [getLatestLayout]);
-
-  // Listen for changes to layoutData and update the state
-  useEffect(() => {
-    if (layoutData && Array.isArray(layoutData) && layoutData.length > 0) {
-      //console.log("🔄 Updating Content.js with new layoutData:", layoutData);
-      setRow(layoutData);
-      setLayout(layoutData.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
-    }
-  }, [layoutData]);
+  const items = Array.isArray(layoutData) ? layoutData : [];
+  const gridLayout = toGridLayout(items);
 
   // Calculate grid position based on mouse position
   const calculateGridPosition = (clientX, clientY) => {
@@ -80,15 +77,10 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 
   // Add a placeholder item to preview element placement
   const addPlaceholderToLayout = (pos, item) => {
-    // Get component-specific minimum sizes
-    const { minW, minH } = getMinSize(item.name);
-
-    // Use appropriate sizes for placeholder
-    const w = Math.max(4, minW);
-    const h = Math.max(10, minH);
+    const { w, h } = getInitialSize(item.name);
 
     setPlaceholderSize({ w, h });
-    setPlaceholderPos(pos);
+    setPlaceholderPos({ ...pos, x: clampXForWidth(pos.x, w) });
     setShowPlaceholder(true);
   };
 
@@ -96,45 +88,36 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
   const addNewElement = (item, dropPosition) => {
     if (layoutLocked) {
       toast.error('Cannot add elements - layout is locked', {
-        autoClose: 2000,
-	position: "top-right",
-	hideProgressBar: true,
+        duration: 2000,
       });
       return;
     }
 
-    if (row.some((ele) => ele.name === item.name)) {
-      toast.warn(`"${item.name}" is already added!`, {
-        autoClose: 2000,
-        position: "top-right",
-        hideProgressBar: true,
+    if (items.some((ele) => ele.name === item.name)) {
+      toast(`"${item.name}" is already added!`, {
+        duration: 2000,
+        icon: "❗",
       });
       return;
     }
 
-    // Get minimum sizes for this component type
-    const { minW, minH } = getMinSize(item.name);
+    const { w, h } = getInitialSize(item.name);
 
     // Use drop position from placeholder
     const newItem = {
       name: item.name,
       i: uuidv4(),
-      x: dropPosition.x,
+      x: clampXForWidth(dropPosition.x, w),
       y: dropPosition.y,
-      w: Math.max(4, minW),
-      h: Math.max(10, minH),
+      w,
+      h,
     };
 
-    const newRow = [...row, newItem];
-    setRow(newRow);
-    setLayout(newRow.map(({ i, x, y, w, h, name }) => ({ i, x, y, w, h, name })));
-    setLayoutData(newRow);
+    onAddItem(newItem);
 
     // Show a success toast
     toast.success(`Added ${item.name} to dashboard`, {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: true,
+      duration: 2000,
     });
   };
 
@@ -171,55 +154,18 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
     }
   }, [isOver]);
 
-  // Debounced state update
-  const debouncedChange = useCallback(
-    debounce((newRow) => {
-      change(newRow);
-    }, 100),
-    [change]
-  );
-
-  useEffect(() => {
-    debouncedChange(row);
-  }, [row, debouncedChange]);
-
   // Function to remove an element
-  const removeElement = (index) => {
-    const deletedName = row[index].name;
-    const newRow = row.filter((_, i) => i !== index);
-    const newLayout = layout.filter((item) => item.i !== row[index].i);
-
-    setRow(newRow);
-    setLayout(newLayout);
-    setLayoutData(newRow);
-
-    toast.info(`Removed ${deletedName}`, {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: true,
+  const removeElement = (item) => {
+    const deletedName = item.name;
+    onRemoveItem(item.i);
+    toast(`Removed ${deletedName}`, {
+      duration: 2000,
+      icon: "❌",
     });
   };
 
-  const onLayoutChange = (newLayout) => {
-    //console.log("📌 Layout Changed:", newLayout);
-    setLayout(newLayout);
-
-    // Preserve the name when updating layout
-    const updatedRow = row.map((item) => {
-        const newItem = newLayout.find((l) => l.i === item.i);
-        return newItem
-            ? {
-                ...item,
-                x: newItem.x,
-                y: newItem.y,
-                w: newItem.w,
-                h: newItem.h
-              }
-            : item;
-    });
-
-    setRow(updatedRow);
-    setLayoutData(updatedRow);
+  const commitUserLayoutChange = (committedLayout) => {
+    onCommitGridLayout(committedLayout);
   };
 
   // Function to render correct charts
@@ -235,7 +181,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
 
   // Create a combined layout that includes both regular items and the placeholder
   const combinedLayout = showPlaceholder
-    ? [...layout, {
+    ? [...gridLayout, {
         i: 'placeholder',
         x: placeholderPos.x,
         y: placeholderPos.y,
@@ -243,7 +189,7 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         h: placeholderSize.h,
         isPlaceholder: true
       }]
-    : layout;
+    : gridLayout;
 
   return (
     <div
@@ -253,16 +199,12 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
       }}
       className={`dashboard-grid-dropzone max-w-full h-auto relative ${isOver ? "theme-selected" : ""}`}
     >
-      {/* Toast Notification Container */}
-      <ToastContainer />
-
       <ReactGridLayout
         layout={combinedLayout}
-        onLayoutChange={onLayoutChange}
         cols={DASHBOARD_COLUMNS}
         rowHeight={20}
         isBounded={false}
-        isDroppable={!layoutLocked}
+        isDroppable={false}
         isResizable={!layoutLocked}
         isDraggable={!layoutLocked}
         compactType="vertical"
@@ -271,9 +213,11 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
         autoSize={true}
 	className="dashboard-react-grid"
         draggableCancel=".non-draggable"
+        onDragStop={commitUserLayoutChange}
+        onResizeStop={commitUserLayoutChange}
       >
         {/* Render actual grid items */}
-        {row.map((ele, index) => {
+        {items.map((ele, index) => {
           const { minW, minH } = getMinSize(ele.name);
           return (
             <div
@@ -291,8 +235,12 @@ const Content = ({ layoutData, setLayoutData, change, getLatestLayout, layoutLoc
               {/* Clean, elegant remove button - only show when not locked */}
 	      {!layoutLocked && (
 	                <button
-                  onClick={() => removeElement(index) }
-                  className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-mosaic-secondary opacity-90 transition-all duration-100 hover:border-mosaic-danger-bg hover:bg-mosaic-danger-bg hover:text-white"
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    removeElement(ele);
+                  }}
+                  className="non-draggable absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-mosaic-secondary opacity-90 transition-all duration-100 hover:border-mosaic-danger-bg hover:bg-mosaic-danger-bg hover:text-white"
                   title="Remove this element"
                 >
                   <span className="text-sm">✕</span>

@@ -10,6 +10,7 @@ all others are preserved.
 
 Current preference keys:
   default_layout (str | null) — layout name to auto-load on login
+  dashboard_layout (object | null) — automatically restored current dashboard layout
 """
 
 import os
@@ -62,4 +63,3 @@ def save_preferences():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-

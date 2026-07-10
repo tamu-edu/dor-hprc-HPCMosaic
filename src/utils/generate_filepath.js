@@ -5,6 +5,7 @@ export function generate_file_explorer_path_for_disk(disk_path) {
 
   return (
     <a
+      className="non-draggable"
       target="_blank"
       style={{
         color: 'var(--mosaic-color-link)',
@@ -27,6 +28,7 @@ export function generate_file_explorer_path_for_jobs(job) {
 
   return (
     <a
+      className="non-draggable"
       target="_blank"
       rel="noopener noreferrer"
       style={{

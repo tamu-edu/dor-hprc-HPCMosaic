@@ -1,5 +1,4 @@
 import axios from 'axios';
-import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
 
 const baseUrl = get_base_url() + '/api';

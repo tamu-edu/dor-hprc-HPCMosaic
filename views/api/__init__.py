@@ -13,7 +13,8 @@ All routes are registered under the /api prefix (set in app.py).
   preferences.py  — Per-user server-side preferences
     GET    /get_preferences           Fetch all preferences (returns {} if none saved yet)
     POST   /save_preferences          Partial-merge update to preferences
-                                      Current keys: default_layout (str|null)
+                                      Current keys: default_layout (str|null),
+                                      dashboard_layout (object|null)
 
   info.py         — Read-only cluster state queries
     GET    /user-data                 Current user's username and institutional email

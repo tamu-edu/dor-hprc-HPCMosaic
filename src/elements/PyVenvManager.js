@@ -94,7 +94,7 @@ const PyVenvManager = () => {
 	      {isFormOpen &&
 			<div className='fixed inset-0 flex items-center justify-center z-9999' style={{ backgroundColor: 'var(--mosaic-color-overlay)' }}>
 				<div className='relative theme-surface p-6 rounded-lg w-2/3'>
-					<button className='absolute top-2 right-2 theme-text-secondary theme-hover-danger'
+					<button className='non-draggable absolute top-2 right-2 theme-text-secondary theme-hover-danger'
 					onClick={() => {setIsFormOpen(false)}}>
 					&#10006;
 				</button>
@@ -135,7 +135,7 @@ const PyVenvManager = () => {
 							<td className="border theme-border px-4 py-2">{env.python_version}</td>
 							<td className="border theme-border px-4 py-2">{env.toolchain}</td>
 							<td className="border theme-border px-4 py-2"> 
-									<button className="theme-button-danger px-2 py-1 rounded"
+									<button className="non-draggable theme-button-danger px-2 py-1 rounded"
 									onClick={() => deleteHandler(env.name)} disabled={deletingEnv === env.name}>
 									{deletingEnv === env.name ? (
 										<Spinner/>
@@ -149,7 +149,7 @@ const PyVenvManager = () => {
 				</tbody>
 				</table>
 				<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}}
-				className="theme-button-primary rounded-lg p-1 m-2">
+				className="non-draggable theme-button-primary rounded-lg p-1 m-2">
 				<svg xmlns="http://www.ws.org/2000/svg"
 				className="h-6 w-6"
 				fill="none"
@@ -165,7 +165,7 @@ const PyVenvManager = () => {
 	  <div className="overflow-auto w-full h-full flex flex-grow flex-col justify-center items-center">	
 			<h2 className="text-xl font-semibold mb-4 theme-text-primary"> No virtual environments to manage. </h2>
 			<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}}
-				className="theme-button-primary rounded-lg p-1 m-2">
+				className="non-draggable theme-button-primary rounded-lg p-1 m-2">
 				<svg xmlns="http://www.ws.org/2000/svg"
 				className="h-6 w-6"
 				fill="none"

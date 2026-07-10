@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { MdViewQuilt, MdArrowDropDown, MdDelete, MdEdit, MdRefresh, MdCheck } from "react-icons/md";
-import config from "../../config.yml";
+import { MdDelete, MdEdit, MdRefresh, MdCheck } from "react-icons/md";
 import { toast } from "react-hot-toast";
-import { fetchLayouts as fetchLayoutsUtil, deleteLayout as deleteLayoutUtil } from './layoutUtils';
-import { get_base_url } from "../utils/api_config.js" 
+import {
+    fetchLayouts as fetchLayoutsUtil,
+    deleteLayout as deleteLayoutUtil,
+    renameLayout as renameLayoutUtil,
+} from './layoutUtils';
 
 const LayoutUtility = ({
   layouts, 
@@ -11,7 +13,6 @@ const LayoutUtility = ({
   applyDefaultView, 
   applySavedLayout, 
   saveCurrentLayout, 
-  fetchLayouts: parentFetchLayouts, // renamed to avoid confusion
   setLayouts, // add this prop to directly update layouts in parent
   isOpen,
   setIsOpen,
@@ -19,7 +20,6 @@ const LayoutUtility = ({
     const [activeLayout, setActiveLayout] = useState(null);
     const [actionInProgress, setActionInProgress] = useState(null);
     const [localLayouts, setLocalLayouts] = useState(layouts);
-    const baseUrl = get_base_url();
 	
     // Update local layouts when parent layouts change
     useEffect(() => {
@@ -39,6 +39,19 @@ const LayoutUtility = ({
         if (savedLayout) {
             setActiveLayout(savedLayout);
         }
+    }, []);
+
+    useEffect(() => {
+        const clearActiveLayout = () => {
+            setActiveLayout(null);
+            localStorage.removeItem('activeLayout');
+        };
+
+        window.addEventListener("mosaic-dashboard-layout-modified", clearActiveLayout);
+
+        return () => {
+            window.removeEventListener("mosaic-dashboard-layout-modified", clearActiveLayout);
+        };
     }, []);
 
     // Improved function to refresh layouts
@@ -118,37 +131,26 @@ const LayoutUtility = ({
             // Display a loading toast
             const toastId = toast.loading(`Renaming layout...`);
             
-            const response = await fetch(`${baseUrl}/api/rename_layout`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ old_name: oldName, new_name: newName }),
-            });
+            await renameLayoutUtil(oldName, newName);
 
-            const data = await response.json();
-            
-            if (response.ok) {
-                // Update toast to success
-                toast.success(`Layout renamed to "${newName}"`, { id: toastId });
-                
-                // Update active layout name if it was renamed
-                if (activeLayout === oldName) {
-                    setActiveLayout(newName);
-                    localStorage.setItem('activeLayout', newName);
-                }
-                
-                // Update local state immediately
-                const updatedLayouts = localLayouts.map(name => 
-                    name === oldName ? newName : name
-                );
-                setLocalLayouts(updatedLayouts);
-                setLayouts(updatedLayouts); // Update parent state
-                
-                // Refresh layouts to ensure consistency
-                await refreshLayouts();
-            } else {
-                // Update toast to error
-                toast.error(`Failed to rename: ${data.error}`, { id: toastId });
+            // Update toast to success
+            toast.success(`Layout renamed to "${newName}"`, { id: toastId });
+
+            // Update active layout name if it was renamed
+            if (activeLayout === oldName) {
+                setActiveLayout(newName);
+                localStorage.setItem('activeLayout', newName);
             }
+
+            // Update local state immediately
+            const updatedLayouts = localLayouts.map(name =>
+                name === oldName ? newName : name
+            );
+            setLocalLayouts(updatedLayouts);
+            setLayouts(updatedLayouts); // Update parent state
+
+            // Refresh layouts to ensure consistency
+            await refreshLayouts();
         } catch (error) {
             console.error("Error renaming layout:", error);
             toast.error(`An unexpected error occurred`);
@@ -232,25 +234,6 @@ const LayoutUtility = ({
 
     const handleRefreshLayouts = async () => {
         await refreshLayouts();
-    };
-
-    // Function to control the element movement locking mechanism
-    const handleToggleLock = () => {
-    	const newLockState = !layoutLocked;
-	
-	setLayoutLocked(newLockState);
-	
-        if (newLockState)
-          toast.success('Layout locked - elements cannot be moved or modified', {icon: '🔒', duration: 2000});
-	else
-          toast.success('Layout unlocked - elements can be edited', {icon: '🔓', duration: 2000});
-    };
-
-    // Determine the text to display on the main button
-    const getButtonText = () => {
-        if (loadingLayouts) return "Loading layouts...";
-        if (activeLayout) return `Layout: ${activeLayout}`;
-        return "Layout";
     };
 
     return (

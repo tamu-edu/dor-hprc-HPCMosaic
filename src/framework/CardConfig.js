@@ -39,8 +39,10 @@ const CardConfig = {
         icon: <AiOutlinePieChart size={30}/>,
         chartComponent: CpuUtilizationCard,
         category: "analytics",
-        minW: 2,
-        minH: 7
+        defaultW: 3,
+        defaultH: 7,
+        minW: 1,
+        minH: 1
     },
 
     "GPU Resources": {
@@ -48,8 +50,10 @@ const CardConfig = {
         icon: <AiOutlinePieChart size={30}/>,
         chartComponent: GpuResourcesCard,
         category: "analytics",
-        minW: 2,
-        minH: 7
+        defaultW: 3,
+        defaultH: 7,
+        minW: 1,
+        minH: 1
     },
 
     "Nodes Available": {
@@ -57,8 +61,10 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: NodesAvailableCard,
         category: "system",
-        minW: 2,
-        minH: 7
+        defaultW: 3,
+        defaultH: 7,
+        minW: 1,
+        minH: 1
     },
 
     "Jobs Overview": {
@@ -66,8 +72,10 @@ const CardConfig = {
         icon: <AiOutlineProject size={30}/>,
         chartComponent: JobsOverviewCard,
         category: "analytics",
-        minW: 4,
-        minH: 7
+        defaultW: 3,
+        defaultH: 7,
+        minW: 1,
+        minH: 1
     },
 
     "System Load": {
@@ -75,8 +83,10 @@ const CardConfig = {
         icon: <AiOutlinePieChart size={30}/>,
         chartComponent: SystemLoadCard,
         category: "analytics",
-        minW: 2,
-        minH: 8
+        defaultW: 3,
+        defaultH: 7,
+        minW: 1,
+        minH: 1
     },
 
     "My Jobs Summary": {
@@ -84,8 +94,10 @@ const CardConfig = {
         icon: <AiOutlineProject size={30}/>,
         chartComponent: MyJobsSummaryCard,
         category: "user",
-        minW: 4,
-        minH: 10
+        defaultW: 3,
+        defaultH: 12,
+        minW: 1,
+        minH: 1
     },
 
     "My Quotas Summary": {
@@ -93,8 +105,10 @@ const CardConfig = {
         icon: <AiOutlineDatabase size={30}/>,
         chartComponent: MyQuotasSummaryCard,
         category: "user",
-        minW: 3,
-        minH: 10
+        defaultW: 3,
+        defaultH: 12,
+        minW: 1,
+        minH: 1
     },
 
     "Accounts Usage Summary": {
@@ -102,8 +116,10 @@ const CardConfig = {
         icon: <AiOutlineUser size={30}/>,
         chartComponent: AccountsUsageSummaryCard,
         category: "user",
-        minW: 4,
-        minH: 10
+        defaultW: 3,
+        defaultH: 12,
+        minW: 1,
+        minH: 1
     },
 
     "Announcements Summary": {
@@ -111,8 +127,10 @@ const CardConfig = {
         icon: <AiOutlineCode size={30}/>,
         chartComponent: AnnouncementsSummaryCard,
         category: "analytics",
-        minW: 4,
-        minH: 10
+        defaultW: 3,
+        defaultH: 12,
+        minW: 1,
+        minH: 1
     },
 
     "Cluster Nodes Overview": {
@@ -120,15 +138,19 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: ClusterStatus,
         category: "system",
-        minW: 4,
-        minH: 10
+        defaultW: 9,
+        defaultH: 19,
+        minW: 1,
+        minH: 1
     },
     "Node Utilization": {
 	description: "Displays the current and available computing resources across nodes.",
 	icon: <AiOutlineCluster size={30}/>,
 	chartComponent: ClusterInfo,
 	category: "system",
-	minW: 3, minH: 6
+	defaultW: 6,
+	defaultH: 12,
+	minW: 1, minH: 1
     },
 
     "Python Venv Manager": {
@@ -136,7 +158,9 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: PyVenvManager,
 	category: "system",
-        minW: 6, minH: 10
+        defaultW: 6,
+        defaultH: 10,
+        minW: 1, minH: 1
     },
 
     "Quota Information": {
@@ -144,7 +168,9 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: QuotaInfo,
 	category: "system",
-        minW: 3, minH: 8
+        defaultW: 6,
+        defaultH: 12,
+        minW: 1, minH: 1
     },
 
     "User Groups": {
@@ -152,7 +178,9 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
         chartComponent: UserGroups,
 	category: "user",
-        minW: 6, minH: 7
+        defaultW: 6,
+        defaultH: 10,
+        minW: 1, minH: 1
     },
 
     "Accounts": {
@@ -160,7 +188,9 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: Accounts,
 	category: "user",
-        minW: 5, minH: 8
+        defaultW: 6,
+        defaultH: 12,
+        minW: 1, minH: 1
     },
 
     "User Jobs": {
@@ -168,7 +198,9 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: UserJobs,
 	category: "user",
-        minW: 3, minH: 6
+        defaultW: 6,
+        defaultH: 12,
+        minW: 1, minH: 1
     },
 
  // "Job Explorer": {
@@ -184,7 +216,9 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: AcknowledgementForm,
 	category: "user",
-        minW: 3, minH: 6
+        defaultW: 6,
+        defaultH: 12,
+        minW: 1, minH: 1
     },
 
     "Announcement": {
@@ -192,7 +226,9 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: Announcement,
 	category: "analytics",
-        minW: 5, minH: 4
+        defaultW: 6,
+        defaultH: 12,
+        minW: 1, minH: 1
     },
 };
 
