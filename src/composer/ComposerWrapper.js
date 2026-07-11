@@ -135,7 +135,7 @@ const ComposerWrapper = ({
             {error && (
               <div className="error-message">
                 <span>{typeof error === 'string' ? error : error.message || 'An error occurred'}</span>
-                <button onClick={() => setError(null)}>✕</button>
+                <button className="non-draggable" onClick={() => setError(null)}>✕</button>
               </div>
             )}
           </div>
@@ -145,7 +145,7 @@ const ComposerWrapper = ({
             onChange={scheduleReadinessUpdate}
             onInput={scheduleReadinessUpdate}
             encType="multipart/form-data"
-            className="form-content"
+            className="non-draggable form-content"
           >
             <Composer
               ref={composerRef}
@@ -159,7 +159,7 @@ const ComposerWrapper = ({
               <button
                 type="submit"
                 onClick={handleSubmit}
-                className="btn btn-primary"
+                className="non-draggable btn btn-primary"
                 disabled={isSubmitting || !isFormReady}
                 style={{
                   opacity: (isSubmitting || !isFormReady) ? 0.6 : 1,
@@ -169,7 +169,7 @@ const ComposerWrapper = ({
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>
               {onClose && (
-                <button type="button" onClick={handleClose} className="btn btn-secondary">
+                <button type="button" onClick={handleClose} className="non-draggable btn btn-secondary">
                   Close
                 </button>
               )}

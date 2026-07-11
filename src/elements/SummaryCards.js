@@ -69,7 +69,7 @@ const statusBadgeClass = (state) => {
 };
 
 const dotButtonClass = (active) => cx(
-  "h-[7px] rounded-full border-0 p-0 transition-all",
+  "non-draggable h-[7px] rounded-full border-0 p-0 transition-all",
   active ? "w-[18px] bg-mosaic-accent" : "w-[7px] bg-mosaic-border"
 );
 
@@ -207,7 +207,7 @@ export const MyJobsSummaryCard = () => {
         </button>
       </div>
       {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable] [overscroll-behavior:contain]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable]">
           <div className="mb-2 grid shrink-0 grid-cols-2 gap-2 border-b border-mosaic-border px-0 pb-2 pt-px">
             <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("green"))}>{counts.running || 0}</strong>Running</span>
             <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("amber"))}>{counts.pending || 0}</strong>Pending</span>
@@ -223,7 +223,7 @@ export const MyJobsSummaryCard = () => {
                 return (
                   <div
                     className={cx(
-                      "grid min-w-0 cursor-pointer gap-0 overflow-hidden rounded-[5px] border border-l-[3px] bg-mosaic-table transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-mosaic-accent-hover",
+                      "non-draggable grid min-w-0 cursor-pointer gap-0 overflow-hidden rounded-[5px] border border-l-[3px] bg-mosaic-table transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-mosaic-accent-hover",
                       isExpanded
                         ? "border-mosaic-border-strong border-l-mosaic-accent-hover bg-mosaic-surface-hover"
                         : "border-mosaic-border border-l-transparent hover:border-mosaic-border-strong hover:bg-mosaic-surface-hover"
@@ -261,7 +261,7 @@ export const MyJobsSummaryCard = () => {
                         )}
                         <button
                           type="button"
-                          className="w-auto justify-self-start rounded-[5px] bg-mosaic-danger-bg px-2.5 py-2 text-card-12 font-extrabold text-mosaic-accent-text hover:bg-mosaic-danger-hover disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled"
+                          className="non-draggable w-auto justify-self-start rounded-[5px] bg-mosaic-danger-bg px-2.5 py-2 text-card-12 font-extrabold text-mosaic-accent-text hover:bg-mosaic-danger-hover disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled"
                           onClick={(event) => {
                             event.stopPropagation();
                             cancelJob(job.job_id);
@@ -327,7 +327,7 @@ export const MyQuotasSummaryCard = () => {
       </div>
       {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="grid min-h-0 flex-1 content-start gap-[7px] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overscroll-behavior:contain]">
+          <div className="grid min-h-0 flex-1 content-start gap-[7px] overflow-y-auto pr-1 [scrollbar-gutter:stable]">
             {quotas.map((quota, index) => {
               const { diskPercent, diskUsageLabel, filePercent, fileUsageLabel } = getQuotaUsage(quota);
               const disk = String(quota.disk || "Unknown path");

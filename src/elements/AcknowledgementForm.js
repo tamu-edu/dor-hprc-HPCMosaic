@@ -114,7 +114,7 @@ const AcknowledgementForm = ({ description }) => {
           {usesAccessAcknowledgement ? (
             <>
               For standard acknowledgement examples acknowledging ACCESS, click{' '}
-              <a style={{ color: theme.colors.warningText }} className="hover:underline" href="https://access-ci.org/about/acknowledging-access/" target="_blank" rel="noopener noreferrer">
+              <a style={{ color: theme.colors.warningText }} className="non-draggable hover:underline" href="https://access-ci.org/about/acknowledging-access/" target="_blank" rel="noopener noreferrer">
                 https://access-ci.org/about/acknowledging-access/
               </a>
               .
@@ -122,7 +122,7 @@ const AcknowledgementForm = ({ description }) => {
           ) : (
             <>
               For standard acknowledgment examples and a listing of publications acknowledging HPRC, click{' '}
-              <a style={{ color: theme.colors.warningText }} className="hover:underline" href="https://hprc.tamu.edu/research/citations.html" target="_blank" rel="noopener noreferrer">
+              <a style={{ color: theme.colors.warningText }} className="non-draggable hover:underline" href="https://hprc.tamu.edu/research/citations.html" target="_blank" rel="noopener noreferrer">
                 here
               </a>
               . Once you acknowledge us, we will add your paper to the publications list on the HPRC website.

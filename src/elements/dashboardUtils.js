@@ -71,12 +71,12 @@ export const normalizeNodeState = (state = "") => {
 };
 
 export const NODE_STATUS_COLORS = {
-  idle: "#0072B2",
-  allocated: "#009E73",
-  mixed: "#D8C84A",
-  drained: "#E69F00",
-  down: "#D55E00",
-  maintenance: "#CC79A7",
+  idle: "#277DA1",
+  allocated: "#43AA8B",
+  mixed: "#90BE6D",
+  drained: "#F9844A",
+  down: "#DC2626",
+  maintenance: "#F9C74F",
   unknown: "#6B7280",
 };
 
@@ -102,11 +102,11 @@ export const NODE_STATUS_SYMBOLS = {
 
 export const NODE_STATUS_TEXT_COLORS = {
   idle: "#ffffff",
-  allocated: "#ffffff",
+  allocated: "#111827",
   mixed: "#111827",
   drained: "#111827",
   down: "#ffffff",
-  maintenance: "#ffffff",
+  maintenance: "#111827",
   unknown: "#ffffff",
 };
 
@@ -141,11 +141,11 @@ export const cardClasses = {
   icon: "inline-flex shrink-0 items-center justify-center text-card-18 text-mosaic-secondary",
   loading: "flex min-h-11 items-center text-card-12 font-semibold text-mosaic-muted",
   empty: "flex min-h-11 items-center text-card-12 font-semibold text-mosaic-muted",
-  link: "ml-auto whitespace-nowrap text-card-12 font-semibold text-mosaic-link no-underline",
+  link: "non-draggable ml-auto whitespace-nowrap text-card-12 font-semibold text-mosaic-link no-underline",
   progressTrack: "block h-2.5 overflow-hidden rounded-full bg-mosaic-border",
   progressFill: "block h-full rounded-full bg-gradient-to-r from-green-600 to-green-500",
   subtlePanel: "rounded-[5px] border border-mosaic-border bg-mosaic-table",
-  iconButton: "inline-flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-card-18 text-mosaic-secondary hover:border-mosaic-accent hover:text-mosaic-primary",
+  iconButton: "non-draggable inline-flex h-7 w-7 items-center justify-center rounded-[5px] border border-mosaic-border bg-mosaic-surface text-card-18 text-mosaic-secondary hover:border-mosaic-accent hover:text-mosaic-primary",
 };
 
 export const getToneTextClass = (tone) => {

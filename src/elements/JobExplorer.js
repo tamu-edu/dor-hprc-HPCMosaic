@@ -41,9 +41,9 @@ const getStateBadgeClass = (state) => {
   return "bg-slate-500";
 };
 
-const explorerButtonClass = "rounded-[5px] border border-mosaic-border bg-mosaic-surface px-3 py-2 text-card-13 font-semibold text-mosaic-secondary transition-colors hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover hover:text-mosaic-primary disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled";
-const explorerDangerButtonClass = "rounded-[5px] border border-mosaic-danger-bg bg-mosaic-danger-bg px-3 py-2 text-card-13 font-semibold text-mosaic-accent-text transition-colors hover:bg-mosaic-danger-hover disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled";
-const explorerInputClass = "min-h-9 rounded-[5px] border border-mosaic-border-strong bg-mosaic-app px-3 py-2 text-card-13 text-mosaic-primary outline-none focus:border-mosaic-accent focus:shadow-[0_0_0_3px_var(--mosaic-color-focus-ring)]";
+const explorerButtonClass = "non-draggable rounded-[5px] border border-mosaic-border bg-mosaic-surface px-3 py-2 text-card-13 font-semibold text-mosaic-secondary transition-colors hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover hover:text-mosaic-primary disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled";
+const explorerDangerButtonClass = "non-draggable rounded-[5px] border border-mosaic-danger-bg bg-mosaic-danger-bg px-3 py-2 text-card-13 font-semibold text-mosaic-accent-text transition-colors hover:bg-mosaic-danger-hover disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled";
+const explorerInputClass = "non-draggable min-h-9 rounded-[5px] border border-mosaic-border-strong bg-mosaic-app px-3 py-2 text-card-13 text-mosaic-primary outline-none focus:border-mosaic-accent focus:shadow-[0_0_0_3px_var(--mosaic-color-focus-ring)]";
 const explorerPanelClass = "rounded-[5px] border border-mosaic-border bg-mosaic-table p-3";
 
 const uniqueOptions = (jobs, key) =>
