@@ -3,14 +3,14 @@
     "type": "text",
     "label": "Digital Object Identifier (DOI), if available",
     "name": "doi",
-    "help": "Enter the DOI of the paper you want to acknowledge if available (optional)",
+    "help": "Enter the paper's DOI, if available (optional)",
     "value": ""
   },
   "additionalInfo": {
     "type": "textarea",
-    "label": "Publication Information (Preferably Bibtex)",
+    "label": "Publication Information (Preferably BibTeX)",
     "name": "additionalInfo",
-    "help": "Enter any additional information you want to include in the acknowledgement eg. Publication Information (optional)",
+    "help": "Enter any additional information you want to include in the acknowledgment, e.g., publication information (optional)",
     "value": "",
     "rows": 4
   }

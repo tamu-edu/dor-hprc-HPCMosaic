@@ -87,10 +87,10 @@ const GroupButton = () => {
   
 
   const disclaimerText = [
-    "Group operations require appropriate permissions",
-    "Only group owners and delegates can add or remove members",
-    "New group names must follow naming guidelines (no spaces, only underscores and hyphens allowed)",
-    "Requesting access to restricted groups may require approval from the group owner"
+    "Group operations require appropriate permissions.",
+    "Only group owners and delegates can add or remove members.",
+    "New group names must follow the naming guidelines: no spaces; only underscores and hyphens are allowed.",
+    "Requests for access to restricted groups may require approval from the group owner."
   ];
 
   return (

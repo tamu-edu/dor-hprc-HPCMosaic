@@ -32,7 +32,7 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
     const isPIRequest = formData.get('isPIRequest');
 
     if (isBlockedNonPiLongRequest(isLongRequest, isPIRequest)) {
-      alert('Only PIs can request quota increases for more than 10TB, longer than 6 months, or buy-in quota. Please ask your PI to make the request.');
+      alert('Only PIs can request quota increases of more than 10 TB, requests longer than 6 months, or quota buy-ins. Please ask your PI to submit the request.');
       return false;
     }
 
@@ -148,9 +148,9 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
   }
 
   const disclaimerText = [
-    "Only Owners of the individual disk space can request the quota increase",
-    "Quota requests are subject to review and approval by HPRC admins. Please provide a strong and detailed justification for this request.",
-    "Only a PI can request quota increases that exceed 10 TB or last more than six months. These requests need approval from the HPRC Director."
+    "Only owners of the storage space can request a quota increase.",
+    "Quota requests are subject to review and approval by HPRC administrators. Please provide a strong and detailed justification for your request.",
+    "Only a PI can request quota increases exceeding 10 TB or lasting more than six months. These requests require approval from the HPRC Director."
   ];
 
   return (
@@ -174,7 +174,7 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
         fontWeight: '500'
       }}
       buttonClassName={buttonClassName || (disk ? "inline-button" : "")}
-      errorMessage="Either Disk Quota or File Limit must be filled."
+      errorMessage="Enter either a disk quota or a file limit."
     />
   );
 };

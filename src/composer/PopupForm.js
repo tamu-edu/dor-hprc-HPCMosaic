@@ -5,11 +5,9 @@ import ComposerWrapper from './ComposerWrapper';
 
 //Context Import
 import { useLayoutLock } from '../context/LayoutLockContext';
-import { useTheme } from '../context/ThemeContext';
 
 const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaimerText, errorMessage, isSubmitting, validateFormReady }) => {
   const modalRef = useRef(null);
-  const { theme } = useTheme();
 
   const handleClickOutside = useCallback((event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -68,85 +66,45 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
   }, []);
 
   return createPortal(
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: theme.colors.overlay,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-      pointerEvents: 'auto'
-    }}>
-      <div ref={modalRef} style={{
-        backgroundColor: theme.colors.surfaceBg,
-        color: theme.colors.textPrimary,
-        width: '90%',
-        maxWidth: '800px',
-        maxHeight: '90vh',
-        overflow: 'auto',
-        position: 'relative',
-        borderRadius: '4px',
-        border: `1px solid ${theme.colors.borderStrong}`,
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-	pointerEvents: 'auto'
-      }}>
+    <div className="composer-modal-overlay" role="presentation">
+      <div
+        ref={modalRef}
+        className="composer-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
         <button
+          type="button"
           onClick={onClose}
-	  disabled={isSubmitting}
-          className="non-draggable"
-          style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            background: 'none',
-            border: 'none',
-            fontSize: '24px',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            color: isSubmitting ? theme.colors.disabledText : theme.colors.textSecondary,
-            padding: '4px 12px',
-            zIndex: 1
-          }}
+          disabled={isSubmitting}
+          className="non-draggable composer-modal-close"
+          aria-label="Close form"
         >
           ×
         </button>
 
-        <div style={{ padding: '20px' }}>
-          {disclaimerText && (
-            <div style={{
-              borderBottom: `1px solid ${theme.colors.borderStrong}`,
-              marginBottom: '24px',
-              paddingBottom: '16px'
-            }}>
-              <div style={{
-                fontSize: '15px',
-                fontWeight: '500',
-                color: theme.colors.warningText,
-                marginBottom: '12px'
-              }}>
+        <div className="composer-modal-body">
+          {disclaimerText?.length > 0 && (
+            <aside className="composer-notice" aria-label="Important information">
+              <div className="composer-notice-title">
                 Important Information
               </div>
-              {disclaimerText.map((text, index) => (
-                <div key={index} style={{
-                  display: 'flex',
-                  gap: '8px',
-                  marginBottom: '8px',
-                  color: theme.colors.warningText,
-                  fontSize: '14px',
-                  lineHeight: '1.5'
-                }}>
-                  <span style={{ minWidth: '15px' }}>{index + 1}.</span>
-                  <span>{text}</span>
-                </div>
-              ))}
-            </div>
+              <ul className="composer-notice-list">
+                {disclaimerText.map((text) => (
+                  <li key={text} className="composer-notice-item">
+                    {text}
+                  </li>
+                ))}
+              </ul>
+            </aside>
           )}
           
           <ComposerWrapper
             schema={schema}
             defaultValues={defaultValues}
             onSubmit={onSubmit}
-	    isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting}
             validateFormReady={validateFormReady}
             onClose={onClose}
             title={title}
@@ -217,7 +175,7 @@ const PopupForm = ({
           schema={schema}
           defaultValues={defaultValues}
           onSubmit={handleSubmit}
-	  isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting}
           validateFormReady={validateFormReady}
           onClose={handleClose}
           title={title}

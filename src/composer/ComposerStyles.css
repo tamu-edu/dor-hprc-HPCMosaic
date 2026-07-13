@@ -551,3 +551,393 @@
 .mb-4 {
   margin-bottom: 1.5rem !important;
 }
+
+/* Composer popup shell */
+.composer-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--mosaic-color-overlay);
+  pointer-events: auto;
+}
+
+.composer-modal-dialog {
+  position: relative;
+  width: min(900px, 100%);
+  max-height: min(92vh, 980px);
+  overflow: hidden;
+  color: var(--mosaic-color-text-primary);
+  background: var(--mosaic-color-surface-bg);
+  border: 1px solid var(--mosaic-color-border);
+  border-radius: 6px;
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+.composer-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1100;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--mosaic-color-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.composer-modal-close:hover:not(:disabled) {
+  color: var(--mosaic-color-text-primary);
+  background: var(--mosaic-color-surface-bg-hover);
+  border-color: var(--mosaic-color-border);
+}
+
+.composer-modal-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--mosaic-color-focus-ring);
+}
+
+.composer-modal-close:disabled {
+  color: var(--mosaic-color-disabled-text);
+  background: var(--mosaic-color-disabled-bg);
+  cursor: not-allowed;
+}
+
+.composer-modal-body {
+  max-height: min(92vh, 980px);
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.composer-notice {
+  margin: 0 40px 16px 0;
+  padding: 8px 12px;
+  color: var(--mosaic-color-text-primary);
+  background: var(--mosaic-color-table-header-bg);
+  border: 1px solid var(--mosaic-color-border);
+  border-radius: 4px;
+}
+
+.composer-notice-title {
+  margin-bottom: 4px;
+  color: var(--mosaic-color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.composer-notice-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.composer-notice-item {
+  margin: 2px 0;
+  padding-left: 0;
+  color: var(--mosaic-color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Clean form surface and hierarchy */
+.composer-wrapper .form-card {
+  border: 1px solid var(--composer-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.composer-wrapper.popup-form .form-card {
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.composer-wrapper .form-header {
+  padding: 16px;
+}
+
+.composer-wrapper .form-header h2 {
+  max-width: calc(100% - 3rem);
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.composer-wrapper .form-content {
+  padding: 16px;
+}
+
+.composer-wrapper .form-control-label,
+.composer-wrapper .col-form-label {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 4px;
+  padding: 0;
+  color: var(--composer-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.composer-wrapper .form-control-label > span[title],
+.composer-wrapper .col-form-label > span[title] {
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  margin-left: 4px !important;
+  color: var(--composer-text-secondary) !important;
+  border-color: var(--composer-border-strong) !important;
+  opacity: 1 !important;
+}
+
+.composer-wrapper .form-group {
+  margin-bottom: 16px;
+}
+
+.composer-wrapper .form-control,
+.composer-wrapper select,
+.composer-wrapper textarea,
+.composer-wrapper input:not([type="radio"]):not([type="checkbox"]):not([type="button"]):not([type="submit"]):not([type="hidden"]) {
+  min-height: 40px;
+  border-color: var(--composer-border);
+  border-radius: 4px;
+}
+
+.composer-wrapper textarea.form-control {
+  min-height: 88px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.composer-wrapper .form-control::placeholder,
+.composer-wrapper textarea::placeholder,
+.composer-wrapper input::placeholder {
+  color: var(--mosaic-color-text-muted);
+  opacity: 0.9;
+}
+
+/* External collapsible containers do not expose classes, so target their
+   stable top-level structure while keeping the rule inside Composer. */
+.composer-wrapper .form-content > div > div:not(.form-group) {
+  margin-bottom: 16px !important;
+  padding: 16px !important;
+  background: var(--composer-surface-alt) !important;
+  border: 1px solid var(--composer-border) !important;
+  border-radius: 6px !important;
+}
+
+.composer-wrapper .form-content > div > div:not(.form-group) > div:first-child {
+  margin-bottom: 8px !important;
+  padding-bottom: 8px !important;
+  border-bottom-color: var(--composer-border) !important;
+}
+
+.composer-wrapper .form-content > div > div:not(.form-group) > div:first-child > span {
+  color: var(--composer-text-primary);
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+.composer-wrapper .form-content > div > div:not(.form-group) > div:first-child > button {
+  display: none !important;
+}
+
+/* Radio choices: the actual radio covers the complete visual card. */
+.composer-wrapper .form-check.form-check-inline {
+  position: relative;
+  display: inline-flex;
+  min-width: 96px;
+  margin: 0 8px 8px 0;
+  padding: 0;
+  vertical-align: top;
+}
+
+.composer-wrapper .form-check.form-check-inline > input[type="radio"].form-check-input {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.composer-wrapper .form-check.form-check-inline > .form-check-label {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  padding: 8px 12px 8px 32px;
+  color: var(--composer-text-secondary);
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.composer-wrapper .form-check.form-check-inline > .form-check-label::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
+  border-radius: 999px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.composer-wrapper .form-check.form-check-inline > .form-check-label::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  width: 6px;
+  height: 6px;
+  background: var(--composer-primary);
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.composer-wrapper .form-check.form-check-inline > input[type="radio"]:hover + .form-check-label {
+  color: var(--composer-text-primary);
+  background: var(--composer-surface-hover);
+  border-color: var(--composer-primary-hover);
+}
+
+.composer-wrapper .form-check.form-check-inline > input[type="radio"]:checked + .form-check-label {
+  color: var(--composer-text-primary) !important;
+  background: var(--mosaic-color-selected-bg);
+  border-color: var(--composer-primary);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.composer-wrapper .form-check.form-check-inline > input[type="radio"]:checked + .form-check-label::before {
+  border-color: var(--composer-primary);
+  box-shadow: none;
+}
+
+.composer-wrapper .form-check.form-check-inline > input[type="radio"]:checked + .form-check-label::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.composer-wrapper .form-check.form-check-inline > input[type="radio"]:focus-visible + .form-check-label {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--composer-focus-ring);
+}
+
+.composer-wrapper .form-check.form-check-inline > input[type="radio"]:disabled + .form-check-label {
+  color: var(--mosaic-color-disabled-text);
+  background: var(--mosaic-color-disabled-bg);
+  border-color: var(--composer-border);
+  cursor: not-allowed;
+}
+
+.composer-wrapper .form-footer {
+  padding: 8px 16px;
+  background: var(--composer-surface);
+}
+
+.composer-wrapper .button-group {
+  gap: 8px;
+}
+
+.composer-wrapper .btn {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.composer-wrapper .btn-secondary,
+.composer-wrapper .maroon-button-secondary {
+  color: var(--composer-text-secondary);
+  background: transparent;
+  border-color: transparent;
+}
+
+.composer-wrapper .btn-secondary:hover,
+.composer-wrapper .maroon-button-secondary:hover {
+  color: var(--composer-text-primary);
+  background: var(--composer-surface-hover);
+  border-color: var(--composer-border);
+}
+
+.composer-wrapper .btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--composer-focus-ring);
+}
+
+.composer-wrapper .btn:disabled {
+  color: var(--mosaic-color-disabled-text) !important;
+  background: var(--mosaic-color-disabled-bg) !important;
+  border-color: var(--mosaic-color-disabled-bg) !important;
+}
+
+@media (max-width: 640px) {
+  .composer-modal-overlay {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .composer-modal-dialog {
+    width: 100%;
+    max-height: 100dvh;
+    border-width: 0;
+    border-radius: 0;
+  }
+
+  .composer-modal-body {
+    max-height: 100dvh;
+    padding: 0.85rem;
+  }
+
+  .composer-notice {
+    margin-right: 3rem;
+  }
+
+  .composer-wrapper .form-header,
+  .composer-wrapper .form-content,
+  .composer-wrapper .form-footer {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .composer-wrapper .form-check.form-check-inline {
+    display: flex;
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composer-wrapper *,
+  .composer-modal-dialog * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

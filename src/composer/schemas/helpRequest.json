@@ -15,7 +15,7 @@
 
    "softwareQestions": {
       "type": "collapsibleColContainer",
-      "title": "Software Install Requests",
+      "title": "Software Installation Requests",
       "condition" : "helpRequest.software",
       "elements": {
 
@@ -28,7 +28,7 @@
  
          "softwareCategory": {
             "type": "radioGroup",
-            "label": "Software Category (this will help with routing the request to the correct channels).",
+            "label": "Software category (used to route the request to the appropriate channel)",
             "name": "softwareCategory",
             "required":true,
             "options": [
@@ -79,53 +79,53 @@
             "type": "textarea",
             "label": "Additional information",
             "name": "softwareInfo",
-            "help": "Enter any relevant info that might help installing the software. If this is a licensed software provide license information."
+            "help": "Enter any relevant information that might help with installing the software. If this is licensed software, provide the license information."
          }   
       }  
    },
 
    "jobQestions": {
       "type": "collapsibleColContainer",
-      "title": "Job Related Questions",
+      "title": "Job-Related Questions",
       "condition" : "helpRequest.jobs",
       "elements": {
 
          "jobID": {
             "type": "text",
-            "label": "Provide JobID",
+            "label": "Provide the job ID",
             "name": "jobID",
 	    "required":true,
-            "help": "Provide JobID"
+            "help": "Provide the job ID"
          },
 
           "jobLocation": {
             "type": "text",
-            "label": "Provide location of job script",
+            "label": "Provide the location of the job script",
             "name": "jobLocation",
-            "help": "Provide location of job script"
+            "help": "Provide the location of the job script"
          },
 
 
          "jobIssue": {
             "type": "textarea",
-            "label": "Provide detailed info about your job issue",
+            "label": "Provide detailed information about your job issue",
             "name": "jobIssue",
 	    "required":true,
-            "help": "Provide location jo job script"
+            "help": "Describe the job issue in detail"
          },
 
          "jobIrrors": {
             "type": "textarea",
-            "label": "Copy/Paste any relevant output",
+            "label": "Copy and paste any relevant output",
             "name": "jobErrors",
-            "help": "Provide location jo job script"
+            "help": "Provide any output or error messages relevant to the issue"
          }
       }
    },
 
    "accountQestions": {
       "type": "collapsibleColContainer",
-      "title": "Account Related Questions",
+      "title": "Account-Related Questions",
       "condition" : "helpRequest.accounts",
       "elements": {
 
@@ -136,16 +136,16 @@
             "required":true,
             "options": [
                { "value": "general", "label": "General account question" },
-               { "value": "addAccount", "label": "Add user to Account" },
-               { "value": "transferSU", "label": "Tranfer SUs" }
+               { "value": "addAccount", "label": "Add user to account" },
+               { "value": "transferSU", "label": "Transfer SUs" }
             ]
          },
       
          "accountGeneral": {
             "type": "textarea",
-            "label": "What is your account question, be as detailed as possible",
+            "label": "Describe your account question in as much detail as possible",
             "name": "jobIssue",
-            "help": "What is your account question, be as detailed as possible",
+            "help": "Describe your account question in as much detail as possible",
             "condition" : "accountType.general"
          },
 
@@ -158,7 +158,7 @@
 
          "accountAddNote": {
             "type": "staticText",
-            "value": "Provide the account number, the name of the user to transfer the SUs to and the number of SUs.",
+            "value": "Provide the account number, the name of the user receiving the SUs, and the number of SUs to transfer.",
             "isHeading": false,
 	    "required": true,
             "condition" : "accountType.transferSU"
@@ -172,7 +172,7 @@
                   "type": "text",
                   "label": "Account number",
                   "name": "accountNumber",
-                  "help": "Provide location of job script",
+                  "help": "Provide the account number",
 		  "required":true,
                   "condition" : "accountType.addAccount || accountType.transferSU"
                },
