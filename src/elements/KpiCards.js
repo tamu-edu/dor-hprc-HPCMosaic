@@ -100,13 +100,13 @@ export const GpuResourcesCard = () => {
       ) : error ? (
         <div className={cardClasses.empty}>Unavailable</div>
       ) : (
-        <div className="grid grid-cols-3 gap-[7px]">
+        <div className="grid grid-cols-3 gap-1">
           {gpuStats.map((stat) => (
             <div
               key={stat.label}
-              className="grid min-w-0 gap-1 rounded-[5px] border border-mosaic-border bg-mosaic-table px-2 py-2 text-center"
+              className="grid min-w-0 gap-1 rounded-[5px] border border-mosaic-border bg-mosaic-table px-1 py-2 text-center"
             >
-              <strong className="min-w-0 whitespace-nowrap text-card-22 font-extrabold leading-none text-mosaic-primary">
+              <strong className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-22 font-extrabold leading-none text-mosaic-primary">
                 {stat.value}
               </strong>
               <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-10 font-bold uppercase text-mosaic-secondary">
