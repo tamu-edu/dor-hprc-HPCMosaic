@@ -3,6 +3,7 @@
    "groupRequest": {
       "type": "radioGroup",
       "label": "Type of group request?*",
+      "required": true,
       "name": "groupRequest",
       "options": [
          { "value": "madd", "label": "Add member" },
@@ -28,6 +29,7 @@
             "type": "text",
             "label": "Enter a group name (max 14 characters). You may use letters, numbers, underscores (_), periods (.), and hyphens (-)",
             "name": "groupName",
+	    "required": true,
             "help": "Enter a group name (max 14 characters). You may use letters, numbers, underscores (_), periods (.), and hyphens (-)"
           },
    
@@ -35,6 +37,7 @@
             "type": "textarea",
             "label": "Provide netids of members to add to group, one per line",
             "name": "groupAdd",
+	    "required": true,
             "help": "Provide netids of members to add to group, one per line",
             "condition" : "groupRequest.madd"
          },   
@@ -44,6 +47,7 @@
             "type": "textarea",
             "label": "Provide netids of members to remove from group, one per line",
             "name": "groupRemove",
+	    "required": true,
             "help": "Provide netids of members to remove from group, one per line",
             "condition" : "groupRequest.mremove"
          }
@@ -67,6 +71,7 @@
            "type": "text",
            "label": "Provide group name (no special characters aside from _ and -",
            "name": "groupName",
+	   "required": true,
            "help": "Provide group name (no special characters aside from _ and -"
          },
 
@@ -74,6 +79,7 @@
            "type": "textarea",
            "label": "Provide netids of members to add to group, one per line",
            "name": "groupMembers",
+	   "required": true,
            "help": "Provide netids of members to add to group, one per line"
          }
       }  
@@ -96,6 +102,7 @@
            "type": "text",
            "label": "Provide group name you request access to",
            "name": "groupName",
+	   "required": true,
            "help": "Provide group name you request access to"
          },
 
@@ -103,6 +110,7 @@
            "type": "textarea",
            "label": "Explain why you are requesting access to this group (e.g., project storage, shared software, collaboration, etc.)",
            "name": "comments",
+	   "required": true,
            "help": "Explain the purpose of this group request. Include details such as: What the group will be used for (e.g., project data storage, shared software, collaboration). Why you should have access (e.g., relevant license, PI approval, related research work)"
          }
 

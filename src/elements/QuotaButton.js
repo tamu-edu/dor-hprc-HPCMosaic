@@ -3,7 +3,6 @@ import PopupForm from '../composer/PopupForm';
 import quotaRequestSchema from '../composer/schemas/quotaRequest.json';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
-import { getFieldValue } from "../composer/schemaRendering/utils/fieldUtils";
 
 const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null, buttonText = null, buttonClassName = "" }) => {
   const baseUrl = get_base_url();
@@ -15,9 +14,9 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
     return isLongRequest === 'Yes' && isPIRequest === 'No';
   };
 
-  const validateQuotaReady = (fields) => {
-    const isLongRequest = getFieldValue(fields, 'isLongRequest');
-    const isPIRequest = getFieldValue(fields, 'isPIRequest');
+  const validateQuotaReady = (formData) => {
+    const isLongRequest = formData.get('isLongRequest');
+    const isPIRequest = formData.get('isPIRequest');
 
     return !isBlockedNonPiLongRequest(isLongRequest, isPIRequest);
   };

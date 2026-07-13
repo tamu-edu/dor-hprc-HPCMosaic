@@ -4,6 +4,7 @@
       "type": "select",
       "label": "What do you need help with?*",
       "name": "helpRequest",
+      "required":true,
       "options": [
          { "value": "software", "label": "Software Installation" },
          { "value": "accounts", "label": "Accounts" },
@@ -29,6 +30,7 @@
             "type": "radioGroup",
             "label": "Software Category (this will help with routing the request to the correct channels).",
             "name": "softwareCategory",
+            "required":true,
             "options": [
                { "value": "bio", "label": "Bio" },
                { "value": "engineering", "label": "Engineering" },
@@ -45,6 +47,7 @@
                   "type": "text",
                   "label": "Name of software",
                   "name": "softwareName",
+		  "required":true,
                   "help": "Name of software"
                },
 
@@ -91,6 +94,7 @@
             "type": "text",
             "label": "Provide JobID",
             "name": "jobID",
+	    "required":true,
             "help": "Provide JobID"
          },
 
@@ -106,6 +110,7 @@
             "type": "textarea",
             "label": "Provide detailed info about your job issue",
             "name": "jobIssue",
+	    "required":true,
             "help": "Provide location jo job script"
          },
 
@@ -128,6 +133,7 @@
             "type": "select",
             "label": "What do you need help with?*",
             "name": "accountType",
+            "required":true,
             "options": [
                { "value": "general", "label": "General account question" },
                { "value": "addAccount", "label": "Add user to Account" },
@@ -154,6 +160,7 @@
             "type": "staticText",
             "value": "Provide the account number, the name of the user to transfer the SUs to and the number of SUs.",
             "isHeading": false,
+	    "required": true,
             "condition" : "accountType.transferSU"
          },
 
@@ -166,6 +173,7 @@
                   "label": "Account number",
                   "name": "accountNumber",
                   "help": "Provide location of job script",
+		  "required":true,
                   "condition" : "accountType.addAccount || accountType.transferSU"
                },
 
@@ -174,6 +182,7 @@
                   "label": "User",
                   "name": "accountUser",
                   "help": "User",
+		  "required": true,
                   "condition" : "accountType.addAccount || accountType.transferSU"
                },
 
@@ -181,6 +190,7 @@
                   "type": "text",
                   "label": "Number of SUs to transfer",
                   "name": "jobIssue",
+		  "required": true,
                   "help": "Number of SUs to transfer",
                   "condition" : "accountType.transferSU"
                }
@@ -199,6 +209,7 @@
             "type": "textarea",
             "label": "Describe your issue. Provide as much detail as possible",
             "name": "otherDescription",
+	    "required":true,
             "help": "Describe your issue. Provide as much detail as possible"
          }
       }
