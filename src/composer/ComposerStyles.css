@@ -1,9 +1,4 @@
 .composer-wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-
   --composer-surface: var(--mosaic-color-surface-bg);
   --composer-surface-alt: var(--mosaic-color-app-bg);
   --composer-surface-hover: var(--mosaic-color-surface-bg-hover);
@@ -20,58 +15,71 @@
   --composer-primary-text: var(--mosaic-color-primary-text);
   --composer-focus-ring: var(--mosaic-color-focus-ring);
 
-  /*To prevent selection bleeding*/
   position: relative;
   z-index: 1000;
-  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
   color: var(--composer-text-primary);
+  pointer-events: auto;
 }
 
 .composer-wrapper * {
   box-sizing: border-box;
 }
 
-/* Prevent text selection from going through form*/
 .composer-wrapper::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: -1;
   background: transparent;
   pointer-events: none;
 }
 
+/* Form shell */
 .composer-wrapper .form-card {
-  background: var(--composer-surface);
-  border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(128, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
   margin: 1rem;
+  overflow: hidden;
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.composer-wrapper.popup-form .form-card {
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 4px;
 }
 
 .composer-wrapper .form-header {
   flex-shrink: 0;
-  padding: 1.5rem;
+  padding: 16px;
+  color: var(--composer-text-primary);
   background: var(--composer-surface);
   border-bottom: 1px solid var(--composer-border-strong);
-  color: var(--composer-text-primary);
 }
 
 .composer-wrapper .form-header h2 {
+  max-width: calc(100% - 3rem);
+  margin: 0;
   color: var(--composer-text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .composer-wrapper .form-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
   min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
   color: var(--composer-text-primary);
 }
 
@@ -100,211 +108,18 @@
   color: var(--mosaic-color-link) !important;
 }
 
-/* Row Container Styles */
+/* Renderer layout adapters */
 .composer-wrapper .form-group.row {
   display: flex;
   flex-wrap: wrap;
-  margin: -0.75rem;  /* Negative margin to offset child padding */
   align-items: flex-start;
+  margin: -0.75rem;
 }
 
 .composer-wrapper .form-group.row > .col {
   flex: 1;
+  min-width: 200px;
   padding: 0.75rem;
-  min-width: 200px; /* Ensure columns don't get too narrow */
-}
-
-/* Form Controls */
-.composer-wrapper .form-control {
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border: 1px solid var(--composer-border);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-  background-color: var(--composer-surface);
-  color: var(--composer-text-primary);
-}
-
-.composer-wrapper select,
-.composer-wrapper textarea,
-.composer-wrapper input:not([type="radio"]):not([type="checkbox"]):not([type="button"]):not([type="submit"]) {
-  background-color: var(--composer-surface);
-  color: var(--composer-text-primary);
-  border-color: var(--composer-border);
-}
-
-.composer-wrapper option {
-  background-color: var(--composer-surface);
-  color: var(--composer-text-primary);
-}
-
-.composer-wrapper input[type="radio"],
-.composer-wrapper input[type="checkbox"],
-.composer-wrapper .form-check-input {
-  accent-color: var(--composer-primary) !important;
-}
-
-.composer-wrapper .form-check-input:checked + .form-check-label {
-  color: var(--composer-primary) !important;
-}
-
-.composer-wrapper .form-control:focus {
-  border-color: var(--composer-primary);
-  box-shadow: 0 0 0 3px var(--composer-focus-ring);
-  outline: none;
-}
-
-.composer-wrapper .form-control:hover:not(:focus) {
-  border-color: var(--composer-border-strong);
-}
-
-/* Labels */
-.composer-wrapper .form-label {
-  display: flex;
-  align-items: center;
-  color: var(--composer-text-secondary);
-  font-weight: 500;
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Form Groups */
-.composer-wrapper .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.composer-wrapper .form-group:last-child {
-  margin-bottom: 0;
-}
-
-/* Error Message */
-.composer-wrapper .error-message {
-  background-color: var(--composer-error-bg);
-  border: 1px solid var(--composer-error-border);
-  color: var(--composer-error-text);
-  padding: 0.875rem 1rem;
-  margin: 1rem 0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.95rem;
-}
-
-.composer-wrapper .error-message button {
-  background: none;
-  border: none;
-  color: var(--composer-error-text);
-  cursor: pointer;
-  padding: 0.25rem;
-  margin-left: 1rem;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.composer-wrapper .error-message button:hover {
-  opacity: 1;
-}
-
-/* Footer */
-.composer-wrapper .form-footer {
-  flex-shrink: 0;
-  padding: 1.5rem;
-  background: var(--composer-surface-alt);
-  border-top: 1px solid var(--composer-border-strong);
-}
-
-/* Buttons */
-.composer-wrapper .button-group {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-
-.composer-wrapper .btn {
-  padding: 0.625rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.composer-wrapper .btn-primary,
-.composer-wrapper .maroon-button-filled,
-.composer-wrapper .btn-primary.maroon-button {
-  background-color: var(--composer-primary);
-  color: var(--composer-primary-text);
-  border: 1px solid var(--composer-primary);
-}
-
-.composer-wrapper .btn-primary:hover,
-.composer-wrapper .maroon-button-filled:hover,
-.composer-wrapper .btn-primary.maroon-button:hover {
-  background-color: var(--composer-primary-hover);
-  border-color: var(--composer-primary-hover);
-  color: var(--composer-primary-text);
-}
-
-.composer-wrapper .maroon-button:not(.btn-primary) {
-  background-color: var(--composer-surface);
-  color: var(--composer-primary);
-  border: 1px solid var(--composer-primary);
-}
-
-.composer-wrapper .maroon-button:not(.btn-primary):hover {
-  background-color: var(--composer-primary-hover);
-  border-color: var(--composer-primary-hover);
-  color: var(--composer-primary-text);
-}
-
-.composer-wrapper .btn-secondary,
-.composer-wrapper .maroon-button-secondary {
-  background-color: var(--composer-surface);
-  color: var(--composer-warning);
-  border: 1px solid var(--composer-border-strong);
-}
-
-.composer-wrapper .btn-secondary:hover,
-.composer-wrapper .maroon-button-secondary:hover {
-  background-color: var(--composer-surface-hover);
-  border-color: var(--composer-warning);
-  color: var(--composer-warning);
-}
-
-/* Container sections */
-.composer-wrapper .container-section {
-  background-color: var(--composer-surface-alt);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--composer-border);
-}
-
-.composer-wrapper .container-title {
-  color: var(--composer-warning);
-  font-weight: 600;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .composer-wrapper .form-group.row > .col {
-    flex: 0 0 100%;
-  }
-  
-  .composer-wrapper .button-group {
-    flex-direction: column;
-  }
-  
-  .composer-wrapper .btn {
-    width: 100%;
-  }
 }
 
 .composer-wrapper .input-group {
@@ -314,372 +129,22 @@
   width: 100%;
 }
 
-.composer-wrapper .time-inputs {
+.composer-wrapper .form-group {
+  margin-bottom: 16px;
+}
+
+.composer-wrapper .form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Labels and controls */
+.composer-wrapper .form-label {
   display: flex;
-  gap: 1rem;
-  width: 100%;
-  max-width: 400px; /* Prevent inputs from getting too wide */
-}
-
-.composer-wrapper .time-input-container {
-  flex: 1;
-  min-width: 80px; /* Ensure minimum width */
-}
-
-.composer-wrapper .time-input-container input[type="number"] {
-  width: 100%;
-  text-align: center;
-  padding: 0.625rem 0.5rem;
-  border: 1px solid var(--composer-border);
-  background-color: var(--composer-surface);
-  color: var(--composer-text-primary);
-  border-radius: 8px;
-  font-size: 0.95rem;
-}
-
-/* Remove spinner buttons */
-.composer-wrapper .time-input-container input[type="number"]::-webkit-outer-spin-button,
-.composer-wrapper .time-input-container input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.composer-wrapper .time-input-container input[type="number"] {
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-/* Labels */
-.composer-wrapper .time-label {
-  display: block;
-  text-align: center;
-  font-size: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
   color: var(--composer-text-secondary);
-  margin-top: 0.25rem;
-}
-
-/* Time input specific styling */
-.composer-wrapper .time-input-container input[type="number"]::placeholder {
-  color: var(--mosaic-color-text-muted);
-}
-
-.composer-wrapper .time-input-container input[type="number"]:focus {
-  border-color: var(--composer-primary);
-  box-shadow: 0 0 0 3px var(--composer-focus-ring);
-  outline: none;
-}
-
-/* Adjustments for the memory field to align properly */
-.composer-wrapper .memory-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.composer-wrapper .memory-row input {
-  flex: 1;
-  max-width: 120px;
-}
-
-.composer-wrapper .memory-row select {
-  width: auto;
-  min-width: 80px;
-}
-
-/* Add spacing between row sections */
-.composer-wrapper .form-row {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-}
-
-.composer-wrapper .form-row > * {
-  flex: 1;
-}
-
-@media (maxWidth: 768px) {
-  .composer-wrapper .form-row {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .composer-wrapper .time-inputs {
-    max-width: 100%;
-  }
-}
-
-/* Required Fields Modal Styles */
-.modal-dialog {
-  position: relative;
-  width: auto;
-  margin: 1.75rem auto;
-  max-width: 800px;
-  pointer-events: none;
-  z-index: 10000 !important;
-}
-
-.modal-dialog.modal-lg {
-  max-width: 800px;
-}
-
-.modal-content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  pointer-events: auto;
-  background-color: var(--mosaic-color-surface-bg);
-  background-clip: padding-box;
-  border: 1px solid var(--mosaic-color-border-strong);
-  border-radius: 0.3rem;
-  outline: 0;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  z-index: 10000 !important;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  border-bottom: 1px solid var(--mosaic-color-border-strong);
-  border-top-left-radius: calc(0.3rem - 1px);
-  border-top-right-radius: calc(0.3rem - 1px);
-  background-color: var(--mosaic-color-surface-bg);
-}
-
-.modal-title {
-  margin: 0;
-  line-height: 1.5;
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--mosaic-color-text-primary);
-}
-
-.modal-body {
-  position: relative;
-  flex: 1 1 auto;
-  padding: 1rem;
-  background-color: var(--mosaic-color-surface-bg);
-}
-
-.modal-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0.75rem;
-  border-top: 1px solid var(--mosaic-color-border-strong);
-  border-bottom-right-radius: calc(0.3rem - 1px);
-  border-bottom-left-radius: calc(0.3rem - 1px);
-  background-color: var(--mosaic-color-surface-bg);
-}
-
-/* Modal buttons - consistent with form buttons */
-.modal-footer .btn {
-  padding: 0.625rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 500;
   font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--mosaic-color-primary);
-  color: var(--mosaic-color-primary-text);
-  border: 1px solid var(--mosaic-color-primary);
-}
-
-.modal-footer .btn:hover {
-  background-color: var(--mosaic-color-primary-hover);
-  border-color: var(--mosaic-color-primary-hover);
-}
-
-.modal-header .close {
-  padding: 0;
-  background-color: transparent;
-  border: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--mosaic-color-text-primary);
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-.modal-header .close:hover {
-  opacity: 0.75;
-}
-
-.alert {
-  position: relative;
-  padding: 0.75rem 1.25rem;
-  margin-bottom: 1rem;
-  border: 1px solid transparent;
-  border-radius: 0.25rem;
-}
-
-.alert-warning {
-  color: var(--mosaic-color-caution-text);
-  background-color: var(--mosaic-color-alert-bg);
-  border-color: var(--mosaic-color-alert-border);
-}
-
-.list-unstyled {
-  padding-left: 0;
-  list-style: none;
-  margin: 0;
-}
-
-.text-danger {
-  color: var(--mosaic-color-danger-text) !important;
-}
-
-.me-2 {
-  margin-right: 0.5rem !important;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem !important;
-}
-
-.mb-3 {
-  margin-bottom: 1rem !important;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem !important;
-}
-
-/* Composer popup shell */
-.composer-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: var(--mosaic-color-overlay);
-  pointer-events: auto;
-}
-
-.composer-modal-dialog {
-  position: relative;
-  width: min(900px, 100%);
-  max-height: min(92vh, 980px);
-  overflow: hidden;
-  color: var(--mosaic-color-text-primary);
-  background: var(--mosaic-color-surface-bg);
-  border: 1px solid var(--mosaic-color-border);
-  border-radius: 6px;
-  box-shadow: none;
-  pointer-events: auto;
-}
-
-.composer-modal-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 1100;
-  display: inline-flex;
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  color: var(--mosaic-color-text-secondary);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  font-size: 1.35rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
-}
-
-.composer-modal-close:hover:not(:disabled) {
-  color: var(--mosaic-color-text-primary);
-  background: var(--mosaic-color-surface-bg-hover);
-  border-color: var(--mosaic-color-border);
-}
-
-.composer-modal-close:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--mosaic-color-focus-ring);
-}
-
-.composer-modal-close:disabled {
-  color: var(--mosaic-color-disabled-text);
-  background: var(--mosaic-color-disabled-bg);
-  cursor: not-allowed;
-}
-
-.composer-modal-body {
-  max-height: min(92vh, 980px);
-  overflow-y: auto;
-  padding: 16px;
-}
-
-.composer-notice {
-  margin: 0 40px 16px 0;
-  padding: 8px 12px;
-  color: var(--mosaic-color-text-primary);
-  background: var(--mosaic-color-table-header-bg);
-  border: 1px solid var(--mosaic-color-border);
-  border-radius: 4px;
-}
-
-.composer-notice-title {
-  margin-bottom: 4px;
-  color: var(--mosaic-color-text-primary);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.composer-notice-list {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.composer-notice-item {
-  margin: 2px 0;
-  padding-left: 0;
-  color: var(--mosaic-color-text-secondary);
-  font-size: 0.8125rem;
-  line-height: 1.45;
-}
-
-/* Clean form surface and hierarchy */
-.composer-wrapper .form-card {
-  border: 1px solid var(--composer-border);
-  border-radius: 6px;
-  box-shadow: none;
-}
-
-.composer-wrapper.popup-form .form-card {
-  height: auto;
-  margin: 0;
-  border: 0;
-  border-radius: 4px;
-  box-shadow: none;
-}
-
-.composer-wrapper .form-header {
-  padding: 16px;
-}
-
-.composer-wrapper .form-header h2 {
-  max-width: calc(100% - 3rem);
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.composer-wrapper .form-content {
-  padding: 16px;
+  font-weight: 500;
 }
 
 .composer-wrapper .form-control-label,
@@ -704,23 +169,30 @@
   opacity: 1 !important;
 }
 
-.composer-wrapper .form-group {
-  margin-bottom: 16px;
-}
-
 .composer-wrapper .form-control,
 .composer-wrapper select,
 .composer-wrapper textarea,
 .composer-wrapper input:not([type="radio"]):not([type="checkbox"]):not([type="button"]):not([type="submit"]):not([type="hidden"]) {
+  width: 100%;
   min-height: 40px;
-  border-color: var(--composer-border);
+  padding: 0.625rem 0.875rem;
+  color: var(--composer-text-primary);
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-border);
   border-radius: 4px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
 .composer-wrapper textarea.form-control {
   min-height: 88px;
-  resize: vertical;
   line-height: 1.5;
+  resize: vertical;
+}
+
+.composer-wrapper option {
+  color: var(--composer-text-primary);
+  background: var(--composer-surface);
 }
 
 .composer-wrapper .form-control::placeholder,
@@ -730,8 +202,27 @@
   opacity: 0.9;
 }
 
-/* External collapsible containers do not expose classes, so target their
-   stable top-level structure while keeping the rule inside Composer. */
+.composer-wrapper .form-control:focus {
+  border-color: var(--composer-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--composer-focus-ring);
+}
+
+.composer-wrapper .form-control:hover:not(:focus) {
+  border-color: var(--composer-border-strong);
+}
+
+.composer-wrapper input[type="radio"],
+.composer-wrapper input[type="checkbox"],
+.composer-wrapper .form-check-input {
+  accent-color: var(--composer-primary) !important;
+}
+
+.composer-wrapper .form-check-input:checked + .form-check-label {
+  color: var(--composer-primary) !important;
+}
+
+/* The external collapsible containers expose only inline structure. */
 .composer-wrapper .form-content > div > div:not(.form-group) {
   margin-bottom: 16px !important;
   padding: 16px !important;
@@ -756,7 +247,7 @@
   display: none !important;
 }
 
-/* Radio choices: the actual radio covers the complete visual card. */
+/* Radio choices use the transparent native control over the visual card. */
 .composer-wrapper .form-check.form-check-inline {
   position: relative;
   display: inline-flex;
@@ -780,9 +271,9 @@
 .composer-wrapper .form-check.form-check-inline > .form-check-label {
   position: relative;
   display: flex;
+  align-items: center;
   width: 100%;
   min-height: 40px;
-  align-items: center;
   padding: 8px 12px 8px 32px;
   color: var(--composer-text-secondary);
   background: var(--composer-surface);
@@ -795,26 +286,27 @@
   transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.composer-wrapper .form-check.form-check-inline > .form-check-label::before {
+.composer-wrapper .form-check.form-check-inline > .form-check-label::before,
+.composer-wrapper .form-check.form-check-inline > .form-check-label::after {
   content: "";
   position: absolute;
+  border-radius: 999px;
+}
+
+.composer-wrapper .form-check.form-check-inline > .form-check-label::before {
   left: 10px;
   width: 14px;
   height: 14px;
   background: var(--composer-surface);
   border: 1px solid var(--composer-border);
-  border-radius: 999px;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .composer-wrapper .form-check.form-check-inline > .form-check-label::after {
-  content: "";
-  position: absolute;
   left: 14px;
   width: 6px;
   height: 6px;
   background: var(--composer-primary);
-  border-radius: 999px;
   opacity: 0;
   transform: scale(0.5);
   transition: opacity 0.18s ease, transform 0.18s ease;
@@ -856,28 +348,94 @@
   cursor: not-allowed;
 }
 
+/* Feedback and actions */
+.composer-wrapper .error-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  margin: 1rem 0;
+  color: var(--composer-error-text);
+  background: var(--composer-error-bg);
+  border: 1px solid var(--composer-error-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.composer-wrapper .error-message button {
+  padding: 0.25rem;
+  margin-left: 1rem;
+  color: var(--composer-error-text);
+  background: none;
+  border: 0;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.composer-wrapper .error-message button:hover {
+  opacity: 1;
+}
+
 .composer-wrapper .form-footer {
+  flex-shrink: 0;
   padding: 8px 16px;
   background: var(--composer-surface);
+  border-top: 1px solid var(--composer-border-strong);
 }
 
 .composer-wrapper .button-group {
+  display: flex;
+  justify-content: flex-end;
   gap: 8px;
 }
 
 .composer-wrapper .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 36px;
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.composer-wrapper .btn-primary,
+.composer-wrapper .maroon-button-filled,
+.composer-wrapper .btn-primary.maroon-button {
+  color: var(--composer-primary-text);
+  background: var(--composer-primary);
+  border: 1px solid var(--composer-primary);
+}
+
+.composer-wrapper .btn-primary:hover,
+.composer-wrapper .maroon-button-filled:hover,
+.composer-wrapper .btn-primary.maroon-button:hover {
+  color: var(--composer-primary-text);
+  background: var(--composer-primary-hover);
+  border-color: var(--composer-primary-hover);
+}
+
+.composer-wrapper .maroon-button:not(.btn-primary) {
+  color: var(--composer-primary);
+  background: var(--composer-surface);
+  border: 1px solid var(--composer-primary);
+}
+
+.composer-wrapper .maroon-button:not(.btn-primary):hover {
+  color: var(--composer-primary-text);
+  background: var(--composer-primary-hover);
+  border-color: var(--composer-primary-hover);
 }
 
 .composer-wrapper .btn-secondary,
 .composer-wrapper .maroon-button-secondary {
   color: var(--composer-text-secondary);
   background: transparent;
-  border-color: transparent;
+  border: 1px solid transparent;
 }
 
 .composer-wrapper .btn-secondary:hover,
@@ -896,28 +454,21 @@
   color: var(--mosaic-color-disabled-text) !important;
   background: var(--mosaic-color-disabled-bg) !important;
   border-color: var(--mosaic-color-disabled-bg) !important;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {
-  .composer-modal-overlay {
-    align-items: stretch;
-    padding: 0;
+  .composer-wrapper .form-group.row > .col {
+    flex: 0 0 100%;
   }
 
-  .composer-modal-dialog {
+  .composer-wrapper .button-group {
+    flex-direction: column;
+  }
+
+  .composer-wrapper .btn {
     width: 100%;
-    max-height: 100dvh;
-    border-width: 0;
-    border-radius: 0;
-  }
-
-  .composer-modal-body {
-    max-height: 100dvh;
-    padding: 0.85rem;
-  }
-
-  .composer-notice {
-    margin-right: 3rem;
   }
 
   .composer-wrapper .form-header,
@@ -935,8 +486,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .composer-wrapper *,
-  .composer-modal-dialog * {
+  .composer-wrapper * {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }

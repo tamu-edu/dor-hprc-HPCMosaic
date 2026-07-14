@@ -2,6 +2,7 @@
 import React, { useState, memo, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ComposerWrapper from './ComposerWrapper';
+import './PopupForm.css';
 
 //Context Import
 import { useLayoutLock } from '../context/LayoutLockContext';
@@ -133,18 +134,6 @@ const PopupForm = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
 
-  const defaultButtonStyle = {
-    backgroundColor: 'var(--mosaic-color-primary)',
-    color: 'var(--mosaic-color-primary-text)',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    ...buttonStyle
-  };
-
   const handleSubmit = async (formData) => {
     try {
       const result = await onSubmit(formData);
@@ -164,8 +153,8 @@ const PopupForm = ({
     <>
       <button
         onClick={() => setShowModal(true)}
-        style={defaultButtonStyle}
-        className={`non-draggable ${buttonClassName}`.trim()}
+        style={buttonStyle}
+        className={`non-draggable composer-trigger ${buttonClassName}`.trim()}
       >
         {buttonText}
       </button>

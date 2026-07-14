@@ -2,6 +2,7 @@ import React, { useState, useRef, useContext, createContext, useMemo, useEffect,
 import Composer from "./schemaRendering/Composer";
 import RequiredFieldsModal from "./RequiredFieldsModal";
 import "./ComposerStyles.css";
+import "./RequiredFieldsModal.css";
 
 export const GlobalFilesContext = createContext();
 
@@ -220,10 +221,6 @@ const ComposerWrapper = ({
                 onClick={handleSubmit}
                 className="non-draggable btn btn-primary"
                 disabled={isSubmitting || !isFormReady}
-                style={{
-                  opacity: (isSubmitting || !isFormReady) ? 0.6 : 1,
-                  cursor: (isSubmitting || !isFormReady) ? 'not-allowed' : 'pointer'
-                }}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>
