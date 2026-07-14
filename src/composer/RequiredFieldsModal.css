@@ -1,39 +1,42 @@
-/* Compatibility styles for the portaled modal supplied by external/drona_composer. */
-.modal-dialog {
+/*
+ * Compatibility styles for the portaled modal supplied by external/drona_composer.
+ * The external root has no unique hook, so use its complete portal hierarchy to
+ * minimize collisions with other Bootstrap-style components.
+ */
+.modal.fade.show > .modal-dialog {
   position: relative;
   width: auto;
   max-width: 800px;
   margin: 1.75rem auto;
   pointer-events: none;
-  z-index: 10000 !important;
 }
 
-.modal-content {
+.modal.fade.show > .modal-dialog > .modal-content {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  pointer-events: auto;
-  background: var(--mosaic-color-surface-bg);
+  color: var(--mosaic-color-text-primary);
+  background-color: var(--mosaic-color-surface-bg);
   background-clip: padding-box;
   border: 1px solid var(--mosaic-color-border-strong);
   border-radius: 0.3rem;
   outline: 0;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  z-index: 10000 !important;
+  pointer-events: auto;
 }
 
-.modal-header {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  background: var(--mosaic-color-surface-bg);
+  background-color: var(--mosaic-color-surface-bg);
   border-bottom: 1px solid var(--mosaic-color-border-strong);
   border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;
 }
 
-.modal-title {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-header > .modal-title {
   margin: 0;
   color: var(--mosaic-color-text-primary);
   font-size: 1.25rem;
@@ -41,96 +44,112 @@
   line-height: 1.5;
 }
 
-.modal-body {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body {
   position: relative;
   flex: 1 1 auto;
   padding: 1rem;
-  background: var(--mosaic-color-surface-bg);
+  background-color: var(--mosaic-color-surface-bg);
 }
 
-.modal-footer {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   padding: 0.75rem;
-  background: var(--mosaic-color-surface-bg);
+  background-color: var(--mosaic-color-surface-bg);
   border-top: 1px solid var(--mosaic-color-border-strong);
   border-radius: 0 0 calc(0.3rem - 1px) calc(0.3rem - 1px);
 }
 
-.modal-footer .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.25rem;
-  color: var(--mosaic-color-primary-text);
-  background: var(--mosaic-color-primary);
-  border: 1px solid var(--mosaic-color-primary);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
+.modal.fade.show > .modal-dialog > .modal-content > .modal-header > .close,
+.modal.fade.show > .modal-dialog > .modal-content > .modal-footer > .btn {
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.modal-footer .btn:hover {
-  background: var(--mosaic-color-primary-hover);
-  border-color: var(--mosaic-color-primary-hover);
-}
-
-.modal-header .close {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-header > .close {
   padding: 0;
   color: var(--mosaic-color-text-primary);
-  background: transparent;
+  background-color: transparent;
   border: 0;
   font-size: 1.5rem;
   font-weight: 700;
   line-height: 1;
   opacity: 0.5;
-  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
-.modal-header .close:hover {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-header > .close:hover:not(:disabled) {
   opacity: 0.75;
 }
 
-.alert {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-header > .close:focus-visible,
+.modal.fade.show > .modal-dialog > .modal-content > .modal-footer > .btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--mosaic-color-focus-ring);
+}
+
+.modal.fade.show > .modal-dialog > .modal-content > .modal-header > .close:disabled,
+.modal.fade.show > .modal-dialog > .modal-content > .modal-footer > .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal.fade.show > .modal-dialog > .modal-content > .modal-footer > .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  color: var(--mosaic-color-primary-text);
+  background-color: var(--mosaic-color-primary);
+  border: 1px solid var(--mosaic-color-primary);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.modal.fade.show > .modal-dialog > .modal-content > .modal-footer > .btn:hover:not(:disabled) {
+  background-color: var(--mosaic-color-primary-hover);
+  border-color: var(--mosaic-color-primary-hover);
+}
+
+.modal.fade.show > .modal-dialog > .modal-content > .modal-footer > .btn:disabled {
+  color: var(--mosaic-color-disabled-text);
+  background-color: var(--mosaic-color-disabled-bg);
+  border-color: var(--mosaic-color-disabled-bg);
+}
+
+/* Replace Bootstrap utilities through the modal's exact child structure. */
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body > .alert-warning {
   position: relative;
   padding: 0.75rem 1.25rem;
-  margin-bottom: 1rem;
-  border: 1px solid transparent;
+  margin: 0 0 1.5rem;
+  color: var(--mosaic-color-caution-text);
+  background-color: var(--mosaic-color-alert-bg);
+  border: 1px solid var(--mosaic-color-alert-border);
   border-radius: 0.25rem;
 }
 
-.alert-warning {
-  color: var(--mosaic-color-caution-text);
-  background: var(--mosaic-color-alert-bg);
-  border-color: var(--mosaic-color-alert-border);
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body > .alert-warning > i,
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body > ul > li > i {
+  margin-right: 0.5rem;
 }
 
-.list-unstyled {
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body > p {
+  margin: 0 0 1rem;
+}
+
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body > ul {
   padding-left: 0;
   margin: 0;
   list-style: none;
 }
 
-.text-danger {
-  color: var(--mosaic-color-danger-text) !important;
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body > ul > li {
+  margin-bottom: 0.5rem;
 }
 
-.me-2 {
-  margin-right: 0.5rem !important;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem !important;
-}
-
-.mb-3 {
-  margin-bottom: 1rem !important;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem !important;
+.modal.fade.show > .modal-dialog > .modal-content > .modal-body > ul > li > i {
+  color: var(--mosaic-color-danger-text);
 }
