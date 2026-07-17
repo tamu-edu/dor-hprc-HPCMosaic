@@ -1,10 +1,62 @@
-import React, { useState, useRef, useContext, createContext, useMemo, useEffect } from "react";
+import React, { useState, useRef, useContext, createContext, useMemo, useEffect, useCallback } from "react";
 import Composer from "./schemaRendering/Composer";
 import RequiredFieldsModal from "./RequiredFieldsModal";
-import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import "./ComposerStyles.css";
+import "./RequiredFieldsModal.css";
 
 export const GlobalFilesContext = createContext();
+
+const collectRequiredFields = (fields, requiredFields = new Map()) => {
+  Object.values(fields || {}).forEach((field) => {
+    if (!field || typeof field !== "object") return;
+
+    if (field.required && field.name && !requiredFields.has(field.name)) {
+      requiredFields.set(field.name, {
+        name: field.name,
+        label: field.label || field.name,
+        type: field.type
+      });
+    }
+
+    if (field.elements) {
+      collectRequiredFields(field.elements, requiredFields);
+    }
+  });
+
+  return Array.from(requiredFields.values());
+};
+
+const hasFormValue = (values) => values.some((value) => {
+  if (value instanceof File) return value.size > 0;
+  return String(value).trim() !== "";
+});
+
+const getRenderedFieldLabel = (form, field) => {
+  const label = Array.from(form.querySelectorAll("label"))
+    .find((candidate) => candidate.htmlFor === field.name);
+
+  return label?.textContent?.trim() || field.label;
+};
+
+const validateRenderedRequiredFields = (form, requiredFields) => {
+  const formData = new FormData(form);
+  const missingFields = requiredFields
+    .filter((field) => {
+      // Inactive conditional branches are not rendered by Composer.
+      if (!form.elements.namedItem(field.name)) return false;
+      return !hasFormValue(formData.getAll(field.name));
+    })
+    .map((field) => ({
+      ...field,
+      label: getRenderedFieldLabel(form, field)
+    }));
+
+  return {
+    formData,
+    isValid: missingFields.length === 0,
+    missingFields
+  };
+};
 
 const ComposerWrapper = ({
   schema,
@@ -27,32 +79,32 @@ const ComposerWrapper = ({
   const formRef = useRef(null);
   const composerRef = useRef(null);
   const memoizedSchema = useMemo(() => schema, []);
+  const requiredFields = useMemo(() => collectRequiredFields(schema), [schema]);
   const defaultsAppliedRef = useRef(false);
-  const readinessTimerRef = useRef(null);
+  const readinessFrameRef = useRef(null);
 
-  const updateFormReadiness = () => {
-    if (!composerRef.current) {
+  const updateFormReadiness = useCallback(() => {
+    if (!formRef.current) {
       setIsFormReady(false);
       return;
     }
 
-    const currentFields = composerRef.current.getFields();
-    const validation = validateRequiredFields(currentFields);
-    const customValidation = validateFormReady?.(currentFields);
+    const validation = validateRenderedRequiredFields(formRef.current, requiredFields);
+    const customValidation = validateFormReady?.(validation.formData);
 
     setIsFormReady(validation.isValid && customValidation !== false);
-  };
+  }, [requiredFields, validateFormReady]);
 
-  const scheduleReadinessUpdate = () => {
-    if (readinessTimerRef.current) {
-      clearTimeout(readinessTimerRef.current);
+  const scheduleReadinessUpdate = useCallback(() => {
+    if (readinessFrameRef.current !== null) {
+      cancelAnimationFrame(readinessFrameRef.current);
     }
 
-    readinessTimerRef.current = setTimeout(() => {
+    readinessFrameRef.current = requestAnimationFrame(() => {
+      readinessFrameRef.current = null;
       updateFormReadiness();
-      readinessTimerRef.current = null;
-    }, 0);
-  };
+    });
+  }, [updateFormReadiness]);
 
   useEffect(() => {
     if (composerRef.current && Object.keys(defaultValues).length > 0 && !defaultsAppliedRef.current) {
@@ -60,12 +112,23 @@ const ComposerWrapper = ({
       defaultsAppliedRef.current = true;
     }
     scheduleReadinessUpdate();
+  }, [defaultValues, scheduleReadinessUpdate]);
+
+  useEffect(() => {
+    if (!formRef.current) return undefined;
+
+    const observer = new MutationObserver(scheduleReadinessUpdate);
+    observer.observe(formRef.current, { childList: true, subtree: true });
+    scheduleReadinessUpdate();
+
     return () => {
-      if (readinessTimerRef.current) {
-        clearTimeout(readinessTimerRef.current);
+      observer.disconnect();
+      if (readinessFrameRef.current !== null) {
+        cancelAnimationFrame(readinessFrameRef.current);
+        readinessFrameRef.current = null;
       }
     };
-  }, []);
+  }, [scheduleReadinessUpdate]);
 
   const handleUploadedFiles = (files) => {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -81,24 +144,21 @@ const ComposerWrapper = ({
       return;
     }
 
-    // Validate required fields before submission
-    if (composerRef.current) {
-      const currentFields = composerRef.current.getFields();
-      const validation = validateRequiredFields(currentFields);
-      const customValidation = validateFormReady?.(currentFields);
-      if (!validation.isValid || customValidation === false) {
-        setMissingRequiredFields(validation.missingFields);
-        if (!validation.isValid) {
-          setShowRequiredFieldsModal(true);
-        }
-        setIsFormReady(false);
-        return;
-      }
-    }
-
     if (!formRef.current) return;
 
-    const formData = new FormData(formRef.current);
+    // Validate the controls that are currently rendered before submission.
+    const validation = validateRenderedRequiredFields(formRef.current, requiredFields);
+    const customValidation = validateFormReady?.(validation.formData);
+    if (!validation.isValid || customValidation === false) {
+      setMissingRequiredFields(validation.missingFields);
+      if (!validation.isValid) {
+        setShowRequiredFieldsModal(true);
+      }
+      setIsFormReady(false);
+      return;
+    }
+
+    const formData = validation.formData;
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
@@ -161,10 +221,6 @@ const ComposerWrapper = ({
                 onClick={handleSubmit}
                 className="non-draggable btn btn-primary"
                 disabled={isSubmitting || !isFormReady}
-                style={{
-                  opacity: (isSubmitting || !isFormReady) ? 0.6 : 1,
-                  cursor: (isSubmitting || !isFormReady) ? 'not-allowed' : 'pointer'
-                }}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>

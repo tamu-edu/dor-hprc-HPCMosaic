@@ -2,7 +2,7 @@
       
    "isLongRequest": {
       "type": "radioGroup",
-      "label": "Is this request more than 10TB or for longer than 6 months?",
+      "label": "Is this request for more than 10 TB or longer than 6 months?",
       "name": "isLongRequest",
       "required": true,
       "options": [
@@ -27,7 +27,7 @@
    
    "isBuyRequest": {
       "type": "radioGroup",
-      "label": "Do you want to buy-in quota?",
+      "label": "Do you want to purchase a quota buy-in?",
       "name": "isBuyRequest",
       "condition" : "isPIRequest.Yes",
       "required" : true,
@@ -43,7 +43,7 @@
       "elements": {
          "noBuyinNote": {            
             "type": "staticText",            
-            "value": "\n\n\n\n\nOnly PIs can request quota increases for more than 10TB, longer than 6 months, or buy in quota. Please ask your PI to make the request.\n\n",
+            "value": "\n\n\n\n\nOnly PIs can request quota increases of more than 10 TB, requests longer than 6 months, or quota buy-ins. Please ask your PI to submit the request.\n\n",
             "isHeading": true
           }
       }
@@ -52,20 +52,20 @@
 
    "buyinQuestions": {
       "type": "collapsibleColContainer",
-      "title": "Questions for buy-in request",
+      "title": "Quota Buy-In Details",
       "condition" : "isBuyRequest.Yes",
       "elements": {
           
          "buyinNote": {
             "type": "staticText",
-            "value": "TAMU HPRC can provide dedicated storage in longer term for a cost. For more information and current rates please check: <a href=\"https://hprc.tamu.edu/kb/Helpful-Pages/Storage/\" style=\"color: blue;\" target=\"blank\">the knowledgebase.</a>",
+            "value": "TAMU HPRC offers long-term dedicated storage for a fee. For more information and current rates, see <a href=\"https://hprc.tamu.edu/kb/Helpful-Pages/Storage/\" style=\"color: blue;\" target=\"blank\">the knowledge base.</a>",
             "isHeading": false,
 	    "allowHtml": true 
           },
 
          "expirationDate": {
             "type": "text",
-            "label": "Expiration date for quota request (YYYY-MM-DD)",
+            "label": "Expiration date for the quota request (YYYY-MM-DD)",
             "name": "expiration",
             "value": "",
             "required": true
@@ -73,7 +73,7 @@
    
          "account": {
             "type": "text",
-            "label": "Please provide account number to use",
+            "label": "Please provide the account number to use",
             "name": "account",
             "value": "",
             "required": true
@@ -169,7 +169,7 @@
       },
       "researchDescription": {
         "type": "textarea",
-        "label": "Briefly describe the research project that will be supported by the requested storage?",
+        "label": "Briefly describe the research project that will be supported by the requested storage",
         "name": "researchDescription",
         "help": "Briefly describe the research project that will be supported by the requested storage",
 	"required": true
