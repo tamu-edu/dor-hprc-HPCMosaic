@@ -1,0 +1,118 @@
+{
+
+  "justification": {
+    "type": "collapsibleColContainer",
+    "title": "Request Justification",
+    "elements": {
+
+	  "MandatoryNotice": {
+            "type": "staticText",
+            "value": "All fields are mandatory unless otherwise noted. Missing information may delay processing and require follow-up from HPRC.",
+            "isHeading": true,
+	    "allowHtml": true
+          },
+
+          "requestType": {
+      	    "type": "radioGroup",
+            "label": "Request Type",
+            "name": "requestType",
+            "required": true,
+            "options": [
+         	{ "value": "New Request", "label": "New Request" },
+         	{ "value": "Extension", "label": "Extension" }
+      	    ]
+   	 },
+
+   "quotaContainer": {
+      "type": "rowContainer",
+      "elements": {
+         "currentQuota": {
+            "type": "unit",
+            "label": "Current Quota",
+            "name": "currentQuota",
+            "value": "1",
+            "units": [{ "label": "TB", "value": "TB" }],
+	    "required": true
+         },
+         "newQuota": {
+            "type": "unit",
+            "label": "New Quota",
+            "name": "newQuota",
+            "units": [{ "label": "TB", "value": "TB" }],
+	    "required": true
+         }
+      }
+   },
+
+   "fileContainer": {
+      "type": "rowContainer",
+      "elements": {
+         "currentFileLimit": {
+            "type": "text",
+            "label": "Current File Limit",
+            "name": "currentFileLimit",
+            "value": "250000",
+	    "required": true
+         },
+         "newFileLimit": {
+            "type": "text",
+            "label": "New File Limit",
+            "name": "newFileLimit",
+	    "required": true
+         }
+        }
+   },
+
+      "piName":{
+         "type":"textarea",
+         "label": "Who is the PI for this project?",
+         "name": "piName",
+         "required": true
+      },
+
+      "piAwareness": {
+        "type": "textarea",
+        "label": "Is your PI aware of this request?",
+        "name": "piAwareness",
+        "help": "Please provide details of PI's awareness and approval",
+	"required": true
+      },
+      "storedData": {
+        "type": "textarea",
+        "label": "What data is stored with the requested quota?",
+        "name": "storedData",
+        "help": "Describe the type and nature of data to be stored",
+	"required": true
+      },
+      "researchDescription": {
+        "type": "textarea",
+        "label": "Briefly describe the research project that will be supported by the requested storage?",
+        "name": "researchDescription",
+        "help": "Briefly describe the research project that will be supported by the requested storage",
+	"required": true
+      },
+
+      "jobSize": {
+        "type": "textarea",
+        "label": "What is the input/output size of the job?",
+        "name": "jobSize",
+        "help": "What is the input/output size of the job?",
+	"required": true
+      },
+      "storagePlan": {
+        "type": "textarea",
+        "label": "What is your long-term storage plan for your data after the quota increase expires?",
+        "name": "storagePlan",
+        "help": "What is your long-term storage plan for your data after the quota increase expires?",
+	"required": true
+      },
+      "comment": {
+        "type": "textarea",
+        "label": "Additional Comments (Optional)",
+        "name": "comment",
+        "help": "Any additional information you would like to provide (Optional)"
+      }
+    }
+  }
+
+}

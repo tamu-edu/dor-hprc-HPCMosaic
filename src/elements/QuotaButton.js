@@ -1,11 +1,14 @@
 import React, { useRef, useState } from 'react';
 import PopupForm from '../composer/PopupForm';
-import quotaRequestSchema from '../composer/schemas/quotaRequest.json';
+import { loadRequestSchema } from '../composer/schemas/requestProfile';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
 
+const quotaRequestSchema = loadRequestSchema('quotaRequest.json');
+
 const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null, buttonText = null, buttonClassName = "" }) => {
   const baseUrl = get_base_url();
+  const supportsBuyIn = Object.prototype.hasOwnProperty.call(quotaRequestSchema, 'isBuyRequest');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -32,7 +35,9 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
     const isPIRequest = formData.get('isPIRequest');
 
     if (isBlockedNonPiLongRequest(isLongRequest, isPIRequest)) {
-      alert('Only PIs can request quota increases of more than 10 TB, requests longer than 6 months, or quota buy-ins. Please ask your PI to submit the request.');
+      alert(supportsBuyIn
+        ? 'Only PIs can request quota increases of more than 10 TB, requests longer than 6 months, or quota buy-ins. Please ask your PI to submit the request.'
+        : 'Only PIs can request quota increases of more than 10 TB or requests longer than 6 months. Please ask your PI to submit the request.');
       return false;
     }
 

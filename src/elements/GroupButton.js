@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import PopupForm from '../composer/PopupForm';
-import groupRequestSchema from '../composer/schemas/groupRequest.json';
+import { loadRequestSchema } from '../composer/schemas/requestProfile';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
+
+const groupRequestSchema = loadRequestSchema('groupRequest.json');
 
 const GroupButton = () => {
   const baseUrl = get_base_url();
