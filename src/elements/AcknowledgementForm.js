@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PopupForm from '../composer/PopupForm';
-import acknowledgementRequestSchema from '../composer/schemas/acknowledgementRequest.json';
+import { loadRequestSchema } from '../composer/schemas/requestProfile';
 import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 import { useTheme } from "../context/ThemeContext";
 import { get_base_url } from "../utils/api_config.js"
+
+const acknowledgementRequestSchema = loadRequestSchema('acknowledgementRequest.json');
 
 const AcknowledgementForm = ({ description }) => {
   const baseUrl = config.production.dashboard_url;
