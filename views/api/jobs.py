@@ -387,9 +387,10 @@ def _is_history_state(state):
 
 
 def _paginate_jobs(jobs, page, page_size):
+    total = len(jobs)
     start = (page - 1) * page_size
     end = start + page_size
-    return jobs[start:end], end < len(jobs)
+    return jobs[start:end], total, end < len(jobs)
 
 
 def _get_jobs_summary_cached():
@@ -590,13 +591,13 @@ def get_jobs_list():
             account=account,
             search=search,
         )
-        page_jobs, has_next = _paginate_jobs(filtered_jobs, page, page_size)
+        page_jobs, total, has_next = _paginate_jobs(filtered_jobs, page, page_size)
 
         return jsonify({
             "jobs": page_jobs,
             "page": page,
             "page_size": page_size,
-            "total": len(filtered_jobs),
+            "total": total,
             "has_next": has_next,
         }), 200
 
@@ -630,6 +631,32 @@ def get_jobs_details():
 
         return jsonify(response), 200
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api.route("/jobs/past_jobs", methods=["GET"])
+def get_past_user_jobs():
+    """Return the current user's recent jobs, newest first."""
+    try:
+        page = parse_positive_int(request.args.get("page"), 1)
+        page_size = parse_positive_int(request.args.get("page_size"), 25, maximum=200)
+
+        jobs = _get_sacct_jobs(
+            history_window=_DEFAULT_HISTORY_WINDOW,
+            user=os.getenv("USER"),
+            all_users=False,
+        )
+        jobs.sort(key=lambda job: job.get("submit_time") or "", reverse=True)
+        page_jobs, total, has_next = _paginate_jobs(jobs, page, page_size)
+
+        return jsonify({
+            "jobs": page_jobs,
+            "page": page,
+            "total": total,
+            "page_size": page_size,
+            "has_next": has_next,
+        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
