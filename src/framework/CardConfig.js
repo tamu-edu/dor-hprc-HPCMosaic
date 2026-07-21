@@ -7,6 +7,7 @@ import QuotaInfo from "../elements/QuotaInfo";
 import UserGroups from "../elements/UserGroups";
 import Accounts from "../elements/Accounts";
 import UserJobs from "../elements/UserJobs";
+import JobHistory from "../elements/JobHistory";
 // import JobExplorer from "../elements/JobExplorer"; TODO make Job Explorer more efficient
 import QuotaButton from '../elements/QuotaButton';
 import Composer from '../elements/Composer';
@@ -98,6 +99,17 @@ const CardConfig = {
         defaultH: 12,
         minW: 1,
         minH: 1
+    },
+
+    "Job History": {
+        description: "Browse jobs submitted by the current user during the past 24 hours.",
+        icon: <AiOutlineProject size={30}/>,
+        chartComponent: JobHistory,
+        category: "user",
+        defaultW: 6,
+        defaultH: 12,
+        minW: 3,
+        minH: 8
     },
 
     "My Quotas Summary": {
