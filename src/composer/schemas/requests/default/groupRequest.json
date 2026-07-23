@@ -2,7 +2,8 @@
       
    "groupRequest": {
       "type": "radioGroup",
-      "label": "Type of group request?*",
+      "label": "What type of group request is this?*",
+      "required": true,
       "name": "groupRequest",
       "options": [
          { "value": "madd", "label": "Add member" },
@@ -20,7 +21,7 @@
 
           "memeberNote": {
             "type": "staticText",
-            "value": "In this section you can add or remove members of your group. NOTE: only the owner or delegate of this group can preform this action. If you are not the owner or a delegate, do not continue this action.",
+            "value": "In this section, you can add or remove members of your group. Note: Only the owner or a delegate of the group can perform this action. If you are not the owner or a delegate, do not proceed.",
             "isHeading": false
          },
 
@@ -28,23 +29,26 @@
             "type": "text",
             "label": "Enter a group name (max 14 characters). You may use letters, numbers, underscores (_), periods (.), and hyphens (-)",
             "name": "groupName",
+	    "required": true,
             "help": "Enter a group name (max 14 characters). You may use letters, numbers, underscores (_), periods (.), and hyphens (-)"
           },
    
          "groupAdd": {
             "type": "textarea",
-            "label": "Provide netids of members to add to group, one per line",
+            "label": "Provide the NetIDs of members to add to the group, one per line",
             "name": "groupAdd",
-            "help": "Provide netids of members to add to group, one per line",
+	    "required": true,
+            "help": "Provide the NetIDs of members to add to the group, one per line",
             "condition" : "groupRequest.madd"
          },   
 
 
          "groupRemove": {
             "type": "textarea",
-            "label": "Provide netids of members to remove from group, one per line",
+            "label": "Provide the NetIDs of members to remove from the group, one per line",
             "name": "groupRemove",
-            "help": "Provide netids of members to remove from group, one per line",
+	    "required": true,
+            "help": "Provide the NetIDs of members to remove from the group, one per line",
             "condition" : "groupRequest.mremove"
          }
       }
@@ -59,22 +63,24 @@
 
          "newGHroupNote": {
             "type": "staticText",
-            "value": "In this section you can provide all information we need to create a (Linux) group. For the name of the group, you cannot use spaces or any special characters, aside from _ and -. We also recommend providing a descriptive name for the group.",
+            "value": "In this section, you can provide all the information needed to create a Linux group. The group name cannot contain spaces or special characters other than underscores (_) and hyphens (-). We recommend choosing a descriptive group name.",
             "isHeading": false
          },
 
         "groupName": {
            "type": "text",
-           "label": "Provide group name (no special characters aside from _ and -",
+           "label": "Provide a group name (no special characters aside from _ and -)",
            "name": "groupName",
-           "help": "Provide group name (no special characters aside from _ and -"
+	   "required": true,
+           "help": "Provide a group name (no special characters aside from _ and -)"
          },
 
         "groupMembers": {
            "type": "textarea",
-           "label": "Provide netids of members to add to group, one per line",
+           "label": "Provide the NetIDs of members to add to the group, one per line",
            "name": "groupMembers",
-           "help": "Provide netids of members to add to group, one per line"
+	   "required": true,
+           "help": "Provide the NetIDs of members to add to the group, one per line"
          }
       }  
    },   
@@ -88,22 +94,24 @@
 
          "newGHroupNote": {
             "type": "staticText",            
-            "value": "In this section you can request access to a group. This is typically done to gain access to restricted software or to a specific group directory. HPRC staff will evaluate the request and if needed, contact the owner of the group. Please make sure you have a legitimate reason to request access ",
+            "value": "In this section, you can request access to a group. This is typically used to gain access to restricted software or a specific group directory. HPRC staff will evaluate the request and, if needed, contact the group owner. Please make sure you have a legitimate reason for requesting access.",
             "isHeading": false
          },
 
         "groupName": {
            "type": "text",
-           "label": "Provide group name you request access to",
+           "label": "Provide the group name you want to access",
            "name": "groupName",
-           "help": "Provide group name you request access to"
+	   "required": true,
+           "help": "Provide the group name you want to access"
          },
 
 	 "justification": {
            "type": "textarea",
            "label": "Explain why you are requesting access to this group (e.g., project storage, shared software, collaboration, etc.)",
            "name": "comments",
-           "help": "Explain the purpose of this group request. Include details such as: What the group will be used for (e.g., project data storage, shared software, collaboration). Why you should have access (e.g., relevant license, PI approval, related research work)"
+	   "required": true,
+           "help": "Explain the purpose of this group request, what the group will be used for, and why you should have access."
          }
 
       } 

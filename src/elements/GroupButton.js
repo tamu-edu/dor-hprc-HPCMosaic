@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import PopupForm from '../composer/PopupForm';
-import groupRequestSchema from '../composer/schemas/groupRequest.json';
+import { loadRequestSchema } from '../composer/schemas/requestProfile';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
+
+const groupRequestSchema = loadRequestSchema('groupRequest.json');
 
 const GroupButton = () => {
   const baseUrl = get_base_url();
@@ -87,10 +89,10 @@ const GroupButton = () => {
   
 
   const disclaimerText = [
-    "Group operations require appropriate permissions",
-    "Only group owners and delegates can add or remove members",
-    "New group names must follow naming guidelines (no spaces, only underscores and hyphens allowed)",
-    "Requesting access to restricted groups may require approval from the group owner"
+    "Group operations require appropriate permissions.",
+    "Only group owners and delegates can add or remove members.",
+    "New group names must follow the naming guidelines: no spaces; only underscores and hyphens are allowed.",
+    "Requests for access to restricted groups may require approval from the group owner."
   ];
 
   return (

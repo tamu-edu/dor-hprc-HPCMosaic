@@ -1,0 +1,38 @@
+{
+      
+   "groupRequest": {
+      "type": "radioGroup",
+      "label": "What type of group request is this?*",
+      "name": "groupRequest",
+      "required": true,
+      "options": [
+         { "value": "rgroup", "label": "Request group access" }
+      ]
+   },
+
+
+   "RequesttQuestions": {
+      "type": "collapsibleColContainer",
+      "title": "Requesting access to a group",
+      "condition" : "groupRequest.rgroup",
+      "elements": {
+
+
+         "newGHroupNote": {
+            "type": "staticText",            
+            "value": "In this section, you can request access to a group. This is typically used to gain access to restricted software or a specific group directory. HPRC staff will evaluate the request and, if needed, contact the group owner. Please make sure you have a legitimate reason for requesting access.",
+            "isHeading": false
+         },
+
+        "groupName": {
+           "type": "text",
+           "label": "Provide the group name you want to access",
+           "name": "groupName",
+           "required": true,
+           "help": "Provide the group name you want to access"
+         }
+
+      } 
+   }
+
+}

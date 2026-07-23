@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PopupForm from '../composer/PopupForm';
-import acknowledgementRequestSchema from '../composer/schemas/acknowledgementRequest.json';
+import { loadRequestSchema } from '../composer/schemas/requestProfile';
 import config from "../../config.yml";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 import { useTheme } from "../context/ThemeContext";
 import { get_base_url } from "../utils/api_config.js"
+
+const acknowledgementRequestSchema = loadRequestSchema('acknowledgementRequest.json');
 
 const AcknowledgementForm = ({ description }) => {
   const baseUrl = config.production.dashboard_url;
@@ -79,18 +81,18 @@ const AcknowledgementForm = ({ description }) => {
 
       if (!response.ok) {
         const errorResult = await response.json().catch(() => ({ error: 'Submission failed with no specific error message.' }));
-        throw new Error(errorResult.error || 'Failed to submit help request');
+        throw new Error(errorResult.error || 'Failed to submit acknowledgment');
       }
 
       const result = await response.json();
-      console.log('Help request submitted successfully:', result);
+      console.log('Acknowledgment submitted successfully:', result);
 
-      alert('Help request submitted successfully!');
+      alert('Acknowledgment submitted successfully!');
       return true;
 
     } catch (error) {
-      console.error('Error submitting help request:', error);
-      setErrorMessage('Failed to submit help request. Please try again.');
+      console.error('Error submitting acknowledgment:', error);
+      setErrorMessage('Failed to submit acknowledgment. Please try again.');
       // We re-throw the error to make sure the PopupForm knows about the failure.
       throw error;
     } finally {
@@ -113,7 +115,7 @@ const AcknowledgementForm = ({ description }) => {
         <p className="theme-text-secondary text-sm mb-2">
           {usesAccessAcknowledgement ? (
             <>
-              For standard acknowledgement examples acknowledging ACCESS, click{' '}
+              For standard acknowledgment examples for ACCESS, visit{' '}
               <a style={{ color: theme.colors.warningText }} className="non-draggable hover:underline" href="https://access-ci.org/about/acknowledging-access/" target="_blank" rel="noopener noreferrer">
                 https://access-ci.org/about/acknowledging-access/
               </a>
@@ -131,7 +133,7 @@ const AcknowledgementForm = ({ description }) => {
         </p>
         <div className="flex justify-center">
           <PopupForm
-            buttonText="Submit Acknowledgement"
+            buttonText="Submit Acknowledgment"
             buttonStyle={{
               backgroundColor: 'var(--mosaic-color-primary)',
               color: 'var(--mosaic-color-primary-text)',
@@ -145,7 +147,7 @@ const AcknowledgementForm = ({ description }) => {
             schema={acknowledgementRequestSchema}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
-            title="Acknowledgement Form"
+            title="Acknowledgment Form"
             errorMessage={errorMessage || "Please complete the required fields."}
           />
         </div>
