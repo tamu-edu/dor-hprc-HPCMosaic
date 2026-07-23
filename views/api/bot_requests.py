@@ -335,21 +335,3 @@ def submit_acknowledgement():
     except Exception as e:
         logging.error(f"Acknowledgement submission failed: {e}")
         return jsonify({"error": f"Failed to process acknowledgement: {e}"}), 500
-
-
-@api.route('/announcement', methods=['GET'])
-def get_announcement():
-    try:
-        announcement = {
-            "messages": [
-                "Welcome to HPRC!",
-            ],
-            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-
-        }
-        return jsonify({"announcement": announcement}), 200
-
-    except Exception as e:
-        logging.error(f"Failed to fetch announcement: {e}")
-        return jsonify({"error": "Unable to fetch announcement"}), 500
-
