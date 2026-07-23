@@ -12,7 +12,7 @@ from . import api
 
 _SEVERITIES = {"info", "warning", "critical"}
 _EMPTY_RESPONSE = {"announcements": []}
-_DEFAULT_FILE = os.path.abspath(
+_ANNOUNCEMENTS_FILE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "announcements.json")
 )
 
@@ -109,8 +109,11 @@ def _validate_announcement(announcement, index):
     return starts_at, ends_at, created_at
 
 
-def load_active_announcements(path, now=None):
+def load_active_announcements(path, now=None, cluster=None):
     """Load, validate, and time-filter a complete announcement document."""
+    normalized_cluster = (
+        cluster.strip().lower() if isinstance(cluster, str) and cluster.strip() else None
+    )
     with open(path, "r", encoding="utf-8") as announcement_file:
         document = json.load(announcement_file)
 
@@ -145,6 +148,13 @@ def load_active_announcements(path, now=None):
         # The end instant is no longer part of the active window.
         if ends_at is not None and current_time >= ends_at:
             continue
+        announcement_clusters = announcement.get("clusters")
+        if announcement_clusters is not None:
+            normalized_clusters = {
+                cluster.strip().lower() for cluster in announcement_clusters
+            }
+            if normalized_cluster not in normalized_clusters:
+                continue
         active.append((announcement, created_at))
 
     # Python's sort is stable, so announcements with the same creation
@@ -155,13 +165,15 @@ def load_active_announcements(path, now=None):
 
 @api.route("/announcements", methods=["GET"])
 def get_announcements():
-    path = current_app.config.get(
-        "ANNOUNCEMENTS_FILE",
-        current_app.config.get("announcements_file", _DEFAULT_FILE),
-    )
+    path = _ANNOUNCEMENTS_FILE
     try:
         return jsonify(
-            {"announcements": load_active_announcements(os.path.expanduser(path))}
+            {
+                "announcements": load_active_announcements(
+                    path,
+                    cluster=current_app.config.get("cluster_name"),
+                )
+            }
         )
     except (OSError, json.JSONDecodeError, AnnouncementValidationError, TypeError) as exc:
         current_app.logger.error(
