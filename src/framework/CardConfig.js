@@ -13,7 +13,6 @@ import QuotaButton from '../elements/QuotaButton';
 import Composer from '../elements/Composer';
 // import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
-import Announcement from '../elements/Announcement';
 import ClusterStatus from '../elements/ClusterStatus';
 import {
     AccountsUsageSummaryCard,
@@ -228,16 +227,6 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: AcknowledgementForm,
 	category: "user",
-        defaultW: 6,
-        defaultH: 12,
-        minW: 1, minH: 1
-    },
-
-    "Announcement": {
-        description: "The message of the day and other relevant notification popups.",
-        icon: <AiOutlineCluster size={30}/>,
-	chartComponent: Announcement,
-	category: "analytics",
         defaultW: 6,
         defaultH: 12,
         minW: 1, minH: 1
