@@ -692,7 +692,7 @@ const Banner = ({ setRunTour }) => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
           <span className="font-semibold theme-text-secondary">HPCMosaic Dashboard &mdash; Texas A&amp;M University</span>
           <span className="hidden sm:inline theme-text-muted">|</span>
-          <span>Developed by the Fishbowl Student Helpdesk, HPRC</span>
+          <span>Developed by the HPRC Fishbowl</span>
         </div>
         <div className="flex items-center gap-5">
           <a href="mailto:help@hprc.tamu.edu" className="theme-link hover:underline">help@hprc.tamu.edu</a>
@@ -700,7 +700,7 @@ const Banner = ({ setRunTour }) => {
           <a href="https://github.com/tamu-edu/dor-hprc-HPCMosaic/graphs/contributors" target="_blank" rel="noopener noreferrer" className="theme-link hover:underline">Contributors</a>
           <a href="https://forms.gle/7RwxdFgXVamGVVss8" target="_blank" rel="noopener noreferrer" className="theme-link hover:underline flex items-center gap-1">
             <MdFeedback className="text-base mr-1" />
-            Give Feedback
+            Feedback/Issues
           </a>
         </div>
       </footer>
