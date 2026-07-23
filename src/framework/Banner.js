@@ -412,7 +412,7 @@ const Banner = ({ setRunTour }) => {
   };
 
   return (
-    <div className="mosaic-dashboard-root min-h-screen w-full flex flex-col theme-surface-alt overflow-x-hidden">
+    <div className="mosaic-dashboard-root min-h-screen w-full flex flex-col theme-surface-alt overflow-x-clip">
       {/* Tour Component */}
       <Joyride
         steps={tourSteps}
