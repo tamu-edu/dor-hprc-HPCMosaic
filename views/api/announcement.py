@@ -1,7 +1,6 @@
 """Dashboard announcements loaded from a staff-editable JSON file."""
 
 import json
-import logging
 import os
 from datetime import datetime, timezone
 
@@ -9,9 +8,16 @@ from flask import current_app, jsonify
 
 from . import api
 
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:  # pragma: no cover - used on Python versions before 3.9
+    from backports.zoneinfo import ZoneInfo
+
 
 _SEVERITIES = {"info", "warning", "critical"}
 _EMPTY_RESPONSE = {"announcements": []}
+_ANNOUNCEMENT_TIMEZONE = ZoneInfo("America/Chicago")
+_LOCAL_TIMESTAMP_FORMATS = ("%Y-%m-%d %I:%M %p", "%Y-%m-%d %H:%M")
 _ANNOUNCEMENTS_FILE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "announcements.json")
 )
@@ -21,28 +27,67 @@ class AnnouncementValidationError(ValueError):
     """Raised when the complete announcement document is invalid."""
 
 
+def _localize_timestamp(parsed, field, announcement_id):
+    candidates = [
+        parsed.replace(tzinfo=_ANNOUNCEMENT_TIMEZONE, fold=fold)
+        for fold in (0, 1)
+    ]
+    valid_candidates = [
+        candidate
+        for candidate in candidates
+        if candidate.astimezone(timezone.utc)
+        .astimezone(_ANNOUNCEMENT_TIMEZONE)
+        .replace(tzinfo=None)
+        == parsed
+    ]
+
+    if not valid_candidates:
+        raise AnnouncementValidationError(
+            f"{announcement_id}: {field} is not a valid America/Chicago local time"
+        )
+    if (
+        len(valid_candidates) == 2
+        and valid_candidates[0].utcoffset() != valid_candidates[1].utcoffset()
+    ):
+        raise AnnouncementValidationError(
+            f"{announcement_id}: {field} is ambiguous in America/Chicago; "
+            "use an ISO timestamp with a timezone offset"
+        )
+    return valid_candidates[0]
+
+
 def _parse_timestamp(value, field, announcement_id):
     if value is None:
         return None
     if not isinstance(value, str):
         raise AnnouncementValidationError(
-            f"{announcement_id}: {field} must be an ISO timestamp or null"
+            f"{announcement_id}: {field} must be a timestamp string or null"
         )
 
+    stripped_value = value.strip()
     try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise AnnouncementValidationError(
-            f"{announcement_id}: {field} is not a valid ISO timestamp"
-        ) from exc
-
-    # Scheduling is ambiguous without an offset and cannot safely be compared
-    # with the timezone-aware current time used by the API.
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise AnnouncementValidationError(
-            f"{announcement_id}: {field} must include a timezone offset"
+        parsed = datetime.fromisoformat(
+            stripped_value[:-1] + "+00:00"
+            if stripped_value.endswith("Z")
+            else stripped_value
         )
-    return parsed
+    except ValueError:
+        parsed = None
+
+    if parsed is not None and parsed.tzinfo is not None and parsed.utcoffset() is not None:
+        return parsed
+
+    for timestamp_format in _LOCAL_TIMESTAMP_FORMATS:
+        try:
+            local_time = datetime.strptime(stripped_value, timestamp_format)
+        except ValueError:
+            continue
+        return _localize_timestamp(local_time, field, announcement_id)
+
+    raise AnnouncementValidationError(
+        f"{announcement_id}: {field} must be an ISO timestamp with an offset "
+        "or a local time like 2026-07-25 8:00 AM"
+    )
 
 
 def _validate_announcement(announcement, index):
@@ -94,19 +139,12 @@ def _validate_announcement(announcement, index):
     ends_at = _parse_timestamp(
         announcement.get("ends_at"), "ends_at", announcement_id
     )
-    created_at = _parse_timestamp(
-        announcement.get("created_at"), "created_at", announcement_id
-    )
-    if created_at is None:
-        raise AnnouncementValidationError(
-            f"{announcement_id}: created_at must be an ISO timestamp"
-        )
     if starts_at and ends_at and starts_at >= ends_at:
         raise AnnouncementValidationError(
             f"{announcement_id}: starts_at must be before ends_at"
         )
 
-    return starts_at, ends_at, created_at
+    return starts_at, ends_at
 
 
 def load_active_announcements(path, now=None, cluster=None):
@@ -140,7 +178,7 @@ def load_active_announcements(path, now=None, cluster=None):
         raise ValueError("now must include timezone information")
 
     active = []
-    for announcement, (starts_at, ends_at, created_at) in validated:
+    for announcement, (starts_at, ends_at) in validated:
         if not announcement["enabled"]:
             continue
         if starts_at is not None and current_time < starts_at:
@@ -149,18 +187,15 @@ def load_active_announcements(path, now=None, cluster=None):
         if ends_at is not None and current_time >= ends_at:
             continue
         announcement_clusters = announcement.get("clusters")
-        if announcement_clusters is not None:
+        if announcement_clusters:
             normalized_clusters = {
                 cluster.strip().lower() for cluster in announcement_clusters
             }
             if normalized_cluster not in normalized_clusters:
                 continue
-        active.append((announcement, created_at))
+        active.append(announcement)
 
-    # Python's sort is stable, so announcements with the same creation
-    # timestamp retain their order from the source document.
-    active.sort(key=lambda item: item[1], reverse=True)
-    return [announcement for announcement, _created_at in active]
+    return active
 
 
 @api.route("/announcements", methods=["GET"])
