@@ -9,6 +9,7 @@ import {
   MdCheckCircleOutline,
   MdChevronLeft,
   MdChevronRight,
+  MdErrorOutline,
   MdEvent,
   MdInfoOutline,
   MdRefresh,
@@ -561,36 +562,109 @@ export const ClusterNodesOverviewCard = () => {
 };
 
 export const AnnouncementsSummaryCard = () => {
-  const { data, loading, error } = useApi("/api/announcement");
-  const announcement = data?.announcement;
-  const messages = Array.isArray(announcement?.messages) ? announcement.messages : [];
+  const { data, loading, error } = useApi("/api/announcements");
+  const announcements = Array.isArray(data?.announcements)
+    ? data.announcements
+    : [];
+
+  const severityPresentation = {
+    info: {
+      icon: <MdInfoOutline />,
+      iconClass: "text-mosaic-icon",
+    },
+    warning: {
+      icon: <MdWarningAmber />,
+      iconClass: "text-mosaic-caution",
+    },
+    critical: {
+      icon: <MdErrorOutline />,
+      iconClass: "text-mosaic-danger",
+    },
+  };
 
   return (
-    <section className={cardClasses.shellPadded}>
-      <div className={cardClasses.title}>
-        <span className={cardClasses.icon}><MdEvent /></span>
+    <section
+      className={cx(
+        cardClasses.shellPadded,
+        "box-border flex min-h-0 min-w-0 flex-col"
+      )}
+    >
+      <div className={cx(cardClasses.title, "shrink-0")}>
+        <span className={cardClasses.icon}>
+          <MdEvent />
+        </span>
         <h3 className={cardClasses.titleText}>Announcements</h3>
       </div>
-      {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
-        <div className="flex flex-col">
-          {messages.slice(0, 5).map((message, index) => (
-            <article className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 border-b border-mosaic-border py-[9px] max-[760px]:grid-cols-[32px_minmax(0,1fr)]" key={`${message}-${index}`}>
-              <span className={cx("inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22", index === 0 ? "text-mosaic-caution" : "text-mosaic-icon")}>
-                {index === 0 ? <MdWarningAmber /> : <MdInfoOutline />}
+
+      {loading ? (
+        <div className={cardClasses.loading}>Loading</div>
+      ) : error ? (
+        <div className={cardClasses.empty}>Unavailable</div>
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col">
+          {announcements.length > 0 ? (
+            <div
+              className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1 [overscroll-behavior:contain] [scrollbar-gutter:stable]"
+              aria-label="Active announcements"
+            >
+              {announcements.map((announcement) => {
+                const presentation =
+                  severityPresentation[announcement.severity] ||
+                  severityPresentation.info;
+
+                return (
+                  <article
+                    className="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-3 rounded-md border border-mosaic-border p-3"
+                    key={announcement.id}
+                  >
+                    <span
+                      className={cx(
+                        "inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22",
+                        presentation.iconClass
+                      )}
+                    >
+                      {presentation.icon}
+                    </span>
+
+                    <div className="min-w-0">
+                      <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">
+                        {announcement.title}
+                      </h4>
+
+                      <p className="m-0 text-card-11-5 text-mosaic-secondary">
+                        {announcement.message}
+                      </p>
+
+                      {announcement.link?.url &&
+                        announcement.link?.label && (
+                          <a
+                            className="non-draggable mt-2 inline-block text-card-11-5 font-semibold text-mosaic-accent hover:underline"
+                            href={announcement.link.url}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {announcement.link.label}
+                          </a>
+                        )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <article className="grid grid-cols-[32px_minmax(0,1fr)] items-center gap-3 rounded-md border border-mosaic-border p-3">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22 text-mosaic-success">
+                <MdCheckCircleOutline />
               </span>
+
               <div>
-                <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">{index === 0 ? "Current Notice" : "Announcement"}</h4>
-                <p className="m-0 text-card-11-5 text-mosaic-secondary">{message}</p>
-              </div>
-              {announcement?.updated_at && <time className="m-0 whitespace-nowrap text-card-11-5 text-mosaic-secondary max-[760px]:col-start-2">{announcement.updated_at}</time>}
-            </article>
-          ))}
-          {messages.length === 0 && (
-            <article className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 border-b border-mosaic-border py-[9px] max-[760px]:grid-cols-[32px_minmax(0,1fr)]">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22 text-mosaic-success"><MdCheckCircleOutline /></span>
-              <div>
-                <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">No Active Announcements</h4>
-                <p className="m-0 text-card-11-5 text-mosaic-secondary">There are no current dashboard announcements.</p>
+                <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">
+                  No Active Announcements
+                </h4>
+
+                <p className="m-0 text-card-11-5 text-mosaic-secondary">
+                  There are no current dashboard announcements.
+                </p>
               </div>
             </article>
           )}

@@ -52,7 +52,8 @@ All routes are registered under the /api prefix (set in app.py).
     POST   /software                  Software installation request
     POST   /account                   Account purchase request
     POST   /submit_acknowledgement    Publication acknowledgement submission
-    GET    /announcement              Current dashboard announcement text
+  announcement.py — Staff-managed dashboard announcements
+    GET    /announcements             Valid, enabled, currently active announcements
 
 Adding a new route module
 --------------------------
@@ -72,4 +73,5 @@ from . import preferences  # /get_preferences, /save_preferences
 from . import info         # /user-data, /sinfo, /showquota, /groups, /cpuavail
 from . import modules      # /get_env, /delete_env, /get_py_versions, /create_venv
 from . import jobs         # /jobs, /cancel_job, /projectinfo, /set_default_account, /utilization
-from . import bot_requests # /quota, /group, /help, /software, /account, /submit_acknowledgement, /announcement
+from . import bot_requests # /quota, /group, /help, /software, /account, /submit_acknowledgement
+from . import announcement # /announcements

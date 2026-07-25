@@ -27,6 +27,9 @@ body {
 }
 
 .mosaic-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   height: 56px;
   border-radius: 0;
   background-color: var(--mosaic-color-banner-color, #500000);

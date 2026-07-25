@@ -1,0 +1,18 @@
+{
+  "announcements": [
+    {
+      "id": "welcome-message",
+      "title": "Welcome to HPRC!",
+      "message": "Welcome to the HPRC dashboard.",
+      "severity": "info",
+      "enabled": true,
+      "clusters": [],
+      "starts_at": "2026-07-24 7:00 AM",
+      "ends_at": null,
+      "link": {
+        "label": "HPRC Knowledge Base",
+        "url": "https://hprc.tamu.edu/kb/"
+      }
+    }
+  ]
+}
