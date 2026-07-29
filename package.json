@@ -56,8 +56,9 @@
     "yaml-loader": "^0.8.1"
   },
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "build-watch": "webpack --config webpack.config.js --watch"
+    "build": "NODE_ENV=production webpack --config webpack.config.js",
+    "build:development": "NODE_ENV=development webpack --config webpack.config.js",
+    "build-watch": "NODE_ENV=development webpack --config webpack.config.js --watch"
   },
   "repository": {
     "type": "git",
