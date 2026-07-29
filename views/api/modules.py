@@ -9,8 +9,11 @@ Python/toolchain versions.
 import os
 import json
 import subprocess
+from pathlib import Path
 from flask import request, jsonify
 from . import api
+
+MODULES_PATH = Path(__file__).resolve().parents[2] / "modules" / "aces-modules.json"
 
 @api.route('/get_env', methods=['GET'])
 def get_envs():
@@ -123,3 +126,11 @@ def create_venv():
     except Exception as e:
         return jsonify({"error": f"Unexpected error creating venv: {str(e)}"}), 500
 
+@api.route('/available_modules', methods=['GET'])
+def list_available_modules():
+    try:
+        with MODULES_PATH.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify(data)
+    except (OSError, json.JSONDecodeError) as e:
+        return jsonify({"error": f"Unable to load available modules: {str(e)}"}), 500

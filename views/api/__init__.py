@@ -32,6 +32,7 @@ All routes are registered under the /api prefix (set in app.py).
     DELETE /delete_env/<name>         Delete a named venv
     GET    /get_py_versions           Available Python versions and GCC toolchains
     POST   /create_venv               Create a new venv via SSH to login node
+    GET    /available_modules          List modules available on the cluster
 
   jobs.py         — SLURM job and project management
     GET    /jobs                      Active jobs for current user (squeue only)
@@ -54,6 +55,12 @@ All routes are registered under the /api prefix (set in app.py).
     POST   /submit_acknowledgement    Publication acknowledgement submission
   announcement.py — Staff-managed dashboard announcements
     GET    /announcements             Valid, enabled, currently active announcements
+    GET    /admin/announcements       All announcements for authorized administrators
+    POST   /admin/announcements       Create an announcement
+    PUT    /admin/announcements/<id>  Update an announcement
+    DELETE /admin/announcements/<id>  Delete an announcement
+    PUT    /admin/announcements/order Reorder all announcements
+
 
 Adding a new route module
 --------------------------
