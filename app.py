@@ -9,12 +9,17 @@ import re
 import logging
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 def detect_env():
-    path = os.getcwd()
-    if "/dev/" in path:
+    configured_env = os.environ.get("RACK_ENV", "").strip().lower()
+    if configured_env in {"development", "production"}:
+        return configured_env
+
+    paths = (os.getcwd(), APP_ROOT, os.environ.get("PWD", ""))
+    if any("/dev/" in path or "/ood_dev/" in path for path in paths):
         return "development"
-    elif "/sys/" in path:
+    elif any("/sys/" in path for path in paths):
         return "production"
     else:
         return "unknown"
@@ -25,7 +30,12 @@ CORS(app)
 env = detect_env()
 
 def load_config(config_file='config.yml'):
-    with open(config_file, 'r') as file:
+    config_path = (
+        config_file
+        if os.path.isabs(config_file)
+        else os.path.join(APP_ROOT, config_file)
+    )
+    with open(config_path, 'r') as file:
         config_data = yaml.safe_load(file)
     return config_data
 

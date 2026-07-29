@@ -6,7 +6,6 @@
       "message": "Grace will be unavailable Saturday from 8:00 AM to 12:00 PM.",
       "severity": "warning",
       "enabled": true,
-      "clusters": ["grace"],
       "starts_at": "2026-07-25 8:00 AM",
       "ends_at": "2026-07-25 12:00 PM",
       "link": {
@@ -20,7 +19,6 @@
       "message": "This announcement is disabled and will not be returned.",
       "severity": "info",
       "enabled": false,
-      "clusters": [],
       "starts_at": null,
       "ends_at": null
     },
@@ -30,7 +28,6 @@
       "message": "This maintenance window has already ended.",
       "severity": "critical",
       "enabled": true,
-      "clusters": ["faster"],
       "starts_at": "2025-01-10 8:00 AM",
       "ends_at": "2025-01-10 12:00 PM"
     }

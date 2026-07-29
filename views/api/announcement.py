@@ -185,15 +185,6 @@ def _validate_announcement(announcement, index):
             f"{announcement_id}: severity must be info, warning, or critical"
         )
 
-    clusters = announcement.get("clusters")
-    if clusters is not None and (
-        not isinstance(clusters, list)
-        or any(not isinstance(cluster, str) or not cluster.strip() for cluster in clusters)
-    ):
-        raise AnnouncementValidationError(
-            f"{announcement_id}: clusters must be a list of non-empty strings"
-        )
-
     link = announcement.get("link")
     if link is not None and (
         not isinstance(link, dict)
@@ -253,11 +244,8 @@ def _read_document(path):
     return _decode_document(contents), hashlib.sha256(contents).hexdigest()
 
 
-def load_active_announcements(path, now=None, cluster=None):
+def load_active_announcements(path, now=None):
     """Load, validate, and time-filter a complete announcement document."""
-    normalized_cluster = (
-        cluster.strip().lower() if isinstance(cluster, str) and cluster.strip() else None
-    )
     document, _revision = _read_document(path)
     validated = validate_announcement_document(document)
 
@@ -273,13 +261,6 @@ def load_active_announcements(path, now=None, cluster=None):
             continue
         if ends_at is not None and current_time >= ends_at:
             continue
-        announcement_clusters = announcement.get("clusters")
-        if announcement_clusters:
-            normalized_clusters = {
-                cluster.strip().lower() for cluster in announcement_clusters
-            }
-            if normalized_cluster not in normalized_clusters:
-                continue
         active.append(announcement)
 
     return active
@@ -424,10 +405,7 @@ def get_announcements():
     if str(current_app.config.get("dashboard_url", "")).startswith("/pun/dev/"):
         response["management_diagnostics"] = _management_diagnostics(path)
     try:
-        response["announcements"] = load_active_announcements(
-            path,
-            cluster=current_app.config.get("cluster_name"),
-        )
+        response["announcements"] = load_active_announcements(path)
     except (OSError, json.JSONDecodeError, AnnouncementValidationError, TypeError) as exc:
         current_app.logger.error(
             "Unable to load announcements from %s: %s", path, exc
