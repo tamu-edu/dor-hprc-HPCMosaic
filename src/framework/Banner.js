@@ -29,6 +29,7 @@ import {
 } from "./dashboardLayoutPersistence";
 import { useChatbotVisibility } from "./ChatbotVisibilityContext";
 import config from "../../config.yml";
+import { get_base_url } from "../utils/api_config.js";
 
 const layoutItemsAreEqual = (left, right) =>
   left?.i === right?.i &&
@@ -79,6 +80,7 @@ const Banner = ({ setRunTour }) => {
   const [loadingLayouts, setLoadingLayouts] = useState(true);
   const [layoutLocked, setLayoutLocked] = useState(false);
   const [dashboardUpdatedAt, setDashboardUpdatedAt] = useState(new Date());
+  const [canManageAnnouncements, setCanManageAnnouncements] = useState(false);
 
   const { hideChatbot, showChatbot } = useChatbotVisibility();
   const { theme, themeName, setTheme, themes, cardFontSize, setCardFontSize, cardFontSizes, fontFamily, setFontFamily, fontFamilies } = useTheme();
@@ -218,9 +220,24 @@ const Banner = ({ setRunTour }) => {
 
     const hydrateDashboardLayout = async () => {
       const defaultLayout = defaultLayoutRef.current;
-      const validCardNames = new Set(Object.keys(CardConfig));
 
       try {
+        let announcementManagerAllowed = false;
+        try {
+          const capabilityResponse = await fetch(`${get_base_url()}/api/announcements`);
+          if (capabilityResponse.ok) {
+            const capabilityData = await capabilityResponse.json();
+            announcementManagerAllowed = capabilityData?.can_manage === true;
+          }
+        } catch (capabilityError) {
+          console.warn("Unable to determine announcement management access:", capabilityError);
+        }
+        const validCardNames = new Set(
+          Object.keys(CardConfig).filter(
+            (name) => !CardConfig[name].adminOnly || announcementManagerAllowed
+          )
+        );
+        setCanManageAnnouncements(announcementManagerAllowed);
         const savedLayoutPreference = await loadDashboardLayoutPreference();
         const hasSavedLayout = savedLayoutPreference && Array.isArray(savedLayoutPreference.layout);
         const restoredLayout = mergeDashboardLayout(
@@ -381,7 +398,11 @@ const Banner = ({ setRunTour }) => {
         Array.isArray(fetchedLayout) ||
         Array.isArray(fetchedLayout?.[0]) ||
         Array.isArray(fetchedLayout?.["0"]);
-      const validCardNames = new Set(Object.keys(CardConfig));
+      const validCardNames = new Set(
+        Object.keys(CardConfig).filter(
+          (name) => !CardConfig[name].adminOnly || canManageAnnouncements
+        )
+      );
       const normalizedLayout = normalizeDashboardLayout(
         getSavedLayoutItems(fetchedLayout),
         validCardNames
@@ -677,6 +698,7 @@ const Banner = ({ setRunTour }) => {
                   onRemoveItem={removeDashboardItem}
                   onCommitGridLayout={commitGridLayout}
 	          layoutLocked={layoutLocked}
+                  canManageAnnouncements={canManageAnnouncements}
                 />
               ) : (
                 <div className="flex min-h-[240px] items-center justify-center text-card-14 font-semibold text-mosaic-secondary">
@@ -767,7 +789,7 @@ const Banner = ({ setRunTour }) => {
             </div>
 
             <div className={`${sidebarMaximized ? 'h-[calc(80vh-64px)]' : 'h-[calc(40vh-64px)]'} transition-all duration-300`}>
-	      <Sidebar />
+	      <Sidebar canManageAnnouncements={canManageAnnouncements} />
             </div>
 	  </div>
         </div>

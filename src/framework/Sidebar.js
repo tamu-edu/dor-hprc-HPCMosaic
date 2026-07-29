@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CardConfig from "./CardConfig";
 import { MdSearch, MdFilterList, MdGridView, MdViewList } from "react-icons/md";
 
-const Sidebar = () => {
+const Sidebar = ({ canManageAnnouncements = false }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
   const [categories, setCategories] = useState({
@@ -12,7 +12,9 @@ const Sidebar = () => {
     user: true
   });
 
-  const list = Object.keys(CardConfig);
+  const list = Object.keys(CardConfig).filter(
+    name => !CardConfig[name].adminOnly || canManageAnnouncements
+  );
 
   // Filter elements based on search and category filters
   const filteredList = list.filter(name => {
