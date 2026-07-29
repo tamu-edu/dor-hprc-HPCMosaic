@@ -1,11 +1,15 @@
 const path = require("path");
 const webpack = require("webpack");
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 module.exports = {
-  mode: "development",
+  mode: isDevelopment ? "development" : "production",
+  devtool: isDevelopment ? "eval" : false,
   entry: "./src/index.js",
   output: {
     filename: "bundle.js",
+    chunkFilename: "js/[name].[contenthash:8].js",
     path: path.resolve(__dirname, "static"),
   },
   resolve: {
