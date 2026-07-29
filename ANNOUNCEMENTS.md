@@ -36,14 +36,6 @@ daylight saving time begins are invalid.
 When both schedule fields are provided, `starts_at` must be earlier than
 `ends_at`.
 
-## Validation
-
-Validate a file before publishing it:
-
-```sh
-python scripts/validate_announcements.py announcements.json
-```
-
 The announcement API rejects an invalid document as a whole, logs the error,
 and returns no announcements until the file is corrected.
 
