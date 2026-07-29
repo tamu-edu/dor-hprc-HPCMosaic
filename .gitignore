@@ -4,3 +4,4 @@
 .venv
 node_modules/
 static/bundle.js
+var/announcements/

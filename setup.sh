@@ -63,6 +63,25 @@ echo "Generating configs from templates..."
 envsubst < config.yml.template > config.yml
 envsubst < manifest.yml.template > manifest.yml
 
+# Initialize the runtime announcement store. Announcement data is intentionally
+# ignored by Git, so a fresh checkout needs this directory and file before the
+# Announcement Manager can be used.
+ANNOUNCEMENTS_DIR="$PWD/var/announcements"
+ANNOUNCEMENTS_FILE="$ANNOUNCEMENTS_DIR/announcements.json"
+
+echo "Setting up announcement storage..."
+install -d -g hprc -m 2775 "$ANNOUNCEMENTS_DIR"
+
+if [[ ! -f "$ANNOUNCEMENTS_FILE" ]]; then
+    printf '{\n  "announcements": []\n}\n' > "$ANNOUNCEMENTS_FILE"
+    echo "Created empty announcement file: $ANNOUNCEMENTS_FILE"
+else
+    echo "Keeping existing announcement file: $ANNOUNCEMENTS_FILE"
+fi
+
+chgrp hprc "$ANNOUNCEMENTS_FILE"
+chmod 0664 "$ANNOUNCEMENTS_FILE"
+
 # Virtual environment
 echo "Setting up Python virtual environment..."
 python3 -m venv .venv

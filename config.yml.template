@@ -1,5 +1,6 @@
 development: &common_settings
   cluster_name: "${CLUSTERNAME}"
+  announcements_file: "var/announcements/announcements.json"
   dashboard_url: "/pun/dev/${APPNAME}"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"
@@ -29,6 +30,7 @@ development: &common_settings
 production:
   <<: *common_settings
   dashboard_url: "/pun/sys/${APPNAME}"
+  announcements_file: "/var/www/ood/apps/sys/${APPNAME}/var/announcements/announcements.json"
   request_email: "help@hprc.tamu.edu"
   driver_scripts_path: "/var/www/ood/apps/sys/${APPNAME}/machine_driver_scripts"
   help_email: "help@hprc.tamu.edu"
