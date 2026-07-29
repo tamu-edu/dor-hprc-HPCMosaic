@@ -16,7 +16,6 @@ const EMPTY_FORM = {
   message: "",
   severity: "info",
   enabled: true,
-  clusters: "",
   starts_at: "",
   ends_at: "",
   link_label: "",
@@ -28,9 +27,6 @@ const toForm = (announcement) => ({
   message: announcement.message || "",
   severity: announcement.severity || "info",
   enabled: announcement.enabled === true,
-  clusters: Array.isArray(announcement.clusters)
-    ? announcement.clusters.join(", ")
-    : "",
   starts_at: announcement.starts_at || "",
   ends_at: announcement.ends_at || "",
   link_label: announcement.link?.label || "",
@@ -38,16 +34,11 @@ const toForm = (announcement) => ({
 });
 
 const fromForm = (form, id = undefined) => {
-  const clusters = form.clusters
-    .split(",")
-    .map((cluster) => cluster.trim())
-    .filter(Boolean);
   const announcement = {
     title: form.title.trim(),
     message: form.message.trim(),
     severity: form.severity,
     enabled: form.enabled,
-    clusters,
     starts_at: form.starts_at.trim() || null,
     ends_at: form.ends_at.trim() || null,
   };
@@ -117,6 +108,13 @@ const statusClasses = {
   Expired: "bg-gray-200 text-gray-700",
   Disabled: "bg-yellow-100 text-yellow-800",
 };
+
+const secondaryButtonClass =
+  "rounded-md border border-mosaic-border-strong bg-mosaic-app text-mosaic-secondary transition-colors hover:border-mosaic-accent-hover hover:bg-mosaic-surface-hover hover:text-mosaic-primary disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled";
+const primaryButtonClass =
+  "rounded-md border border-mosaic-accent bg-mosaic-accent text-mosaic-accent-text transition-colors hover:border-mosaic-accent-hover hover:bg-mosaic-accent-hover disabled:cursor-not-allowed disabled:border-mosaic-disabled-bg disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled";
+const dangerButtonClass =
+  "rounded-md border border-mosaic-danger bg-mosaic-app text-mosaic-danger transition-colors hover:bg-mosaic-danger-bg hover:text-mosaic-accent-text disabled:cursor-not-allowed disabled:border-mosaic-border disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled";
 
 const AnnouncementManager = () => {
   const [announcements, setAnnouncements] = useState([]);
@@ -277,11 +275,11 @@ const AnnouncementManager = () => {
             <p className="text-card-11 text-mosaic-muted">Highest priority appears first.</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button className="non-draggable rounded-md border border-mosaic-border p-2 hover:bg-mosaic-table" onClick={loadAnnouncements} title="Refresh" type="button">
+        <div className="mr-9 flex gap-2">
+          <button className={`non-draggable p-2 ${secondaryButtonClass}`} onClick={loadAnnouncements} title="Refresh" type="button">
             <MdRefresh />
           </button>
-          <button className="non-draggable flex items-center gap-1 rounded-md bg-mosaic-primary px-3 py-2 text-card-12 font-semibold text-white disabled:opacity-50" disabled={saving} onClick={beginCreate} type="button">
+          <button className={`non-draggable flex items-center gap-1 px-3 py-2 text-card-12 font-semibold ${primaryButtonClass}`} disabled={saving} onClick={beginCreate} type="button">
             <MdAdd /> New
           </button>
         </div>
@@ -294,7 +292,7 @@ const AnnouncementManager = () => {
         <form className="non-draggable mb-3 grid shrink-0 grid-cols-1 gap-2 rounded-md border border-mosaic-border bg-mosaic-table p-3 md:grid-cols-2" onSubmit={submitForm}>
           <div className="md:col-span-2 flex items-center justify-between">
             <h4 className="font-bold">{editingId ? "Edit announcement" : "New announcement"}</h4>
-            <button aria-label="Close form" onClick={closeForm} type="button"><MdClose /></button>
+            <button aria-label="Close form" className={`p-1.5 ${secondaryButtonClass}`} onClick={closeForm} type="button"><MdClose /></button>
           </div>
           <label className="text-card-11 font-semibold">Title
             <input className="mt-1 w-full rounded border border-mosaic-border bg-mosaic-surface p-2 font-normal" onChange={(event) => updateForm("title", event.target.value)} value={form.title} />
@@ -315,9 +313,6 @@ const AnnouncementManager = () => {
           <label className="text-card-11 font-semibold">Ends at (Central time)
             <input className="mt-1 w-full rounded border border-mosaic-border bg-mosaic-surface p-2 font-normal" onChange={(event) => updateForm("ends_at", event.target.value)} placeholder="Optional" value={form.ends_at} />
           </label>
-          <label className="md:col-span-2 text-card-11 font-semibold">Clusters
-            <input className="mt-1 w-full rounded border border-mosaic-border bg-mosaic-surface p-2 font-normal" onChange={(event) => updateForm("clusters", event.target.value)} placeholder="Comma-separated; blank means all clusters" value={form.clusters} />
-          </label>
           <label className="text-card-11 font-semibold">Link label
             <input className="mt-1 w-full rounded border border-mosaic-border bg-mosaic-surface p-2 font-normal" onChange={(event) => updateForm("link_label", event.target.value)} value={form.link_label} />
           </label>
@@ -329,8 +324,8 @@ const AnnouncementManager = () => {
             Enabled
           </label>
           <div className="flex justify-end gap-2 md:col-span-2">
-            <button className="rounded border border-mosaic-border px-3 py-2 text-card-11 font-semibold" onClick={closeForm} type="button">Cancel</button>
-            <button className="rounded bg-mosaic-primary px-3 py-2 text-card-11 font-semibold text-white disabled:opacity-50" disabled={saving} type="submit">{saving ? "Saving…" : "Save"}</button>
+            <button className={`px-3 py-2 text-card-11 font-semibold ${secondaryButtonClass}`} onClick={closeForm} type="button">Cancel</button>
+            <button className={`px-3 py-2 text-card-11 font-semibold ${primaryButtonClass}`} disabled={saving} type="submit">{saving ? "Saving…" : "Save"}</button>
           </div>
         </form>
       )}
@@ -353,17 +348,16 @@ const AnnouncementManager = () => {
                   </div>
                   <p className="mt-1 whitespace-pre-wrap text-card-11 text-mosaic-secondary">{announcement.message}</p>
                   <p className="mt-1 text-card-10 text-mosaic-muted">
-                    {announcement.clusters?.length ? `Clusters: ${announcement.clusters.join(", ")}` : "All clusters"}
-                    {announcement.starts_at ? ` · Starts ${announcement.starts_at}` : ""}
+                    {announcement.starts_at ? `Starts ${announcement.starts_at}` : ""}
                     {announcement.ends_at ? ` · Ends ${announcement.ends_at}` : ""}
                   </p>
                 </div>
                 <div className="non-draggable flex shrink-0 flex-wrap justify-end gap-1">
-                  <button aria-label="Move up" className="rounded border border-mosaic-border p-1.5 disabled:opacity-30" disabled={saving || index === 0} onClick={() => moveAnnouncement(index, -1)} title="Increase priority" type="button"><MdArrowUpward /></button>
-                  <button aria-label="Move down" className="rounded border border-mosaic-border p-1.5 disabled:opacity-30" disabled={saving || index === announcements.length - 1} onClick={() => moveAnnouncement(index, 1)} title="Decrease priority" type="button"><MdArrowDownward /></button>
-                  <button className="rounded border border-mosaic-border px-2 py-1 text-card-10 font-semibold disabled:opacity-50" disabled={saving} onClick={() => toggleEnabled(announcement)} type="button">{announcement.enabled ? "Disable" : "Enable"}</button>
-                  <button aria-label="Edit" className="rounded border border-mosaic-border p-1.5" disabled={saving} onClick={() => beginEdit(announcement)} type="button"><MdEdit /></button>
-                  <button aria-label="Delete" className="rounded border border-red-300 p-1.5 text-red-700" disabled={saving} onClick={() => removeAnnouncement(announcement)} type="button"><MdDeleteOutline /></button>
+                  <button aria-label="Move up" className={`p-1.5 ${secondaryButtonClass}`} disabled={saving || index === 0} onClick={() => moveAnnouncement(index, -1)} title="Increase priority" type="button"><MdArrowUpward /></button>
+                  <button aria-label="Move down" className={`p-1.5 ${secondaryButtonClass}`} disabled={saving || index === announcements.length - 1} onClick={() => moveAnnouncement(index, 1)} title="Decrease priority" type="button"><MdArrowDownward /></button>
+                  <button className={`px-2 py-1 text-card-10 font-semibold ${secondaryButtonClass}`} disabled={saving} onClick={() => toggleEnabled(announcement)} type="button">{announcement.enabled ? "Disable" : "Enable"}</button>
+                  <button aria-label="Edit" className={`p-1.5 ${secondaryButtonClass}`} disabled={saving} onClick={() => beginEdit(announcement)} type="button"><MdEdit /></button>
+                  <button aria-label="Delete" className={`p-1.5 ${dangerButtonClass}`} disabled={saving} onClick={() => removeAnnouncement(announcement)} type="button"><MdDeleteOutline /></button>
                 </div>
               </div>
             </article>
