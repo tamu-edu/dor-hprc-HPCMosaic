@@ -382,7 +382,9 @@ export const MyQuotasSummaryCard = () => {
 
 export const AccountsUsageSummaryCard = () => {
   const { data, loading, error } = useApi("/api/projectinfo");
-  const projects =  data?.projects?.projects || [];
+  const [defaultAccountStatus, setDefaultAccountStatus] = useState(null);
+  const [updatingDefaultAccount, setUpdatingDefaultAccount] = useState(null);
+  const projects = data?.projects?.projects || [];
   const accounts = useMemo(() => [...projects].sort((a, b) => {
     if (a.default === b.default) return 0;
     return a.default === "Y" ? -1 : 1;
@@ -430,6 +432,38 @@ export const AccountsUsageSummaryCard = () => {
     setActiveIndex(index);
   };
 
+  const setDefaultAccount = async (account) => {
+    if (!account || updatingDefaultAccount) return;
+
+    pauseAccountRotation();
+    setDefaultAccountStatus(null);
+    setUpdatingDefaultAccount(account);
+
+    try {
+      const response = await fetch(`${get_base_url()}/api/set_default_account`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account_no: account }),
+      });
+      const responseData = await response.json();
+
+      if (!response.ok || responseData?.error) {
+        throw new Error(responseData?.error || `Request failed with ${response.status}`);
+      }
+
+      window.dispatchEvent(new Event("mosaic-dashboard-refresh"));
+      setActiveIndex(0);
+      setDefaultAccountStatus({ type: "success", text: `${account} is now the default account.` });
+    } catch (setDefaultError) {
+      setDefaultAccountStatus({
+        type: "error",
+        text: setDefaultError.message || "Unable to update the default account.",
+      });
+    } finally {
+      setUpdatingDefaultAccount(null);
+    }
+  };
+
   return (
     <section className={cx(cardClasses.shell, "flex min-h-0 flex-col")}>
       <div className={cardClasses.title}>
@@ -448,7 +482,18 @@ export const AccountsUsageSummaryCard = () => {
               <div className={cx("grid min-h-[57px] min-w-0 justify-items-center gap-1 text-center", hasMultipleAccounts && "px-9")}>
                 <span className="text-card-10 font-bold uppercase text-mosaic-muted">Account number</span>
                 <strong className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-card-22 font-extrabold text-mosaic-primary">{activeAccount.account || "-"}</strong>
-                {activeAccount.default === "Y" && <em className="rounded-full bg-mosaic-success-bg px-[7px] py-[3px] text-card-10 not-italic font-extrabold uppercase text-mosaic-success">Default</em>}
+                {activeAccount.default === "Y" ? (
+                  <em className="rounded-full bg-mosaic-success-bg px-[7px] py-[3px] text-card-10 not-italic font-extrabold uppercase text-mosaic-success">Default</em>
+                ) : (
+                  <button
+                    type="button"
+                    className="non-draggable rounded border border-mosaic-accent-hover bg-mosaic-accent px-2 py-1 text-card-11 font-bold text-mosaic-accent-text disabled:cursor-wait disabled:opacity-60"
+                    disabled={Boolean(updatingDefaultAccount)}
+                    onClick={() => setDefaultAccount(activeAccount.account)}
+                  >
+                    {updatingDefaultAccount === activeAccount.account ? "Updating..." : "Set as Default"}
+                  </button>
+                )}
               </div>
               {hasMultipleAccounts && (
                 <button type="button" onClick={showNextAccount} className={cx(cardClasses.iconButton, "absolute right-0 top-1/2 -translate-y-1/2")} aria-label="Next account">
@@ -491,6 +536,19 @@ export const AccountsUsageSummaryCard = () => {
                 ))}
               </div>
             </div>
+            {defaultAccountStatus && (
+              <div
+                className={cx(
+                  "rounded px-2 py-1.5 text-card-11 font-bold",
+                  defaultAccountStatus.type === "success"
+                    ? "bg-mosaic-success-bg text-mosaic-success"
+                    : "bg-mosaic-danger-bg text-mosaic-danger"
+                )}
+                role="status"
+              >
+                {defaultAccountStatus.text}
+              </div>
+            )}
           </div>
         )
       )}

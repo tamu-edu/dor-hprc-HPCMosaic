@@ -2,7 +2,11 @@ import { get_base_url } from "../utils/api_config.js";
 
 const DASHBOARD_LAYOUT_KEY = "dashboard_layout";
 const FALLBACK_STORAGE_KEY = "mosaic.dashboard_layout.v1";
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
+const LEGACY_CARD_NAME_ALIASES = {
+  "Accounts Usage Summary": "Accounts",
+  "Accounts": "Project Information",
+};
 
 const getPreferencesUrl = () => `${get_base_url()}/api/get_preferences`;
 const savePreferencesUrl = () => `${get_base_url()}/api/save_preferences`;
@@ -83,11 +87,22 @@ export const mergeDashboardLayout = (savedPayload, defaultLayout, validCardNames
     return normalizedDefaults;
   }
 
-  const savedLayout = normalizeDashboardLayout(savedPayload.layout, validCardNames);
+  const savedLayoutSource =
+    Number(savedPayload.schemaVersion || 1) < SCHEMA_VERSION
+      ? savedPayload.layout.map((item) => ({
+          ...item,
+          name: LEGACY_CARD_NAME_ALIASES[item?.name] || item?.name,
+        }))
+      : savedPayload.layout;
+  const savedLayout = normalizeDashboardLayout(savedLayoutSource, validCardNames);
   const savedNames = new Set(savedLayout.map((item) => item.name));
   const knownDefaultNames = new Set(
     Array.isArray(savedPayload.knownDefaultCardNames)
-      ? savedPayload.knownDefaultCardNames
+      ? savedPayload.knownDefaultCardNames.map((name) =>
+          Number(savedPayload.schemaVersion || 1) < SCHEMA_VERSION
+            ? LEGACY_CARD_NAME_ALIASES[name] || name
+            : name
+        )
       : savedLayout.map((item) => item.name)
   );
 

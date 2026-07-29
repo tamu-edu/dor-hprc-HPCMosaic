@@ -124,7 +124,7 @@ const CardConfig = {
         minH: 1
     },
 
-    "Accounts Usage Summary": {
+    "Accounts": {
         description: "Dashboard-style table of account usage against limits.",
         icon: <AiOutlineUser size={30}/>,
         chartComponent: AccountsUsageSummaryCard,
@@ -219,7 +219,7 @@ const CardConfig = {
         minW: 1, minH: 1
     },
 
-    "Accounts": {
+    "Project Information": {
         description: "Provides information on user accounts and their roles.",
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: Accounts,
