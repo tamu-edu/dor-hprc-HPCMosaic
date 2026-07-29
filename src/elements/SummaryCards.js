@@ -626,7 +626,7 @@ export const AnnouncementsSummaryCard = () => {
                       {presentation.icon}
                     </span>
 
-                    <div className="min-w-0">
+                    <div className="min-w-0 [overflow-wrap:anywhere]">
                       <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">
                         {announcement.title}
                       </h4>
@@ -638,7 +638,7 @@ export const AnnouncementsSummaryCard = () => {
                       {announcement.link?.url &&
                         announcement.link?.label && (
                           <a
-                            className="non-draggable mt-2 inline-block text-card-11-5 font-semibold text-mosaic-accent hover:underline"
+                            className="non-draggable mt-2 inline-block max-w-full rounded-sm text-card-11-5 font-semibold text-mosaic-link underline decoration-transparent underline-offset-2 transition-colors hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mosaic-focus"
                             href={announcement.link.url}
                             rel="noopener noreferrer"
                             target="_blank"
