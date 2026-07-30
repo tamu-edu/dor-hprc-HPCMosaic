@@ -32,7 +32,9 @@ All routes are registered under the /api prefix (set in app.py).
     DELETE /delete_env/<name>         Delete a named venv
     GET    /get_py_versions           Available Python versions and GCC toolchains
     POST   /create_venv               Create a new venv via SSH to login node
-    GET    /available_modules          List modules available on the cluster
+    GET    /available_modules          List raw modules for the configured cluster
+    GET    /available_modules/summary  Grouped module card summaries
+    GET    /available_modules/details  Details for one named module
 
   jobs.py         — SLURM job and project management
     GET    /jobs                      Active jobs for current user (squeue only)
