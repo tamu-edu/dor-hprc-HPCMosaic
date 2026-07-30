@@ -14,6 +14,7 @@ const DASHBOARD_COLUMNS = 12;
 const DEFAULT_CARD_SIZE = { w: 4, h: 10 };
 const CARD_NAME_ALIASES = {
   "GPU Utilization": "GPU Resources",
+  "Accounts Usage Summary": "Accounts",
 };
 
 const getCardConfig = (componentName) => CardConfig[CARD_NAME_ALIASES[componentName] || componentName];

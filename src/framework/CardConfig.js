@@ -14,7 +14,7 @@ import Composer from '../elements/Composer';
 // import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
 import ClusterStatus from '../elements/ClusterStatus';
-// import SoftwareModulesPage from '../elements/SoftwareModulesPage';
+import SoftwareModulesPage from '../elements/SoftwareModulesPage';
 import AnnouncementManager from '../elements/AnnouncementManager';
 import {
     AccountsUsageSummaryCard,
@@ -124,7 +124,7 @@ const CardConfig = {
         minH: 1
     },
 
-    "Accounts Usage Summary": {
+    "Accounts": {
         description: "Dashboard-style table of account usage against limits.",
         icon: <AiOutlineUser size={30}/>,
         chartComponent: AccountsUsageSummaryCard,
@@ -188,16 +188,16 @@ const CardConfig = {
         minW: 1, minH: 1
     },
 
-    /***"Software Modules": {
+    "Software Modules": {
         description: "Browse available software modules on the cluster.",
         icon: <AiOutlineCode size={30}/>,
         chartComponent: SoftwareModulesPage,
         category: "system",
         defaultW: 12,
         defaultH: 20,
-        minW: 5,
-        minH: 12
-    },***/
+        minW: 2,
+        minH: 6
+    },
 
     "Quota Information": {
         description: "Shows disk quota usage and links for users and groups.",
@@ -219,7 +219,7 @@ const CardConfig = {
         minW: 1, minH: 1
     },
 
-    "Accounts": {
+    "Project Information": {
         description: "Provides information on user accounts and their roles.",
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: Accounts,
