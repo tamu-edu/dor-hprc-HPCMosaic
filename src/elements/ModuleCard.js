@@ -13,6 +13,7 @@ const ModuleCard = ({
   isDefault,
   isExtension,
   isListView = false,
+  onSelect,
 }) => {
   const [copied, setCopied] = useState(false);
   const feedbackTimer = useRef(null);
@@ -60,15 +61,22 @@ const ModuleCard = ({
     <article
       className={
         isListView
-          ? "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md border theme-border theme-surface p-2 shadow-sm"
-          : "flex min-h-0 min-w-0 flex-col gap-3 rounded-lg border theme-border theme-surface p-4 shadow-sm"
+          ? "relative grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md border theme-border theme-surface p-2 shadow-sm"
+          : "relative flex min-h-0 min-w-0 flex-col gap-3 rounded-lg border theme-border theme-surface p-4 shadow-sm"
       }
     >
+      <button
+        type="button"
+        className="non-draggable absolute inset-0 rounded-[inherit] theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--mosaic-color-primary)]"
+        onClick={onSelect}
+        aria-label={`View details for ${name}`}
+      />
+
       <header
         className={
           isListView
-            ? "col-span-2 flex min-w-0 flex-wrap items-start gap-2"
-            : "flex min-w-0 flex-wrap items-start gap-2"
+            ? "pointer-events-none relative col-span-2 flex min-w-0 flex-wrap items-start gap-2"
+            : "pointer-events-none relative flex min-w-0 flex-wrap items-start gap-2"
         }
       >
         <h3
@@ -99,7 +107,7 @@ const ModuleCard = ({
 
       {!isListView && (
         <p
-          className="line-clamp-2 min-h-10 break-words text-card-14 theme-text-secondary"
+          className="pointer-events-none relative line-clamp-2 min-h-10 break-words text-card-14 theme-text-secondary"
           title={description}
         >
           {description || "No description available."}
@@ -109,8 +117,8 @@ const ModuleCard = ({
       <div
         className={
           isListView
-            ? "flex min-w-0 items-center gap-1.5 rounded border theme-border theme-surface-alt px-2 py-1"
-            : "flex min-w-0 items-center gap-2 rounded-md border theme-border theme-surface-alt px-3 py-2"
+            ? "pointer-events-none relative flex min-w-0 items-center gap-1.5 rounded border theme-border theme-surface-alt px-2 py-1"
+            : "pointer-events-none relative flex min-w-0 items-center gap-2 rounded-md border theme-border theme-surface-alt px-3 py-2"
         }
       >
         <FiTerminal
@@ -121,36 +129,43 @@ const ModuleCard = ({
           className="min-w-0 flex-1 truncate text-card-12 theme-text-primary"
           title={loadCommand}
         >
-          {loadCommand}
+          {loadCommand ||
+            (isExtension
+              ? "Available after loading its dependencies"
+              : "No load command available")}
         </code>
-        <button
-          type="button"
-          className="non-draggable flex min-h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-card-12 font-medium theme-text-secondary theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mosaic-color-primary)]"
-          onClick={copyLoadCommand}
-          disabled={!loadCommand}
-          aria-label={
-            copied
-              ? "Module load command copied"
-              : `Copy load command for ${name}`
-          }
-          title={copied ? "Copied" : "Copy load command"}
-        >
-          {copied ? (
-            <FiCheck aria-hidden="true" className="h-4 w-4" />
-          ) : (
-            <FiCopy aria-hidden="true" className="h-4 w-4" />
-          )}
-          <span className={isListView ? "sr-only" : undefined} aria-live="polite">
-            {copied ? "Copied" : "Copy"}
-          </span>
-        </button>
+        {loadCommand && (
+          <button
+            type="button"
+            className="non-draggable pointer-events-auto relative z-10 flex min-h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-card-12 font-medium theme-text-secondary theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mosaic-color-primary)]"
+            onClick={copyLoadCommand}
+            aria-label={
+              copied
+                ? "Module load command copied"
+                : `Copy load command for ${name}`
+            }
+            title={copied ? "Copied" : "Copy load command"}
+          >
+            {copied ? (
+              <FiCheck aria-hidden="true" className="h-4 w-4" />
+            ) : (
+              <FiCopy aria-hidden="true" className="h-4 w-4" />
+            )}
+            <span
+              className={isListView ? "sr-only" : undefined}
+              aria-live="polite"
+            >
+              {copied ? "Copied" : "Copy"}
+            </span>
+          </button>
+        )}
       </div>
 
       <footer
         className={
           isListView
-            ? "flex min-w-0 items-center justify-end gap-2 text-card-12 theme-text-secondary"
-            : "mt-auto flex min-w-0 items-center justify-between gap-3 text-card-12 theme-text-secondary"
+            ? "pointer-events-none relative flex min-w-0 items-center justify-end gap-2 text-card-12 theme-text-secondary"
+            : "pointer-events-none relative mt-auto flex min-w-0 items-center justify-between gap-3 text-card-12 theme-text-secondary"
         }
       >
         <span>

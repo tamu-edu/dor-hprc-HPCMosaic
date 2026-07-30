@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FiFilter, FiSearch } from "react-icons/fi";
 import ModuleCardGrid from "./ModuleCardGrid";
+import SoftwareModuleDetail from "./SoftwareModuleDetail";
 import { get_base_url } from "../utils/api_config";
 
 const INITIAL_GRID_CAPACITY = 20;
@@ -40,17 +41,29 @@ export const groupModuleRecords = (records) => {
     const versions = Array.from(recordsByFullName.values()).sort(compareVersions);
     const current = versions[versions.length - 1];
     const compiler = getCompiler(current);
+    const currentDependencySet = Array.isArray(current.dependencies)
+      ? current.dependencies.find(
+          (dependencySet) =>
+            Array.isArray(dependencySet) && dependencySet.length > 0
+        ) || []
+      : [];
+    const loadCommand = current.is_extension
+      ? currentDependencySet.length > 0
+        ? `module load ${currentDependencySet.join(" ")}`
+        : ""
+      : `module load ${current.full_name}`;
 
     return {
       name,
       version: current.version,
       description: current.description || "",
       compiler,
-      loadCommand: `module load ${current.full_name}`,
+      loadCommand,
       versionCount: versions.length,
       isDefault: Boolean(current.is_default),
       isExtension: Boolean(current.is_extension),
       fullName: current.full_name,
+      records: versions,
     };
   }).sort((left, right) =>
     left.name.localeCompare(right.name, undefined, { sensitivity: "base" })
@@ -58,12 +71,15 @@ export const groupModuleRecords = (records) => {
 };
 
 const SoftwareModulesPage = () => {
-  const [moduleRecords, setModuleRecords] = useState([]);
+  const [modules, setModules] = useState([]);
   const [loadState, setLoadState] = useState("loading");
   const [searchQuery, setSearchQuery] = useState("");
   const [moduleType, setModuleType] = useState("all");
   const [compiler, setCompiler] = useState("all");
   const [sortOrder, setSortOrder] = useState("name-asc");
+  const [selectedModuleName, setSelectedModuleName] = useState(null);
+  const [moduleDetails, setModuleDetails] = useState({});
+  const [detailLoadState, setDetailLoadState] = useState("idle");
   const [gridCapacity, setGridCapacity] = useState(INITIAL_GRID_CAPACITY);
   const [currentPage, setCurrentPage] = useState(1);
   const [isListView, setIsListView] = useState(false);
@@ -78,7 +94,7 @@ const SoftwareModulesPage = () => {
     const loadModules = async () => {
       try {
         const response = await fetch(
-          `${get_base_url()}/api/available_modules`,
+          `${get_base_url()}/api/available_modules/summary`,
           { signal: controller.signal }
         );
 
@@ -86,12 +102,24 @@ const SoftwareModulesPage = () => {
           throw new Error(`Unable to load modules (${response.status})`);
         }
 
-        const modules = await response.json();
-        if (!Array.isArray(modules)) {
+        const summaries = await response.json();
+        if (!Array.isArray(summaries)) {
           throw new Error("The modules response is not a list");
         }
 
-        setModuleRecords(modules);
+        setModules(
+          summaries.map((summary) => ({
+            name: summary.name,
+            version: summary.latest_version,
+            description: summary.description || "",
+            compiler: summary.compiler || "",
+            loadCommand: summary.load_command || "",
+            versionCount: summary.version_count,
+            isDefault: Boolean(summary.is_default),
+            isExtension: Boolean(summary.is_extension),
+            fullName: summary.full_name,
+          }))
+        );
         setLoadState("ready");
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -105,11 +133,6 @@ const SoftwareModulesPage = () => {
 
     return () => controller.abort();
   }, []);
-
-  const modules = useMemo(
-    () => groupModuleRecords(moduleRecords),
-    [moduleRecords]
-  );
 
   const compilerOptions = useMemo(
     () =>
@@ -168,6 +191,53 @@ const SoftwareModulesPage = () => {
     firstVisibleIndex,
     firstVisibleIndex + gridCapacity
   );
+  const selectedModule = modules.find(
+    (module) => module.name === selectedModuleName
+  );
+  const selectedModuleDetails = selectedModuleName
+    ? moduleDetails[selectedModuleName]
+    : null;
+
+  useEffect(() => {
+    if (!selectedModuleName || selectedModuleDetails) {
+      if (selectedModuleDetails) {
+        setDetailLoadState("ready");
+      }
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setDetailLoadState("loading");
+
+    fetch(
+      `${get_base_url()}/api/available_modules/details?${new URLSearchParams({
+        name: selectedModuleName,
+      })}`,
+      { signal: controller.signal }
+    )
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to load module details");
+        }
+        return data;
+      })
+      .then((details) => {
+        setModuleDetails((current) => ({
+          ...current,
+          [selectedModuleName]: details,
+        }));
+        setDetailLoadState("ready");
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") {
+          console.error("Error loading module details:", error);
+          setDetailLoadState("error");
+        }
+      });
+
+    return () => controller.abort();
+  }, [selectedModuleDetails, selectedModuleName]);
 
   const updateFilters = (setter) => (event) => {
     setter(event.target.value);
@@ -339,10 +409,18 @@ const SoftwareModulesPage = () => {
           </p>
         </header>
 
-        <section
-          aria-labelledby="available-modules-heading"
-          className="flex min-h-0 flex-1 flex-col gap-2"
-        >
+        {selectedModule ? (
+          <SoftwareModuleDetail
+            module={selectedModule}
+            details={selectedModuleDetails}
+            loadState={detailLoadState}
+            onBack={() => setSelectedModuleName(null)}
+          />
+        ) : (
+          <section
+            aria-labelledby="available-modules-heading"
+            className="flex min-h-0 flex-1 flex-col gap-2"
+          >
           <div className="flex items-center border-t theme-border pt-2">
             <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <h2
@@ -460,6 +538,7 @@ const SoftwareModulesPage = () => {
                   modules={visibleModules}
                   gridRef={gridRef}
                   isListView={isListView}
+                  onSelectModule={setSelectedModuleName}
                 />
                 {totalPages > 1 && (
                   <nav
@@ -512,7 +591,8 @@ const SoftwareModulesPage = () => {
               </>
             )}
           </div>
-        </section>
+          </section>
+        )}
     </div>
   );
 };

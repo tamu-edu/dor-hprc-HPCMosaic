@@ -1,7 +1,12 @@
 import React from "react";
 import ModuleCard from "./ModuleCard";
 
-const ModuleCardGrid = ({ modules, gridRef, isListView = false }) => (
+const ModuleCardGrid = ({
+  modules,
+  gridRef,
+  isListView = false,
+  onSelectModule,
+}) => (
   <div
     ref={gridRef}
     className={
@@ -15,6 +20,7 @@ const ModuleCardGrid = ({ modules, gridRef, isListView = false }) => (
         key={module.fullName}
         {...module}
         isListView={isListView}
+        onSelect={() => onSelectModule?.(module.name)}
       />
     ))}
   </div>
