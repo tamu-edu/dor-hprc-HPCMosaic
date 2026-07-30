@@ -14,7 +14,7 @@ import Composer from '../elements/Composer';
 // import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
 import ClusterStatus from '../elements/ClusterStatus';
-// import SoftwareModulesPage from '../elements/SoftwareModulesPage';
+import SoftwareModulesPage from '../elements/SoftwareModulesPage';
 import AnnouncementManager from '../elements/AnnouncementManager';
 import {
     AccountsUsageSummaryCard,
@@ -188,7 +188,7 @@ const CardConfig = {
         minW: 1, minH: 1
     },
 
-    /***"Software Modules": {
+    "Software Modules": {
         description: "Browse available software modules on the cluster.",
         icon: <AiOutlineCode size={30}/>,
         chartComponent: SoftwareModulesPage,
@@ -197,7 +197,7 @@ const CardConfig = {
         defaultH: 20,
         minW: 5,
         minH: 12
-    },***/
+    },
 
     "Quota Information": {
         description: "Shows disk quota usage and links for users and groups.",
