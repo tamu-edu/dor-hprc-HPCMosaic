@@ -195,8 +195,8 @@ const CardConfig = {
         category: "system",
         defaultW: 12,
         defaultH: 20,
-        minW: 5,
-        minH: 12
+        minW: 2,
+        minH: 6
     },
 
     "Quota Information": {

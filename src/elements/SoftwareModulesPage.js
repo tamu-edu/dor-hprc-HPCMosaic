@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FiBox, FiFilter, FiSearch } from "react-icons/fi";
+import { FiFilter, FiSearch } from "react-icons/fi";
 import ModuleCardGrid from "./ModuleCardGrid";
 import { get_base_url } from "../utils/api_config";
 
 const INITIAL_GRID_CAPACITY = 20;
+const MEANINGFUL_RESIZE_THRESHOLD = 8;
+const LIST_VIEW_MAX_HEIGHT = 520;
+const LIST_VIEW_MAX_WIDTH = 760;
 const COMPILER_PATTERN = /^(?:AOCC|Clang|GCC(?:core)?|intel|NVHPC)\//i;
 
 const compareVersions = (left, right) =>
@@ -62,6 +65,7 @@ const SoftwareModulesPage = () => {
   const [compiler, setCompiler] = useState("all");
   const [gridCapacity, setGridCapacity] = useState(INITIAL_GRID_CAPACITY);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isListView, setIsListView] = useState(false);
   const pageRef = useRef(null);
   const resultsRef = useRef(null);
   const gridRef = useRef(null);
@@ -156,13 +160,39 @@ const SoftwareModulesPage = () => {
   }, [totalPages]);
 
   useEffect(() => {
+    const page = pageRef.current;
+    if (!page) {
+      return undefined;
+    }
+
+    const updateViewMode = () => {
+      const { height, width } = page.getBoundingClientRect();
+      setIsListView(
+        width < LIST_VIEW_MAX_WIDTH || height < LIST_VIEW_MAX_HEIGHT
+      );
+    };
+
+    updateViewMode();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateViewMode);
+      return () => window.removeEventListener("resize", updateViewMode);
+    }
+
+    const viewObserver = new ResizeObserver(updateViewMode);
+    viewObserver.observe(page);
+    return () => viewObserver.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (loadState !== "ready" || filteredModules.length === 0) {
       return undefined;
     }
 
     let animationFrame;
+    let previousBounds = null;
 
-    const calculateGridCapacity = () => {
+    const calculateGridCapacity = ({ force = false } = {}) => {
       window.cancelAnimationFrame(animationFrame);
       animationFrame = window.requestAnimationFrame(() => {
         const page = pageRef.current;
@@ -177,6 +207,24 @@ const SoftwareModulesPage = () => {
 
         const pageRect = page.getBoundingClientRect();
         const resultsRect = results.getBoundingClientRect();
+        const nextBounds = {
+          height: pageRect.height,
+          resultsTop: resultsRect.top,
+          width: pageRect.width,
+        };
+        const changedMeaningfully =
+          !previousBounds ||
+          Object.keys(nextBounds).some(
+            (key) =>
+              Math.abs(nextBounds[key] - previousBounds[key]) >=
+              MEANINGFUL_RESIZE_THRESHOLD
+          );
+
+        if (!force && !changedMeaningfully) {
+          return;
+        }
+
+        previousBounds = nextBounds;
         const cardHeight = Math.max(
           ...Array.from(cards, (card) => card.getBoundingClientRect().height)
         );
@@ -203,32 +251,41 @@ const SoftwareModulesPage = () => {
       });
     };
 
-    calculateGridCapacity();
+    calculateGridCapacity({ force: true });
 
     const resizeObserver =
       typeof ResizeObserver === "undefined"
         ? null
-        : new ResizeObserver(calculateGridCapacity);
+        : new ResizeObserver(() => calculateGridCapacity());
 
-    [pageRef.current, resultsRef.current, gridRef.current].forEach((element) => {
+    [pageRef.current, resultsRef.current].forEach((element) => {
       if (element) {
         resizeObserver?.observe(element);
       }
     });
 
-    const firstCard = gridRef.current?.querySelector("article");
-    if (firstCard) {
-      resizeObserver?.observe(firstCard);
-    }
+    const fontSizeObserver =
+      typeof MutationObserver === "undefined"
+        ? null
+        : new MutationObserver(() =>
+            calculateGridCapacity({ force: true })
+          );
 
-    window.addEventListener("resize", calculateGridCapacity);
+    fontSizeObserver?.observe(document.documentElement, {
+      attributeFilter: ["data-card-font-size"],
+      attributes: true,
+    });
+
+    const handleWindowResize = () => calculateGridCapacity();
+    window.addEventListener("resize", handleWindowResize);
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
       resizeObserver?.disconnect();
-      window.removeEventListener("resize", calculateGridCapacity);
+      fontSizeObserver?.disconnect();
+      window.removeEventListener("resize", handleWindowResize);
     };
-  }, [filteredModules.length, loadState, totalPages > 1]);
+  }, [filteredModules.length, isListView, loadState, totalPages > 1]);
 
   const paginationPages = useMemo(() => {
     const firstPage = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
@@ -248,39 +305,36 @@ const SoftwareModulesPage = () => {
   return (
     <div
       ref={pageRef}
-      className="flex h-full min-h-0 w-full flex-col gap-4 overflow-auto p-3 theme-surface theme-text-primary sm:p-4"
+      className="flex h-full min-h-0 w-full flex-col gap-2 overflow-auto p-3 theme-surface theme-text-primary sm:p-4"
     >
-        <header className="flex shrink-0 flex-col gap-1 rounded-lg border theme-border theme-surface px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:gap-4">
-          <h1 className="text-card-16 font-bold theme-text-primary">
+        <header className="flex shrink-0 flex-col gap-0.5 rounded-lg border theme-border theme-surface px-3 py-2 shadow-sm sm:flex-row sm:items-center sm:gap-3">
+          <h1 className="text-card-15 font-bold theme-text-primary">
             Software Modules
           </h1>
           <span
             aria-hidden="true"
-            className="hidden h-5 w-px theme-surface-hover sm:block"
+            className="hidden h-4 w-px theme-surface-hover sm:block"
           />
-          <p className="text-card-14 theme-text-secondary">
+          <p className="text-card-12 theme-text-secondary">
             Browse available software modules on the cluster.
           </p>
         </header>
 
         <section
           aria-labelledby="available-modules-heading"
-          className="flex min-h-0 flex-1 flex-col gap-4"
+          className="flex min-h-0 flex-1 flex-col gap-2"
         >
-          <div className="flex items-center gap-3 border-t theme-border pt-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border theme-border theme-surface-hover">
-              <FiBox aria-hidden="true" className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
+          <div className="flex items-center border-t theme-border pt-2">
+            <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <h2
                 id="available-modules-heading"
-                className="text-card-16 font-semibold theme-text-primary"
+                className="text-card-14 font-semibold theme-text-primary"
               >
                 Available Modules
               </h2>
               <p
                 aria-live="polite"
-                className="mt-1 text-card-14 theme-text-secondary"
+                className="text-card-12 theme-text-secondary"
               >
                 {countLabel}
               </p>
@@ -344,7 +398,7 @@ const SoftwareModulesPage = () => {
           <div
             ref={resultsRef}
             aria-label="Software module results"
-            className="min-h-32 flex-1"
+            className="relative min-h-0 flex-1"
           >
             {loadState === "loading" && (
               <p className="py-8 text-center text-card-14 theme-text-secondary">
@@ -369,12 +423,16 @@ const SoftwareModulesPage = () => {
 
             {loadState === "ready" && visibleModules.length > 0 && (
               <>
-                <ModuleCardGrid modules={visibleModules} gridRef={gridRef} />
+                <ModuleCardGrid
+                  modules={visibleModules}
+                  gridRef={gridRef}
+                  isListView={isListView}
+                />
                 {totalPages > 1 && (
                   <nav
                     ref={paginationRef}
                     aria-label="Software module pages"
-                    className="flex flex-wrap items-center justify-center gap-2 py-4"
+                    className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-2 py-4 theme-surface"
                   >
                     <button
                       type="button"

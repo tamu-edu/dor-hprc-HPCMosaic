@@ -12,6 +12,7 @@ const ModuleCard = ({
   versionCount,
   isDefault,
   isExtension,
+  isListView = false,
 }) => {
   const [copied, setCopied] = useState(false);
   const feedbackTimer = useRef(null);
@@ -56,8 +57,20 @@ const ModuleCard = ({
       : null;
 
   return (
-    <article className="flex min-h-0 min-w-0 flex-col gap-3 rounded-lg border theme-border theme-surface p-4 shadow-sm">
-      <header className="flex min-w-0 flex-wrap items-start gap-2">
+    <article
+      className={
+        isListView
+          ? "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md border theme-border theme-surface p-2 shadow-sm"
+          : "flex min-h-0 min-w-0 flex-col gap-3 rounded-lg border theme-border theme-surface p-4 shadow-sm"
+      }
+    >
+      <header
+        className={
+          isListView
+            ? "col-span-2 flex min-w-0 flex-wrap items-start gap-2"
+            : "flex min-w-0 flex-wrap items-start gap-2"
+        }
+      >
         <h3
           className="mr-auto min-w-0 break-words text-card-14 font-semibold theme-text-primary"
           title={name}
@@ -84,14 +97,22 @@ const ModuleCard = ({
         )}
       </header>
 
-      <p
-        className="line-clamp-2 min-h-10 break-words text-card-14 theme-text-secondary"
-        title={description}
-      >
-        {description || "No description available."}
-      </p>
+      {!isListView && (
+        <p
+          className="line-clamp-2 min-h-10 break-words text-card-14 theme-text-secondary"
+          title={description}
+        >
+          {description || "No description available."}
+        </p>
+      )}
 
-      <div className="flex min-w-0 items-center gap-2 rounded-md border theme-border theme-surface-alt px-3 py-2">
+      <div
+        className={
+          isListView
+            ? "flex min-w-0 items-center gap-1.5 rounded border theme-border theme-surface-alt px-2 py-1"
+            : "flex min-w-0 items-center gap-2 rounded-md border theme-border theme-surface-alt px-3 py-2"
+        }
+      >
         <FiTerminal
           aria-hidden="true"
           className="h-4 w-4 shrink-0 theme-text-muted"
@@ -119,11 +140,19 @@ const ModuleCard = ({
           ) : (
             <FiCopy aria-hidden="true" className="h-4 w-4" />
           )}
-          <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+          <span className={isListView ? "sr-only" : undefined} aria-live="polite">
+            {copied ? "Copied" : "Copy"}
+          </span>
         </button>
       </div>
 
-      <footer className="mt-auto flex min-w-0 items-center justify-between gap-3 text-card-12 theme-text-secondary">
+      <footer
+        className={
+          isListView
+            ? "flex min-w-0 items-center justify-end gap-2 text-card-12 theme-text-secondary"
+            : "mt-auto flex min-w-0 items-center justify-between gap-3 text-card-12 theme-text-secondary"
+        }
+      >
         <span>
           {normalizedVersionCount.toLocaleString()}{" "}
           {normalizedVersionCount === 1 ? "version" : "versions"}
