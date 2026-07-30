@@ -18,6 +18,7 @@ import ClusterStatus from '../elements/ClusterStatus';
 import {
     AccountsUsageSummaryCard,
     AnnouncementsSummaryCard,
+    GettingStartedCard,
     MyJobsSummaryCard,
     MyQuotasSummaryCard,
 } from '../elements/SummaryCards';
@@ -139,6 +140,17 @@ const CardConfig = {
         icon: <AiOutlineCode size={30}/>,
         chartComponent: AnnouncementsSummaryCard,
         category: "analytics",
+        defaultW: 3,
+        defaultH: 12,
+        minW: 1,
+        minH: 1
+    },
+
+    "Getting Started": {
+        description: "Useful Texas A&M HPRC guides and resources for new users.",
+        icon: <AiOutlineCode size={30}/>,
+        chartComponent: GettingStartedCard,
+        category: "user",
         defaultW: 3,
         defaultH: 12,
         minW: 1,

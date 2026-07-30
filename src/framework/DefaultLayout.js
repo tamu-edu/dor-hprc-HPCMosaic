@@ -12,4 +12,5 @@ export const createDefaultLayout = () => [
   { name: "User Groups", i: uuidv4(), x: 0, y: 19, w: 6, h: 10 },
   { name: "Python Venv Manager", i: uuidv4(), x: 6, y: 19, w: 6, h: 10 },
   { name: "Cluster Nodes Overview", i: uuidv4(), x: 0, y: 29, w: 9, h: 19 },
+  { name: "Getting Started", i: uuidv4(), x: 9, y: 29, w: 3, h: 12 },
 ];
