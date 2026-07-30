@@ -63,6 +63,7 @@ const SoftwareModulesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [moduleType, setModuleType] = useState("all");
   const [compiler, setCompiler] = useState("all");
+  const [sortOrder, setSortOrder] = useState("name-asc");
   const [gridCapacity, setGridCapacity] = useState(INITIAL_GRID_CAPACITY);
   const [currentPage, setCurrentPage] = useState(1);
   const [isListView, setIsListView] = useState(false);
@@ -123,7 +124,7 @@ const SoftwareModulesPage = () => {
   const filteredModules = useMemo(() => {
     const query = searchQuery.trim().toLocaleLowerCase();
 
-    return modules.filter((module) => {
+    const matches = modules.filter((module) => {
       const matchesSearch =
         !query ||
         [module.name, module.version, module.compiler, module.fullName].some(
@@ -138,7 +139,25 @@ const SoftwareModulesPage = () => {
 
       return matchesSearch && matchesType && matchesCompiler;
     });
-  }, [compiler, moduleType, modules, searchQuery]);
+
+    return matches.sort((left, right) => {
+      switch (sortOrder) {
+        case "name-desc":
+          return right.name.localeCompare(left.name, undefined, {
+            sensitivity: "base",
+          });
+        case "count-desc":
+          return right.versionCount - left.versionCount;
+        case "count-asc":
+          return left.versionCount - right.versionCount;
+        case "name-asc":
+        default:
+          return left.name.localeCompare(right.name, undefined, {
+            sensitivity: "base",
+          });
+      }
+    });
+  }, [compiler, moduleType, modules, searchQuery, sortOrder]);
 
   const totalPages = Math.max(
     1,
@@ -307,7 +326,7 @@ const SoftwareModulesPage = () => {
       ref={pageRef}
       className="flex h-full min-h-0 w-full flex-col gap-2 overflow-auto p-3 theme-surface theme-text-primary sm:p-4"
     >
-        <header className="flex shrink-0 flex-col gap-0.5 rounded-lg border theme-border theme-surface px-3 py-2 shadow-sm sm:flex-row sm:items-center sm:gap-3">
+        <header className="flex shrink-0 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
           <h1 className="text-card-15 font-bold theme-text-primary">
             Software Modules
           </h1>
@@ -343,7 +362,7 @@ const SoftwareModulesPage = () => {
 
           <div
             aria-label="Module search and filters"
-            className="grid shrink-0 gap-3 rounded-lg border theme-border theme-surface p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(16rem,1fr)_auto_auto]"
+            className="grid shrink-0 items-center gap-2 rounded-lg border theme-border theme-surface p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(24rem,1fr)_auto_auto_auto]"
           >
             <label className="relative block">
               <span className="sr-only">Search software modules</span>
@@ -369,7 +388,7 @@ const SoftwareModulesPage = () => {
               <select
                 value={moduleType}
                 onChange={updateFilters(setModuleType)}
-                className="non-draggable theme-input h-10 w-full rounded-md border py-2 pl-10 pr-8 text-card-14 outline-none xl:min-w-40"
+                className="non-draggable theme-input h-8 w-full rounded-md border py-1 pl-9 pr-7 text-card-12 outline-none xl:w-auto xl:min-w-32"
               >
                 <option value="all">All Types</option>
                 <option value="module">Modules</option>
@@ -382,7 +401,7 @@ const SoftwareModulesPage = () => {
               <select
                 value={compiler}
                 onChange={updateFilters(setCompiler)}
-                className="non-draggable theme-input h-10 w-full rounded-md border px-3 py-2 text-card-14 outline-none xl:min-w-44"
+                className="non-draggable theme-input h-8 w-full rounded-md border px-2 py-1 text-card-12 outline-none xl:w-auto xl:min-w-36"
               >
                 <option value="all">All Compilers</option>
                 {compilerOptions.map((option) => (
@@ -390,6 +409,20 @@ const SoftwareModulesPage = () => {
                     {option}
                   </option>
                 ))}
+              </select>
+            </label>
+
+            <label>
+              <span className="sr-only">Sort software modules</span>
+              <select
+                value={sortOrder}
+                onChange={updateFilters(setSortOrder)}
+                className="non-draggable theme-input h-8 w-full rounded-md border px-2 py-1 text-card-12 outline-none xl:w-auto xl:min-w-32"
+              >
+                <option value="name-asc">Name: A–Z</option>
+                <option value="name-desc">Name: Z–A</option>
+                <option value="count-desc">Most Versions</option>
+                <option value="count-asc">Fewest Versions</option>
               </select>
             </label>
 
