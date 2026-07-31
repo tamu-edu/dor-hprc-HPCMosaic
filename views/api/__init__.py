@@ -32,6 +32,9 @@ All routes are registered under the /api prefix (set in app.py).
     DELETE /delete_env/<name>         Delete a named venv
     GET    /get_py_versions           Available Python versions and GCC toolchains
     POST   /create_venv               Create a new venv via SSH to login node
+    GET    /available_modules          List raw modules for the configured cluster
+    GET    /available_modules/summary  Grouped module card summaries
+    GET    /available_modules/details  Details for one named module
 
   jobs.py         — SLURM job and project management
     GET    /jobs                      Active jobs for current user (squeue only)
@@ -52,7 +55,14 @@ All routes are registered under the /api prefix (set in app.py).
     POST   /software                  Software installation request
     POST   /account                   Account purchase request
     POST   /submit_acknowledgement    Publication acknowledgement submission
-    GET    /announcement              Current dashboard announcement text
+  announcement.py — Staff-managed dashboard announcements
+    GET    /announcements             Valid, enabled, currently active announcements
+    GET    /admin/announcements       All announcements for authorized administrators
+    POST   /admin/announcements       Create an announcement
+    PUT    /admin/announcements/<id>  Update an announcement
+    DELETE /admin/announcements/<id>  Delete an announcement
+    PUT    /admin/announcements/order Reorder all announcements
+
 
 Adding a new route module
 --------------------------
@@ -72,4 +82,5 @@ from . import preferences  # /get_preferences, /save_preferences
 from . import info         # /user-data, /sinfo, /showquota, /groups, /cpuavail
 from . import modules      # /get_env, /delete_env, /get_py_versions, /create_venv
 from . import jobs         # /jobs, /cancel_job, /projectinfo, /set_default_account, /utilization
-from . import bot_requests # /quota, /group, /help, /software, /account, /submit_acknowledgement, /announcement
+from . import bot_requests # /quota, /group, /help, /software, /account, /submit_acknowledgement
+from . import announcement # /announcements
