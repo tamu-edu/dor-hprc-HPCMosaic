@@ -634,6 +634,11 @@ export const GettingStartedCard = () => {
       description: "Find installed applications and environment modules",
       href: "https://hprc.tamu.edu/kb/Software/",
     },
+    {
+      title: "Youtube Channel",
+      description: "Watch introductory videos and shortcourse vods",
+      href: "youtube.com/channel/UCgeDEHE5GwkxYUGS0FDLmPw/",
+    },
   ];
 
   return (
