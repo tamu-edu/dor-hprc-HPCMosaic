@@ -12,6 +12,8 @@ import {
   MdErrorOutline,
   MdEvent,
   MdInfoOutline,
+  MdMenuBook,
+  MdOpenInNew,
   MdRefresh,
   MdWarningAmber,
 } from "react-icons/md";
@@ -728,6 +730,73 @@ export const AnnouncementsSummaryCard = () => {
           )}
         </div>
       )}
+    </section>
+  );
+};
+
+export const GettingStartedCard = () => {
+  const resources = [
+    {
+      title: "New User Information",
+      description: "Accounts, resources, training, and first steps",
+      href: "https://hprc.tamu.edu/user_services/new_user_information.html",
+    },
+    {
+      title: "HPRC Knowledge Base",
+      description: "Quick starts, user guides, batch jobs, and FAQs",
+      href: "https://hprc.tamu.edu/kb/",
+    },
+    {
+      title: "ACES Quick Start",
+      description: "Connect to Grace and submit your first job",
+      href: "https://hprc.tamu.edu/kb/User-Guides/ACES/",
+    },
+    {
+      title: "Open OnDemand Portal",
+      description: "Use files, shells, jobs, and interactive applications",
+      href: "https://hprc.tamu.edu/kb/Software/Portal/",
+    },
+    {
+      title: "File Transfer",
+      description: "Move data with Globus, SFTP, rsync, or the portal",
+      href: "https://hprc.tamu.edu/kb/Helpful-Pages/File-Transfer/",
+    },
+    {
+      title: "Software",
+      description: "Find installed applications and environment modules",
+      href: "https://hprc.tamu.edu/kb/Software/",
+    },
+    {
+      title: "Youtube Channel",
+      description: "Watch introductory videos and shortcourse vods",
+      href: "youtube.com/channel/UCgeDEHE5GwkxYUGS0FDLmPw/",
+    },
+  ];
+
+  return (
+    <section className={cardClasses.shellPadded}>
+      <div className={cardClasses.title}>
+        <span className={cardClasses.icon}><MdMenuBook /></span>
+        <h3 className={cardClasses.titleText}>Getting Started</h3>
+      </div>
+      <div className="flex flex-col">
+        {resources.map(({ title, description, href }) => (
+          <a
+            aria-label={`${title} (opens in a new tab)`}
+            className="non-draggable group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-mosaic-border py-[9px] no-underline transition-colors focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-mosaic-accent"
+            href={href}
+            key={href}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span>
+              <strong className="block text-card-13 text-mosaic-primary group-hover:text-mosaic-accent">{title}</strong>
+              <span className="block text-card-11-5 text-mosaic-secondary">{description}</span>
+            </span>
+            <MdOpenInNew className="text-card-16 text-mosaic-icon group-hover:text-mosaic-accent" aria-hidden="true" />
+          </a>
+        ))}
+      </div>
     </section>
   );
 };
