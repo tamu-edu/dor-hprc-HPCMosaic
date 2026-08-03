@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { FiFilter, FiSearch } from "react-icons/fi";
 import ModuleCardGrid from "./ModuleCardGrid";
 import SoftwareModuleDetail from "./SoftwareModuleDetail";
@@ -82,7 +83,7 @@ const SoftwareModulesPage = () => {
   const [detailLoadState, setDetailLoadState] = useState("idle");
   const [gridCapacity, setGridCapacity] = useState(INITIAL_GRID_CAPACITY);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isListView, setIsListView] = useState(false);
+  const [isCompactMode, setIsCompactMode] = useState(false);
   const pageRef = useRef(null);
   const resultsRef = useRef(null);
   const gridRef = useRef(null);
@@ -256,7 +257,7 @@ const SoftwareModulesPage = () => {
 
     const updateViewMode = () => {
       const { height, width } = page.getBoundingClientRect();
-      setIsListView(
+      setIsCompactMode(
         width < LIST_VIEW_MAX_WIDTH || height < LIST_VIEW_MAX_HEIGHT
       );
     };
@@ -374,7 +375,7 @@ const SoftwareModulesPage = () => {
       fontSizeObserver?.disconnect();
       window.removeEventListener("resize", handleWindowResize);
     };
-  }, [filteredModules.length, isListView, loadState, totalPages > 1]);
+  }, [filteredModules.length, isCompactMode, loadState, totalPages > 1]);
 
   const paginationPages = useMemo(() => {
     const firstPage = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
@@ -390,23 +391,105 @@ const SoftwareModulesPage = () => {
     loadState === "loading"
       ? "Loading module count..."
       : `${filteredModules.length.toLocaleString()} of ${modules.length.toLocaleString()} modules`;
+  const activeControlCount = [
+    moduleType !== "all",
+    compiler !== "all",
+    sortOrder !== "name-asc",
+  ].filter(Boolean).length;
+
+  const resetCompactControls = () => {
+    setModuleType("all");
+    setCompiler("all");
+    setSortOrder("name-asc");
+    setCurrentPage(1);
+  };
+
+  const filterControls = (
+    <>
+      <label className={isCompactMode ? "relative block" : "relative"}>
+        <span className={isCompactMode ? "mb-1 block text-card-12 font-medium theme-text-secondary" : "sr-only"}>
+          Module type
+        </span>
+        <FiFilter
+          aria-hidden="true"
+          className={`pointer-events-none absolute left-3 h-4 w-4 theme-text-muted ${
+            isCompactMode ? "bottom-2" : "top-1/2 -translate-y-1/2"
+          }`}
+        />
+        <select
+          value={moduleType}
+          onChange={updateFilters(setModuleType)}
+          className={`non-draggable theme-input h-8 w-full rounded-md border py-1 pl-9 pr-7 text-card-12 outline-none ${
+            isCompactMode ? "" : "xl:w-auto xl:min-w-32"
+          }`}
+        >
+          <option value="all">All Types</option>
+          <option value="module">Modules</option>
+          <option value="extension">Extensions</option>
+        </select>
+      </label>
+
+      <label>
+        <span className={isCompactMode ? "mb-1 block text-card-12 font-medium theme-text-secondary" : "sr-only"}>
+          Compiler
+        </span>
+        <select
+          value={compiler}
+          onChange={updateFilters(setCompiler)}
+          className={`non-draggable theme-input h-8 w-full rounded-md border px-2 py-1 text-card-12 outline-none ${
+            isCompactMode ? "" : "xl:w-auto xl:min-w-36"
+          }`}
+        >
+          <option value="all">All Compilers</option>
+          {compilerOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        <span className={isCompactMode ? "mb-1 block text-card-12 font-medium theme-text-secondary" : "sr-only"}>
+          Sort by
+        </span>
+        <select
+          value={sortOrder}
+          onChange={updateFilters(setSortOrder)}
+          className={`non-draggable theme-input h-8 w-full rounded-md border px-2 py-1 text-card-12 outline-none ${
+            isCompactMode ? "" : "xl:w-auto xl:min-w-32"
+          }`}
+        >
+          <option value="name-asc">Name: A–Z</option>
+          <option value="name-desc">Name: Z–A</option>
+          <option value="count-desc">Most Versions</option>
+          <option value="count-asc">Fewest Versions</option>
+        </select>
+      </label>
+    </>
+  );
 
   return (
     <div
       ref={pageRef}
-      className="flex h-full min-h-0 w-full flex-col gap-2 overflow-auto p-3 theme-surface theme-text-primary sm:p-4"
+      className={`flex h-full min-h-0 w-full flex-col overflow-auto theme-surface theme-text-primary ${
+        isCompactMode ? "gap-1.5 p-2" : "gap-2 p-3 sm:p-4"
+      }`}
     >
-        <header className="flex shrink-0 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+        <header className={`flex shrink-0 ${isCompactMode ? "items-baseline gap-2" : "flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3"}`}>
           <h1 className="text-card-15 font-bold theme-text-primary">
             Software Modules
           </h1>
-          <span
+          {!isCompactMode && <span
             aria-hidden="true"
             className="hidden h-4 w-px theme-surface-hover sm:block"
-          />
-          <p className="text-card-12 theme-text-secondary">
+          />}
+          {!isCompactMode && <p className="text-card-12 theme-text-secondary">
             Browse available software modules on the cluster.
-          </p>
+          </p>}
+          {isCompactMode && <p aria-live="polite" className="truncate text-card-12 theme-text-secondary">
+            {countLabel}
+          </p>}
         </header>
 
         {selectedModule ? (
@@ -414,6 +497,7 @@ const SoftwareModulesPage = () => {
             module={selectedModule}
             details={selectedModuleDetails}
             loadState={detailLoadState}
+            isCompactMode={isCompactMode}
             onBack={() => setSelectedModuleName(null)}
           />
         ) : (
@@ -421,7 +505,8 @@ const SoftwareModulesPage = () => {
             aria-labelledby="available-modules-heading"
             className="flex min-h-0 flex-1 flex-col gap-2"
           >
-          <div className="flex items-center border-t theme-border pt-2">
+          {isCompactMode && <h2 id="available-modules-heading" className="sr-only">Available Modules</h2>}
+          {!isCompactMode && <div className="flex items-center border-t theme-border pt-2">
             <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <h2
                 id="available-modules-heading"
@@ -436,11 +521,15 @@ const SoftwareModulesPage = () => {
                 {countLabel}
               </p>
             </div>
-          </div>
+          </div>}
 
           <div
             aria-label="Module search and filters"
-            className="grid shrink-0 items-center gap-2 rounded-lg border theme-border theme-surface p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(24rem,1fr)_auto_auto_auto]"
+            className={
+              isCompactMode
+                ? "grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2"
+                : "grid shrink-0 items-center gap-2 rounded-lg theme-surface p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(24rem,1fr)_auto_auto_auto]"
+            }
           >
             <label className="relative block">
               <span className="sr-only">Search software modules</span>
@@ -453,57 +542,40 @@ const SoftwareModulesPage = () => {
                 placeholder="Search modules by name or description..."
                 value={searchQuery}
                 onChange={updateFilters(setSearchQuery)}
-                className="non-draggable theme-input h-10 w-full rounded-md border py-2 pl-10 pr-3 text-card-14 outline-none"
+                className={`non-draggable theme-input w-full rounded-md border pl-10 pr-3 text-card-14 outline-none ${
+                  isCompactMode ? "h-9 py-1.5" : "h-10 py-2"
+                }`}
               />
             </label>
 
-            <label className="relative">
-              <span className="sr-only">Filter by module type</span>
-              <FiFilter
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 theme-text-muted"
-              />
-              <select
-                value={moduleType}
-                onChange={updateFilters(setModuleType)}
-                className="non-draggable theme-input h-8 w-full rounded-md border py-1 pl-9 pr-7 text-card-12 outline-none xl:w-auto xl:min-w-32"
-              >
-                <option value="all">All Types</option>
-                <option value="module">Modules</option>
-                <option value="extension">Extensions</option>
-              </select>
-            </label>
-
-            <label>
-              <span className="sr-only">Filter by compiler</span>
-              <select
-                value={compiler}
-                onChange={updateFilters(setCompiler)}
-                className="non-draggable theme-input h-8 w-full rounded-md border px-2 py-1 text-card-12 outline-none xl:w-auto xl:min-w-36"
-              >
-                <option value="all">All Compilers</option>
-                {compilerOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span className="sr-only">Sort software modules</span>
-              <select
-                value={sortOrder}
-                onChange={updateFilters(setSortOrder)}
-                className="non-draggable theme-input h-8 w-full rounded-md border px-2 py-1 text-card-12 outline-none xl:w-auto xl:min-w-32"
-              >
-                <option value="name-asc">Name: A–Z</option>
-                <option value="name-desc">Name: Z–A</option>
-                <option value="count-desc">Most Versions</option>
-                <option value="count-asc">Fewest Versions</option>
-              </select>
-            </label>
-
+            {isCompactMode ? (
+              <Popover>
+                <PopoverButton className="non-draggable flex h-9 items-center gap-1.5 rounded-md border theme-border theme-surface-hover px-3 text-card-12 font-medium theme-text-primary outline-none focus-visible:ring-2 focus-visible:ring-[var(--mosaic-color-primary)]">
+                  <FiFilter aria-hidden="true" className="h-4 w-4" />
+                  <span>Filters &amp; sort</span>
+                  {activeControlCount > 0 && (
+                    <span className="theme-selected min-w-5 rounded-full px-1.5 py-0.5 text-center text-card-12 font-semibold">
+                      {activeControlCount}
+                    </span>
+                  )}
+                </PopoverButton>
+                <PopoverPanel
+                  anchor={{ to: "bottom end", gap: 8, padding: 8 }}
+                  portal
+                  className="z-50 grid w-72 gap-3 rounded-lg border theme-border theme-surface p-3 shadow-lg focus:outline-none"
+                >
+                  {filterControls}
+                  <button
+                    type="button"
+                    className="non-draggable justify-self-end rounded-md px-2 py-1.5 text-card-12 font-medium theme-text-secondary theme-hover-surface disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={resetCompactControls}
+                    disabled={activeControlCount === 0}
+                  >
+                    Reset filters &amp; sort
+                  </button>
+                </PopoverPanel>
+              </Popover>
+            ) : filterControls}
           </div>
 
           <div
@@ -537,18 +609,22 @@ const SoftwareModulesPage = () => {
                 <ModuleCardGrid
                   modules={visibleModules}
                   gridRef={gridRef}
-                  isListView={isListView}
+                  isCompactMode={isCompactMode}
                   onSelectModule={setSelectedModuleName}
                 />
                 {totalPages > 1 && (
                   <nav
                     ref={paginationRef}
                     aria-label="Software module pages"
-                    className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-2 py-4 theme-surface"
+                    className={`absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 theme-surface ${
+                      isCompactMode ? "py-2" : "flex-wrap py-4"
+                    }`}
                   >
                     <button
                       type="button"
-                      className="non-draggable rounded-md border theme-border theme-surface-hover px-4 py-2 text-card-14 font-medium theme-text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                      className={`non-draggable rounded-md border theme-border theme-surface-hover font-medium theme-text-primary disabled:cursor-not-allowed disabled:opacity-50 ${
+                        isCompactMode ? "px-3 py-1.5 text-card-12" : "px-4 py-2 text-card-14"
+                      }`}
                       onClick={() =>
                         setCurrentPage((page) => Math.max(1, page - 1))
                       }
@@ -557,7 +633,14 @@ const SoftwareModulesPage = () => {
                       Previous
                     </button>
 
-                    {paginationPages.map((page) => (
+                    {isCompactMode ? (
+                      <span
+                        className="min-w-20 text-center text-card-12 theme-text-secondary"
+                        aria-live="polite"
+                      >
+                        Page {currentPage} of {totalPages}
+                      </span>
+                    ) : paginationPages.map((page) => (
                       <button
                         key={page}
                         type="button"
@@ -576,7 +659,9 @@ const SoftwareModulesPage = () => {
 
                     <button
                       type="button"
-                      className="non-draggable rounded-md border theme-border theme-surface-hover px-4 py-2 text-card-14 font-medium theme-text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                      className={`non-draggable rounded-md border theme-border theme-surface-hover font-medium theme-text-primary disabled:cursor-not-allowed disabled:opacity-50 ${
+                        isCompactMode ? "px-3 py-1.5 text-card-12" : "px-4 py-2 text-card-14"
+                      }`}
                       onClick={() =>
                         setCurrentPage((page) =>
                           Math.min(totalPages, page + 1)

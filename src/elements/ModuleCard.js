@@ -12,7 +12,7 @@ const ModuleCard = ({
   versionCount,
   isDefault,
   isExtension,
-  isListView = false,
+  isCompactMode = false,
   onSelect,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -60,8 +60,8 @@ const ModuleCard = ({
   return (
     <article
       className={
-        isListView
-          ? "relative grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md border theme-border theme-surface p-2 shadow-sm"
+        isCompactMode
+          ? "relative flex min-w-0 items-center gap-3 border-t theme-border theme-surface px-3 py-2.5 first:border-t-0"
           : "relative flex min-h-0 min-w-0 flex-col gap-3 rounded-lg border theme-border theme-surface p-4 shadow-sm"
       }
     >
@@ -74,13 +74,17 @@ const ModuleCard = ({
 
       <header
         className={
-          isListView
-            ? "pointer-events-none relative col-span-2 flex min-w-0 flex-wrap items-start gap-2"
+          isCompactMode
+            ? "pointer-events-none relative flex min-w-0 flex-1 items-center gap-3"
             : "pointer-events-none relative flex min-w-0 flex-wrap items-start gap-2"
         }
       >
         <h3
-          className="mr-auto min-w-0 break-words text-card-14 font-semibold theme-text-primary"
+          className={
+            isCompactMode
+              ? "mr-auto min-w-0 truncate text-card-14 font-semibold theme-text-primary"
+              : "mr-auto min-w-0 break-words text-card-14 font-semibold theme-text-primary"
+          }
           title={name}
         >
           {name}
@@ -95,7 +99,7 @@ const ModuleCard = ({
           </span>
         )}
 
-        {compiler && (
+        {!isCompactMode && compiler && (
           <span
             className="max-w-full shrink-0 truncate rounded border theme-border px-1.5 py-0.5 text-card-12 font-medium theme-text-secondary"
             title={`Compiler ${compiler}`}
@@ -105,7 +109,7 @@ const ModuleCard = ({
         )}
       </header>
 
-      {!isListView && (
+      {!isCompactMode && (
         <p
           className="pointer-events-none relative line-clamp-2 min-h-10 break-words text-card-14 theme-text-secondary"
           title={description}
@@ -114,77 +118,64 @@ const ModuleCard = ({
         </p>
       )}
 
-      <div
-        className={
-          isListView
-            ? "pointer-events-none relative flex min-w-0 items-center gap-1.5 rounded border theme-border theme-surface-alt px-2 py-1"
-            : "pointer-events-none relative flex min-w-0 items-center gap-2 rounded-md border theme-border theme-surface-alt px-3 py-2"
-        }
-      >
-        <FiTerminal
-          aria-hidden="true"
-          className="h-4 w-4 shrink-0 theme-text-muted"
-        />
-        <code
-          className="min-w-0 flex-1 truncate text-card-12 theme-text-primary"
-          title={loadCommand}
-        >
-          {loadCommand ||
-            (isExtension
-              ? "Available after loading its dependencies"
-              : "No load command available")}
-        </code>
-        {loadCommand && (
-          <button
-            type="button"
-            className="non-draggable pointer-events-auto relative z-10 flex min-h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-card-12 font-medium theme-text-secondary theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mosaic-color-primary)]"
-            onClick={copyLoadCommand}
-            aria-label={
-              copied
-                ? "Module load command copied"
-                : `Copy load command for ${name}`
-            }
-            title={copied ? "Copied" : "Copy load command"}
+      {!isCompactMode && (
+        <div className="pointer-events-none relative flex min-w-0 items-center gap-2 rounded-md border theme-border theme-surface-alt px-3 py-2">
+          <FiTerminal
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0 theme-text-muted"
+          />
+          <code
+            className="min-w-0 flex-1 truncate text-card-12 theme-text-primary"
+            title={loadCommand}
           >
-            {copied ? (
-              <FiCheck aria-hidden="true" className="h-4 w-4" />
-            ) : (
-              <FiCopy aria-hidden="true" className="h-4 w-4" />
-            )}
-            <span
-              className={isListView ? "sr-only" : undefined}
-              aria-live="polite"
+            {loadCommand ||
+              (isExtension
+                ? "Available after loading its dependencies"
+                : "No load command available")}
+          </code>
+          {loadCommand && (
+            <button
+              type="button"
+              className="non-draggable pointer-events-auto relative z-10 flex min-h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-card-12 font-medium theme-text-secondary theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mosaic-color-primary)]"
+              onClick={copyLoadCommand}
+              aria-label={
+                copied
+                  ? "Module load command copied"
+                  : `Copy load command for ${name}`
+              }
+              title={copied ? "Copied" : "Copy load command"}
             >
-              {copied ? "Copied" : "Copy"}
-            </span>
-          </button>
-        )}
-      </div>
+              {copied ? (
+                <FiCheck aria-hidden="true" className="h-4 w-4" />
+              ) : (
+                <FiCopy aria-hidden="true" className="h-4 w-4" />
+              )}
+              <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+            </button>
+          )}
+        </div>
+      )}
 
-      <footer
-        className={
-          isListView
-            ? "pointer-events-none relative flex min-w-0 items-center justify-end gap-2 text-card-12 theme-text-secondary"
-            : "pointer-events-none relative mt-auto flex min-w-0 items-center justify-between gap-3 text-card-12 theme-text-secondary"
-        }
-      >
-        <span>
-          {normalizedVersionCount.toLocaleString()}{" "}
-          {normalizedVersionCount === 1 ? "version" : "versions"}
-        </span>
-
-        {statusLabel && (
-          <span
-            className={
-              isExtension
-                ? "theme-selected truncate rounded border theme-border px-2 py-0.5 font-medium"
-                : "theme-status-success theme-surface-hover truncate rounded border theme-border px-2 py-0.5 font-medium"
-            }
-          >
-            {statusLabel}
+      {!isCompactMode && (
+        <footer className="pointer-events-none relative mt-auto flex min-w-0 items-center justify-between gap-3 text-card-12 theme-text-secondary">
+          <span>
+            {normalizedVersionCount.toLocaleString()}{" "}
+            {normalizedVersionCount === 1 ? "version" : "versions"}
           </span>
-        )}
-      </footer>
+
+          {statusLabel && (
+            <span
+              className={
+                isExtension
+                  ? "theme-selected truncate rounded border theme-border px-2 py-0.5 font-medium"
+                  : "theme-status-success theme-surface-hover truncate rounded border theme-border px-2 py-0.5 font-medium"
+              }
+            >
+              {statusLabel}
+            </span>
+          )}
+        </footer>
+      )}
     </article>
   );
 };

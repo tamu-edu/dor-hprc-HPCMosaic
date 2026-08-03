@@ -4,14 +4,14 @@ import ModuleCard from "./ModuleCard";
 const ModuleCardGrid = ({
   modules,
   gridRef,
-  isListView = false,
+  isCompactMode = false,
   onSelectModule,
 }) => (
   <div
     ref={gridRef}
     className={
-      isListView
-        ? "grid min-w-0 grid-cols-1 gap-2"
+      isCompactMode
+        ? "grid min-w-0 grid-cols-1 overflow-hidden rounded-md border theme-border theme-surface shadow-sm"
         : "grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
     }
   >
@@ -19,7 +19,7 @@ const ModuleCardGrid = ({
       <ModuleCard
         key={module.fullName}
         {...module}
-        isListView={isListView}
+        isCompactMode={isCompactMode}
         onSelect={() => onSelectModule?.(module.name)}
       />
     ))}
