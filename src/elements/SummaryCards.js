@@ -88,7 +88,7 @@ const usageBar = (percent, tone, label, extraClass = "") => (
     title={label}
     aria-label={label}
   >
-    <span className={cx("block h-full rounded-full", getUsageFillClass(tone))} style={{ width: `${percent}%`, backgroundColor: usageFillColor(tone), }} />
+    <span className={cx("block h-full rounded-full", getUsageFillClass(tone))} style={{ width: `${Math.max(0, Math.min(100, percent))}%`, backgroundColor: usageFillColor(tone), }} />
   </span>
 );
 
@@ -313,8 +313,10 @@ export const MyQuotasSummaryCard = () => {
       : fileLimit ? (fileUsed / fileLimit) * 100 : 0;
 
     return {
-      diskPercent: Math.min(100, formatPercent(rawDiskPercent)),
-      filePercent: Math.min(100, formatPercent(rawFilePercent)),
+      diskPercent: formatPercent(rawDiskPercent),
+      filePercent: formatPercent(rawFilePercent),
+      diskOverQuota: quota.disk_over_quota === true || rawDiskPercent > 100,
+      fileOverQuota: quota.file_over_quota === true || rawFilePercent > 100,
       diskUsageLabel: `${quota.disk_usage || formatNumber(used)}/${quota.disk_limit || formatNumber(limit)}`,
       fileUsageLabel: `${formatNumber(fileUsed)}/${formatNumber(fileLimit)}`,
     };
@@ -330,7 +332,7 @@ export const MyQuotasSummaryCard = () => {
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="grid min-h-0 flex-1 content-start gap-[7px] overflow-y-auto pr-1 [scrollbar-gutter:stable]">
             {quotas.map((quota, index) => {
-              const { diskPercent, diskUsageLabel, filePercent, fileUsageLabel } = getQuotaUsage(quota);
+              const { diskPercent, diskUsageLabel, diskOverQuota, filePercent, fileUsageLabel, fileOverQuota } = getQuotaUsage(quota);
               const disk = String(quota.disk || "Unknown path");
               const isExpandable = !isHomeDirectory(disk);
               const diskTone = getUsageTone(diskPercent);
@@ -343,13 +345,13 @@ export const MyQuotasSummaryCard = () => {
                     <div className="grid grid-cols-2 gap-[7px] max-[520px]:grid-cols-1">
                       <div className="grid min-w-0 gap-1">
                         <span className="flex justify-between gap-[5px] text-card-11-5 text-mosaic-secondary">
-                          Disk <strong className={getUsageToneClass(diskTone)}>{diskPercent}%</strong>
+                          Disk <strong className={cx("whitespace-nowrap", getUsageToneClass(diskTone))}>{diskPercent}%{diskOverQuota && " · Over quota"}</strong>
                         </span>
                         {usageBar(diskPercent, diskTone, `Disk usage ${diskUsageLabel}`, "h-1.5")}
                       </div>
                       <div className="grid min-w-0 gap-1">
                         <span className="flex justify-between gap-[5px] text-card-11-5 text-mosaic-secondary">
-                          Files <strong className={getUsageToneClass(fileTone)}>{filePercent}%</strong>
+                          Files <strong className={cx("whitespace-nowrap", getUsageToneClass(fileTone))}>{filePercent}%{fileOverQuota && " · Over quota"}</strong>
                         </span>
                         {usageBar(filePercent, fileTone, `File usage ${fileUsageLabel}`, "h-1.5")}
                       </div>
