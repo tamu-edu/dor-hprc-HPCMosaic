@@ -9,7 +9,7 @@ import {
 
 const COPY_FEEDBACK_DURATION = 1800;
 
-const CopyCommandButton = ({ command, label }) => {
+const CopyCommandButton = ({ command, label, compact = false }) => {
   const [copied, setCopied] = useState(false);
   const feedbackTimer = useRef(null);
 
@@ -53,7 +53,9 @@ const CopyCommandButton = ({ command, label }) => {
       ) : (
         <FiCopy aria-hidden="true" className="h-4 w-4" />
       )}
-      <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+      <span className={compact ? "sr-only" : undefined} aria-live="polite">
+        {copied ? "Copied" : "Copy"}
+      </span>
     </button>
   );
 };
@@ -64,7 +66,13 @@ const compareVersionsNewestFirst = (left, right) =>
     sensitivity: "base",
   });
 
-const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
+const SoftwareModuleDetail = ({
+  module,
+  details,
+  loadState,
+  isCompactMode = false,
+  onBack,
+}) => {
   const records = useMemo(
     () => [...(details?.versions || [])].sort(compareVersionsNewestFirst),
     [details]
@@ -91,16 +99,20 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
   };
 
   const detailHeader = (
-      <div className="flex flex-wrap items-center gap-3 border-t theme-border pt-3">
+      <div className={`flex items-center border-t theme-border ${
+        isCompactMode ? "gap-1.5 pt-2" : "flex-wrap gap-3 pt-3"
+      }`}>
         <button
           type="button"
           className="non-draggable flex min-h-8 items-center gap-1.5 rounded-md px-2 text-card-12 font-medium theme-text-secondary theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mosaic-color-primary)]"
           onClick={onBack}
         >
           <FiArrowLeft aria-hidden="true" className="h-4 w-4" />
-          Back to modules
+          {isCompactMode ? "Back" : "Back to modules"}
         </button>
-        <h2 className="min-w-0 break-words text-card-18 font-bold theme-text-primary">
+        <h2 className={`min-w-0 font-bold theme-text-primary ${
+          isCompactMode ? "truncate text-card-15" : "break-words text-card-18"
+        }`} title={module.name}>
           {module.name}
         </h2>
       </div>
@@ -108,7 +120,7 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
 
   if (loadState === "loading" || !details) {
     return (
-      <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
+      <section className={`flex min-h-0 flex-1 flex-col overflow-auto ${isCompactMode ? "gap-2" : "gap-3"}`}>
         {detailHeader}
         <p className="py-8 text-center text-card-14 theme-text-secondary">
           {loadState === "error"
@@ -120,23 +132,23 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
+    <section className={`flex min-h-0 flex-1 flex-col overflow-auto ${isCompactMode ? "gap-2" : "gap-3"}`}>
       {detailHeader}
 
-      <section className="rounded-lg border theme-border theme-surface p-4 shadow-sm">
+      <section className={isCompactMode ? "border-t theme-border py-2" : "rounded-lg border theme-border theme-surface p-4 shadow-sm"}>
         <h3 className="text-card-14 font-semibold theme-text-primary">
           Description
         </h3>
-        <p className="mt-2 break-words text-card-14 theme-text-secondary">
+        <p className={`${isCompactMode ? "mt-1 text-card-12" : "mt-2 text-card-14"} break-words theme-text-secondary`}>
           {module.description || "No description available."}
         </p>
       </section>
 
-      <section className="rounded-lg border theme-border theme-surface p-4 shadow-sm">
-        <h3 className="mb-3 text-card-14 font-semibold theme-text-primary">
+      <section className={isCompactMode ? "border-t theme-border py-2" : "rounded-lg border theme-border theme-surface p-4 shadow-sm"}>
+        <h3 className={`${isCompactMode ? "mb-2" : "mb-3"} text-card-14 font-semibold theme-text-primary`}>
           Versions
         </h3>
-        <div className="flex flex-col gap-2">
+        <div className={`flex flex-col ${isCompactMode ? "gap-1.5" : "gap-2"}`}>
           {records.map((record) => {
             const isExpanded = expandedVersions.has(record.full_name);
             const dependencySets = Array.isArray(record.dependencies)
@@ -154,7 +166,9 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
               >
                 <button
                   type="button"
-                  className="non-draggable flex w-full items-center gap-3 px-3 py-2 text-left theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--mosaic-color-primary)]"
+                  className={`non-draggable flex w-full items-center text-left theme-hover-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--mosaic-color-primary)] ${
+                    isCompactMode ? "gap-2 px-2.5 py-1.5" : "gap-3 px-3 py-2"
+                  }`}
                   onClick={() => toggleVersion(record.full_name)}
                   aria-expanded={isExpanded}
                   aria-controls={panelId}
@@ -178,7 +192,7 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
                 {isExpanded && (
                   <div
                     id={panelId}
-                    className="border-t theme-border p-3"
+                    className={`border-t theme-border ${isCompactMode ? "p-2" : "p-3"}`}
                   >
                     <div>
                       <h4 className="text-card-12 font-semibold uppercase tracking-wide theme-text-secondary">
@@ -203,6 +217,7 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
                               <CopyCommandButton
                                 command={`module load ${record.full_name}`}
                                 label={`Copy load command for ${record.full_name}`}
+                                compact={isCompactMode}
                               />
                             </div>
                           )}
@@ -220,7 +235,11 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
                             return (
                               <div
                                 key={`${record.full_name}-dependencies-${index}`}
-                                className="grid gap-2 rounded-md theme-surface px-3 py-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:items-center"
+                                className={`grid gap-2 rounded-md theme-surface px-3 py-2 ${
+                                  isCompactMode
+                                    ? "grid-cols-1"
+                                    : "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:items-center"
+                                }`}
                               >
                                 <div>
                                   {dependencySets.length > 1 && (
@@ -256,6 +275,7 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
                                     label={`Copy full load command for ${record.full_name}, dependency set ${
                                       index + 1
                                     }`}
+                                    compact={isCompactMode}
                                   />
                                 </div>
                               </div>
@@ -273,16 +293,18 @@ const SoftwareModuleDetail = ({ module, details, loadState, onBack }) => {
       </section>
 
       {!module.isExtension && (
-        <section className="rounded-lg border theme-border theme-surface p-4 shadow-sm">
+        <section className={isCompactMode ? "border-t theme-border py-2" : "rounded-lg border theme-border theme-surface p-4 shadow-sm"}>
           <h3 className="text-card-14 font-semibold theme-text-primary">
             Extensions
           </h3>
           {extensions.length === 0 ? (
-            <p className="mt-2 text-card-14 theme-text-secondary">
+            <p className={`${isCompactMode ? "mt-1 text-card-12" : "mt-2 text-card-14"} theme-text-secondary`}>
               No extensions are listed for this module.
             </p>
           ) : (
-            <ul className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            <ul className={`grid gap-2 ${
+              isCompactMode ? "mt-2 grid-cols-1" : "mt-3 md:grid-cols-2 xl:grid-cols-3"
+            }`}>
               {extensions.map((extension) => (
                 <li
                   key={extension.full_name}

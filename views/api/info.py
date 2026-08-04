@@ -199,23 +199,41 @@ def get_quota():
             if not disk.startswith("/"):
                 continue
 
-            disk_usage_mib = parse_storage_to_mib(parts[1])
-            disk_limit_mib = parse_storage_to_mib(parts[2])
-            file_usage = safe_int(parts[3])
-            file_limit = safe_int(parts[4])
+            disk_usage_value = parts[1].rstrip("*")
+            disk_limit_value = parts[2].rstrip("*")
+            file_usage_value = parts[3].rstrip("*")
+            file_limit_value = parts[4].rstrip("*")
+            disk_usage_mib = parse_storage_to_mib(disk_usage_value)
+            disk_limit_mib = parse_storage_to_mib(disk_limit_value)
+            file_usage = safe_int(file_usage_value)
+            file_limit = safe_int(file_limit_value)
+            disk_over_quota = (
+                parts[1].endswith("*")
+                or disk_usage_mib is not None
+                and disk_limit_mib not in (None, 0)
+                and disk_usage_mib > disk_limit_mib
+            )
+            file_over_quota = (
+                parts[3].endswith("*")
+                or file_usage is not None
+                and file_limit not in (None, 0)
+                and file_usage > file_limit
+            )
 
             quotas.append({
                 "disk": parts[0],
-                "disk_usage": parts[1],
-                "disk_limit": parts[2],
-                "file_usage": parts[3],
-                "file_limit": parts[4],
+                "disk_usage": disk_usage_value,
+                "disk_limit": disk_limit_value,
+                "file_usage": file_usage_value,
+                "file_limit": file_limit_value,
                 "disk_usage_mib": disk_usage_mib,
                 "disk_limit_mib": disk_limit_mib,
                 "disk_usage_percent": percentage(disk_usage_mib, disk_limit_mib),
+                "disk_over_quota": disk_over_quota,
                 "file_usage_count": file_usage,
                 "file_limit_count": file_limit,
                 "file_usage_percent": percentage(file_usage, file_limit),
+                "file_over_quota": file_over_quota,
                 "additional_info": " ".join(parts[5:]) if len(parts) > 5 else "",
             })
 
