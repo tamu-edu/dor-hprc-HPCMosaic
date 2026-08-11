@@ -7,6 +7,7 @@ import QuotaButton from "./QuotaButton"; // Import QuotaButton component
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
 import { useTheme } from "../context/ThemeContext";
 import { get_base_url } from "../utils/api_config.js"
+import { formatIsoDate, isIsoDateBeforeToday } from "../utils/format_date.js";
 
 const QuotaInfo = ({ description }) => {
   const [quotaData, setQuotaData] = useState([]);
@@ -164,6 +165,7 @@ const QuotaInfo = ({ description }) => {
           {quotaData.map((quota, index) => {
             const diskPercentage = getUsagePercentage(quota.disk_usage, quota.disk_limit);
             const filePercentage = getFileUsagePercentage(quota.file_usage, quota.file_limit);
+            const quotaExpirationHasPassed = isIsoDateBeforeToday(quota.expiration_date);
 
             // Check if this is home directory (we might want to skip showing buttons for certain disks)
             const isHomeDir = quota.disk.includes("/home");
@@ -175,7 +177,13 @@ const QuotaInfo = ({ description }) => {
                 style={quota.additional_info ? { backgroundColor: theme.colors.alertBg } : undefined}
               >
                 <td className="border theme-border px-4 py-2" title={quota.additional_info || ""}>
-                  {generate_file_explorer_path_for_disk(quota.disk)}
+                  <div>{generate_file_explorer_path_for_disk(quota.disk)}</div>
+                  {quota.expiration_date && (
+                    <div className={`mt-1 text-sm ${quotaExpirationHasPassed ? "theme-status-danger" : "theme-status-caution"}`}>
+                      Extended quota {quotaExpirationHasPassed ? "expired on" : "expires"}{" "}
+                      <time dateTime={quota.expiration_date}>{formatIsoDate(quota.expiration_date)}</time>
+                    </div>
+                  )}
                 </td>
                 <td className="border theme-border px-4 py-4">
                   <Tippy content={<CustomTooltip content={`Used: ${quota.disk_usage} / Total: ${quota.disk_limit} (${diskPercentage}%) `} />} placement="top">

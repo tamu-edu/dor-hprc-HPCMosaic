@@ -20,6 +20,7 @@ import {
 import QuotaButton from "./QuotaButton";
 import { get_base_url } from "../utils/api_config.js";
 import { generate_file_explorer_path_for_disk } from "../utils/generate_filepath";
+import { formatIsoDate, isIsoDateBeforeToday } from "../utils/format_date.js";
 import {
   formatNumber,
   formatPercent,
@@ -339,11 +340,18 @@ export const MyQuotasSummaryCard = () => {
               const isExpandable = !isHomeDirectory(disk);
               const diskTone = getUsageTone(diskPercent);
               const fileTone = getUsageTone(filePercent);
+              const quotaExpirationHasPassed = isIsoDateBeforeToday(quota.expiration_date);
 
               return (
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px] max-[520px]:grid-cols-1" key={`${disk}-${index}`} title={quota.additional_info || disk}>
                   <div className="grid min-w-0 gap-[5px]">
                     <strong className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-12 font-bold text-mosaic-primary [&_a]:block [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap">{renderQuotaPath(disk)}</strong>
+                    {quota.expiration_date && (
+                      <span className={cx("text-card-11 font-bold", quotaExpirationHasPassed ? "text-mosaic-danger" : "text-mosaic-caution")}>
+                        Extended quota {quotaExpirationHasPassed ? "expired on" : "expires"}{" "}
+                        <time dateTime={quota.expiration_date}>{formatIsoDate(quota.expiration_date)}</time>
+                      </span>
+                    )}
                     <div className="grid grid-cols-2 gap-[7px] max-[520px]:grid-cols-1">
                       <div className="grid min-w-0 gap-1">
                         <span className="flex justify-between gap-[5px] text-card-11-5 text-mosaic-secondary">
