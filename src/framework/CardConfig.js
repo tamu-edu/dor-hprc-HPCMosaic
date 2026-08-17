@@ -156,6 +156,7 @@ const CardConfig = {
         defaultH: 12,
         minW: 1,
         minH: 1
+    },
     "Announcement Manager": {
         description: "Create, edit, schedule, remove, and prioritize dashboard announcements.",
         icon: <AiOutlineCode size={30}/>,
