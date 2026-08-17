@@ -9,14 +9,18 @@ import {
   MdCheckCircleOutline,
   MdChevronLeft,
   MdChevronRight,
+  MdErrorOutline,
   MdEvent,
   MdInfoOutline,
+  MdMenuBook,
+  MdOpenInNew,
   MdRefresh,
   MdWarningAmber,
 } from "react-icons/md";
 import QuotaButton from "./QuotaButton";
 import { get_base_url } from "../utils/api_config.js";
 import { generate_file_explorer_path_for_disk } from "../utils/generate_filepath";
+import { formatIsoDate, isIsoDateBeforeToday } from "../utils/format_date.js";
 import {
   formatNumber,
   formatPercent,
@@ -87,7 +91,7 @@ const usageBar = (percent, tone, label, extraClass = "") => (
     title={label}
     aria-label={label}
   >
-    <span className={cx("block h-full rounded-full", getUsageFillClass(tone))} style={{ width: `${percent}%`, backgroundColor: usageFillColor(tone), }} />
+    <span className={cx("block h-full rounded-full", getUsageFillClass(tone))} style={{ width: `${Math.max(0, Math.min(100, percent))}%`, backgroundColor: usageFillColor(tone), }} />
   </span>
 );
 
@@ -312,8 +316,10 @@ export const MyQuotasSummaryCard = () => {
       : fileLimit ? (fileUsed / fileLimit) * 100 : 0;
 
     return {
-      diskPercent: Math.min(100, formatPercent(rawDiskPercent)),
-      filePercent: Math.min(100, formatPercent(rawFilePercent)),
+      diskPercent: formatPercent(rawDiskPercent),
+      filePercent: formatPercent(rawFilePercent),
+      diskOverQuota: quota.disk_over_quota === true || rawDiskPercent > 100,
+      fileOverQuota: quota.file_over_quota === true || rawFilePercent > 100,
       diskUsageLabel: `${quota.disk_usage || formatNumber(used)}/${quota.disk_limit || formatNumber(limit)}`,
       fileUsageLabel: `${formatNumber(fileUsed)}/${formatNumber(fileLimit)}`,
     };
@@ -329,26 +335,33 @@ export const MyQuotasSummaryCard = () => {
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="grid min-h-0 flex-1 content-start gap-[7px] overflow-y-auto pr-1 [scrollbar-gutter:stable]">
             {quotas.map((quota, index) => {
-              const { diskPercent, diskUsageLabel, filePercent, fileUsageLabel } = getQuotaUsage(quota);
+              const { diskPercent, diskUsageLabel, diskOverQuota, filePercent, fileUsageLabel, fileOverQuota } = getQuotaUsage(quota);
               const disk = String(quota.disk || "Unknown path");
               const isExpandable = !isHomeDirectory(disk);
               const diskTone = getUsageTone(diskPercent);
               const fileTone = getUsageTone(filePercent);
+              const quotaExpirationHasPassed = isIsoDateBeforeToday(quota.expiration_date);
 
               return (
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px] max-[520px]:grid-cols-1" key={`${disk}-${index}`} title={quota.additional_info || disk}>
                   <div className="grid min-w-0 gap-[5px]">
                     <strong className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-12 font-bold text-mosaic-primary [&_a]:block [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap">{renderQuotaPath(disk)}</strong>
+                    {quota.expiration_date && (
+                      <span className={cx("text-card-11 font-bold", quotaExpirationHasPassed ? "text-mosaic-danger" : "text-mosaic-caution")}>
+                        Extended quota {quotaExpirationHasPassed ? "expired on" : "expires"}{" "}
+                        <time dateTime={quota.expiration_date}>{formatIsoDate(quota.expiration_date)}</time>
+                      </span>
+                    )}
                     <div className="grid grid-cols-2 gap-[7px] max-[520px]:grid-cols-1">
                       <div className="grid min-w-0 gap-1">
                         <span className="flex justify-between gap-[5px] text-card-11-5 text-mosaic-secondary">
-                          Disk <strong className={getUsageToneClass(diskTone)}>{diskPercent}%</strong>
+                          Disk <strong className={cx("whitespace-nowrap", getUsageToneClass(diskTone))}>{diskPercent}%{diskOverQuota && " · Over quota"}</strong>
                         </span>
                         {usageBar(diskPercent, diskTone, `Disk usage ${diskUsageLabel}`, "h-1.5")}
                       </div>
                       <div className="grid min-w-0 gap-1">
                         <span className="flex justify-between gap-[5px] text-card-11-5 text-mosaic-secondary">
-                          Files <strong className={getUsageToneClass(fileTone)}>{filePercent}%</strong>
+                          Files <strong className={cx("whitespace-nowrap", getUsageToneClass(fileTone))}>{filePercent}%{fileOverQuota && " · Over quota"}</strong>
                         </span>
                         {usageBar(filePercent, fileTone, `File usage ${fileUsageLabel}`, "h-1.5")}
                       </div>
@@ -381,7 +394,9 @@ export const MyQuotasSummaryCard = () => {
 
 export const AccountsUsageSummaryCard = () => {
   const { data, loading, error } = useApi("/api/projectinfo");
-  const projects =  data?.projects?.projects || [];
+  const [defaultAccountStatus, setDefaultAccountStatus] = useState(null);
+  const [updatingDefaultAccount, setUpdatingDefaultAccount] = useState(null);
+  const projects = data?.projects?.projects || [];
   const accounts = useMemo(() => [...projects].sort((a, b) => {
     if (a.default === b.default) return 0;
     return a.default === "Y" ? -1 : 1;
@@ -429,6 +444,38 @@ export const AccountsUsageSummaryCard = () => {
     setActiveIndex(index);
   };
 
+  const setDefaultAccount = async (account) => {
+    if (!account || updatingDefaultAccount) return;
+
+    pauseAccountRotation();
+    setDefaultAccountStatus(null);
+    setUpdatingDefaultAccount(account);
+
+    try {
+      const response = await fetch(`${get_base_url()}/api/set_default_account`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account_no: account }),
+      });
+      const responseData = await response.json();
+
+      if (!response.ok || responseData?.error) {
+        throw new Error(responseData?.error || `Request failed with ${response.status}`);
+      }
+
+      window.dispatchEvent(new Event("mosaic-dashboard-refresh"));
+      setActiveIndex(0);
+      setDefaultAccountStatus({ type: "success", text: `${account} is now the default account.` });
+    } catch (setDefaultError) {
+      setDefaultAccountStatus({
+        type: "error",
+        text: setDefaultError.message || "Unable to update the default account.",
+      });
+    } finally {
+      setUpdatingDefaultAccount(null);
+    }
+  };
+
   return (
     <section className={cx(cardClasses.shell, "flex min-h-0 flex-col")}>
       <div className={cardClasses.title}>
@@ -447,7 +494,18 @@ export const AccountsUsageSummaryCard = () => {
               <div className={cx("grid min-h-[57px] min-w-0 justify-items-center gap-1 text-center", hasMultipleAccounts && "px-9")}>
                 <span className="text-card-10 font-bold uppercase text-mosaic-muted">Account number</span>
                 <strong className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-card-22 font-extrabold text-mosaic-primary">{activeAccount.account || "-"}</strong>
-                {activeAccount.default === "Y" && <em className="rounded-full bg-mosaic-success-bg px-[7px] py-[3px] text-card-10 not-italic font-extrabold uppercase text-mosaic-success">Default</em>}
+                {activeAccount.default === "Y" ? (
+                  <em className="rounded-full bg-mosaic-success-bg px-[7px] py-[3px] text-card-10 not-italic font-extrabold uppercase text-mosaic-success">Default</em>
+                ) : (
+                  <button
+                    type="button"
+                    className="non-draggable rounded border border-mosaic-accent-hover bg-mosaic-accent px-2 py-1 text-card-11 font-bold text-mosaic-accent-text disabled:cursor-wait disabled:opacity-60"
+                    disabled={Boolean(updatingDefaultAccount)}
+                    onClick={() => setDefaultAccount(activeAccount.account)}
+                  >
+                    {updatingDefaultAccount === activeAccount.account ? "Updating..." : "Set as Default"}
+                  </button>
+                )}
               </div>
               {hasMultipleAccounts && (
                 <button type="button" onClick={showNextAccount} className={cx(cardClasses.iconButton, "absolute right-0 top-1/2 -translate-y-1/2")} aria-label="Next account">
@@ -490,6 +548,19 @@ export const AccountsUsageSummaryCard = () => {
                 ))}
               </div>
             </div>
+            {defaultAccountStatus && (
+              <div
+                className={cx(
+                  "rounded px-2 py-1.5 text-card-11 font-bold",
+                  defaultAccountStatus.type === "success"
+                    ? "bg-mosaic-success-bg text-mosaic-success"
+                    : "bg-mosaic-danger-bg text-mosaic-danger"
+                )}
+                role="status"
+              >
+                {defaultAccountStatus.text}
+              </div>
+            )}
           </div>
         )
       )}
@@ -561,41 +632,181 @@ export const ClusterNodesOverviewCard = () => {
 };
 
 export const AnnouncementsSummaryCard = () => {
-  const { data, loading, error } = useApi("/api/announcement");
-  const announcement = data?.announcement;
-  const messages = Array.isArray(announcement?.messages) ? announcement.messages : [];
+  const { data, loading, error } = useApi("/api/announcements");
+  const announcements = Array.isArray(data?.announcements)
+    ? data.announcements
+    : [];
+
+  const severityPresentation = {
+    info: {
+      icon: <MdInfoOutline />,
+      iconClass: "text-mosaic-icon",
+    },
+    warning: {
+      icon: <MdWarningAmber />,
+      iconClass: "text-mosaic-caution",
+    },
+    critical: {
+      icon: <MdErrorOutline />,
+      iconClass: "text-mosaic-danger",
+    },
+  };
 
   return (
-    <section className={cardClasses.shellPadded}>
-      <div className={cardClasses.title}>
-        <span className={cardClasses.icon}><MdEvent /></span>
+    <section
+      className={cx(
+        cardClasses.shellPadded,
+        "box-border flex min-h-0 min-w-0 flex-col"
+      )}
+    >
+      <div className={cx(cardClasses.title, "shrink-0")}>
+        <span className={cardClasses.icon}>
+          <MdEvent />
+        </span>
         <h3 className={cardClasses.titleText}>Announcements</h3>
       </div>
-      {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
-        <div className="flex flex-col">
-          {messages.slice(0, 5).map((message, index) => (
-            <article className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 border-b border-mosaic-border py-[9px] max-[760px]:grid-cols-[32px_minmax(0,1fr)]" key={`${message}-${index}`}>
-              <span className={cx("inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22", index === 0 ? "text-mosaic-caution" : "text-mosaic-icon")}>
-                {index === 0 ? <MdWarningAmber /> : <MdInfoOutline />}
+
+      {loading ? (
+        <div className={cardClasses.loading}>Loading</div>
+      ) : error ? (
+        <div className={cardClasses.empty}>Unavailable</div>
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col">
+          {announcements.length > 0 ? (
+            <div
+              className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1 [overscroll-behavior:contain] [scrollbar-gutter:stable]"
+              aria-label="Active announcements"
+            >
+              {announcements.map((announcement) => {
+                const presentation =
+                  severityPresentation[announcement.severity] ||
+                  severityPresentation.info;
+
+                return (
+                  <article
+                    className="grid grid-cols-[32px_minmax(0,1fr)] items-start gap-3 rounded-md border border-mosaic-border p-3"
+                    key={announcement.id}
+                  >
+                    <span
+                      className={cx(
+                        "inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22",
+                        presentation.iconClass
+                      )}
+                    >
+                      {presentation.icon}
+                    </span>
+
+                    <div className="min-w-0 [overflow-wrap:anywhere]">
+                      <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">
+                        {announcement.title}
+                      </h4>
+
+                      <p className="m-0 text-card-11-5 text-mosaic-secondary">
+                        {announcement.message}
+                      </p>
+
+                      {announcement.link?.url &&
+                        announcement.link?.label && (
+                          <a
+                            className="non-draggable mt-2 inline-block max-w-full rounded-sm text-card-11-5 font-semibold text-mosaic-link underline decoration-transparent underline-offset-2 transition-colors hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mosaic-focus"
+                            href={announcement.link.url}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {announcement.link.label}
+                          </a>
+                        )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <article className="grid grid-cols-[32px_minmax(0,1fr)] items-center gap-3 rounded-md border border-mosaic-border p-3">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22 text-mosaic-success">
+                <MdCheckCircleOutline />
               </span>
+
               <div>
-                <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">{index === 0 ? "Current Notice" : "Announcement"}</h4>
-                <p className="m-0 text-card-11-5 text-mosaic-secondary">{message}</p>
-              </div>
-              {announcement?.updated_at && <time className="m-0 whitespace-nowrap text-card-11-5 text-mosaic-secondary max-[760px]:col-start-2">{announcement.updated_at}</time>}
-            </article>
-          ))}
-          {messages.length === 0 && (
-            <article className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 border-b border-mosaic-border py-[9px] max-[760px]:grid-cols-[32px_minmax(0,1fr)]">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full text-card-22 text-mosaic-success"><MdCheckCircleOutline /></span>
-              <div>
-                <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">No Active Announcements</h4>
-                <p className="m-0 text-card-11-5 text-mosaic-secondary">There are no current dashboard announcements.</p>
+                <h4 className="mb-1 text-card-13 font-bold text-mosaic-primary">
+                  No Active Announcements
+                </h4>
+
+                <p className="m-0 text-card-11-5 text-mosaic-secondary">
+                  There are no current dashboard announcements.
+                </p>
               </div>
             </article>
           )}
         </div>
       )}
+    </section>
+  );
+};
+
+export const GettingStartedCard = () => {
+  const resources = [
+    {
+      title: "New User Information",
+      description: "Accounts, resources, training, and first steps",
+      href: "https://hprc.tamu.edu/user_services/new_user_information.html",
+    },
+    {
+      title: "HPRC Knowledge Base",
+      description: "Quick starts, user guides, batch jobs, and FAQs",
+      href: "https://hprc.tamu.edu/kb/",
+    },
+    {
+      title: "ACES Quick Start",
+      description: "Connect to Grace and submit your first job",
+      href: "https://hprc.tamu.edu/kb/User-Guides/ACES/",
+    },
+    {
+      title: "Open OnDemand Portal",
+      description: "Use files, shells, jobs, and interactive applications",
+      href: "https://hprc.tamu.edu/kb/Software/Portal/",
+    },
+    {
+      title: "File Transfer",
+      description: "Move data with Globus, SFTP, rsync, or the portal",
+      href: "https://hprc.tamu.edu/kb/Helpful-Pages/File-Transfer/",
+    },
+    {
+      title: "Software",
+      description: "Find installed applications and environment modules",
+      href: "https://hprc.tamu.edu/kb/Software/",
+    },
+    {
+      title: "Youtube Channel",
+      description: "Watch introductory videos and shortcourse vods",
+      href: "youtube.com/channel/UCgeDEHE5GwkxYUGS0FDLmPw/",
+    },
+  ];
+
+  return (
+    <section className={cardClasses.shellPadded}>
+      <div className={cardClasses.title}>
+        <span className={cardClasses.icon}><MdMenuBook /></span>
+        <h3 className={cardClasses.titleText}>Getting Started</h3>
+      </div>
+      <div className="flex flex-col">
+        {resources.map(({ title, description, href }) => (
+          <a
+            aria-label={`${title} (opens in a new tab)`}
+            className="non-draggable group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-mosaic-border py-[9px] no-underline transition-colors focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-mosaic-accent"
+            href={href}
+            key={href}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span>
+              <strong className="block text-card-13 text-mosaic-primary group-hover:text-mosaic-accent">{title}</strong>
+              <span className="block text-card-11-5 text-mosaic-secondary">{description}</span>
+            </span>
+            <MdOpenInNew className="text-card-16 text-mosaic-icon group-hover:text-mosaic-accent" aria-hidden="true" />
+          </a>
+        ))}
+      </div>
     </section>
   );
 };

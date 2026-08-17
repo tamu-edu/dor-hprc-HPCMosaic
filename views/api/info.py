@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import logging
+from datetime import datetime
 from flask import jsonify
 from . import api
 from .utils import (
@@ -22,6 +23,20 @@ from .utils import (
 
 SAFE_NODE_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
 GPU_PARTITION = "gpu"
+QUOTA_EXPIRATION_LINE = re.compile(
+    r"^\s*\*?\s*Quota increase for ['\"]?(?P<disk>/\S+?)['\"]? "
+    r"will expire on (?P<date>.+?)\s*$"
+)
+QUOTA_EXPIRATION_FORMATS = ("%b %d, %Y", "%B %d, %Y", "%Y-%m-%d")
+
+
+def _normalize_quota_expiration(value):
+    for date_format in QUOTA_EXPIRATION_FORMATS:
+        try:
+            return datetime.strptime(value.strip(), date_format).date().isoformat()
+        except ValueError:
+            continue
+    return None
 
 
 def _validate_node_name(node_name):
@@ -191,7 +206,25 @@ def get_quota():
             return jsonify({"error": "Unexpected output format from showquota"}), 500
 
         quotas = []
+        quotas_by_disk = {}
         for line in lines[2:]:
+            expiration_match = QUOTA_EXPIRATION_LINE.match(line)
+            if expiration_match:
+                disk = expiration_match.group("disk")
+                expiration_date = _normalize_quota_expiration(expiration_match.group("date"))
+                quota = quotas_by_disk.get(disk)
+                if quota is None:
+                    logging.warning("Ignoring quota expiration for unknown directory %s", disk)
+                elif expiration_date is None:
+                    logging.warning(
+                        "Ignoring malformed quota expiration date for %s: %s",
+                        disk,
+                        expiration_match.group("date"),
+                    )
+                else:
+                    quota["expiration_date"] = expiration_date
+                continue
+
             parts = line.split()
             if len(parts) < 5:
                 continue
@@ -199,25 +232,45 @@ def get_quota():
             if not disk.startswith("/"):
                 continue
 
-            disk_usage_mib = parse_storage_to_mib(parts[1])
-            disk_limit_mib = parse_storage_to_mib(parts[2])
-            file_usage = safe_int(parts[3])
-            file_limit = safe_int(parts[4])
+            disk_usage_value = parts[1].rstrip("*")
+            disk_limit_value = parts[2].rstrip("*")
+            file_usage_value = parts[3].rstrip("*")
+            file_limit_value = parts[4].rstrip("*")
+            disk_usage_mib = parse_storage_to_mib(disk_usage_value)
+            disk_limit_mib = parse_storage_to_mib(disk_limit_value)
+            file_usage = safe_int(file_usage_value)
+            file_limit = safe_int(file_limit_value)
+            disk_over_quota = (
+                parts[1].endswith("*")
+                or disk_usage_mib is not None
+                and disk_limit_mib not in (None, 0)
+                and disk_usage_mib > disk_limit_mib
+            )
+            file_over_quota = (
+                parts[3].endswith("*")
+                or file_usage is not None
+                and file_limit not in (None, 0)
+                and file_usage > file_limit
+            )
 
-            quotas.append({
+            quota = {
                 "disk": parts[0],
-                "disk_usage": parts[1],
-                "disk_limit": parts[2],
-                "file_usage": parts[3],
-                "file_limit": parts[4],
+                "disk_usage": disk_usage_value,
+                "disk_limit": disk_limit_value,
+                "file_usage": file_usage_value,
+                "file_limit": file_limit_value,
                 "disk_usage_mib": disk_usage_mib,
                 "disk_limit_mib": disk_limit_mib,
                 "disk_usage_percent": percentage(disk_usage_mib, disk_limit_mib),
+                "disk_over_quota": disk_over_quota,
                 "file_usage_count": file_usage,
                 "file_limit_count": file_limit,
                 "file_usage_percent": percentage(file_usage, file_limit),
+                "file_over_quota": file_over_quota,
                 "additional_info": " ".join(parts[5:]) if len(parts) > 5 else "",
-            })
+            }
+            quotas.append(quota)
+            quotas_by_disk[disk] = quota
 
         return jsonify({"quotas": quotas}), 200
 

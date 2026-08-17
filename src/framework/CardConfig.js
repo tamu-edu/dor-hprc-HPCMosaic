@@ -1,5 +1,5 @@
 import React from "react";
-import { AiOutlineCluster, AiOutlineDatabase, AiOutlineUser, AiOutlineCode, AiOutlinePieChart, AiOutlineProject } from "react-icons/ai";
+import { AiOutlineCluster, AiOutlineDatabase, AiOutlineUser, AiOutlineCode, AiOutlineLineChart, AiOutlinePieChart, AiOutlineProject } from "react-icons/ai";
 import Card from "./Card";
 import ClusterInfo from "../elements/ClusterInfo";
 import PyVenvManager from "../elements/PyVenvManager";
@@ -13,11 +13,13 @@ import QuotaButton from '../elements/QuotaButton';
 import Composer from '../elements/Composer';
 // import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
-import Announcement from '../elements/Announcement';
 import ClusterStatus from '../elements/ClusterStatus';
+import SoftwareModulesPage from '../elements/SoftwareModulesPage';
+import AnnouncementManager from '../elements/AnnouncementManager';
 import {
     AccountsUsageSummaryCard,
     AnnouncementsSummaryCard,
+    GettingStartedCard,
     MyJobsSummaryCard,
     MyQuotasSummaryCard,
 } from '../elements/SummaryCards';
@@ -123,7 +125,7 @@ const CardConfig = {
         minH: 1
     },
 
-    "Accounts Usage Summary": {
+    "Accounts": {
         description: "Dashboard-style table of account usage against limits.",
         icon: <AiOutlineUser size={30}/>,
         chartComponent: AccountsUsageSummaryCard,
@@ -143,6 +145,27 @@ const CardConfig = {
         defaultH: 12,
         minW: 1,
         minH: 1
+    },
+
+    "Getting Started": {
+        description: "Useful Texas A&M HPRC guides and resources for new users.",
+        icon: <AiOutlineCode size={30}/>,
+        chartComponent: GettingStartedCard,
+        category: "user",
+        defaultW: 3,
+        defaultH: 12,
+        minW: 1,
+        minH: 1
+    "Announcement Manager": {
+        description: "Create, edit, schedule, remove, and prioritize dashboard announcements.",
+        icon: <AiOutlineCode size={30}/>,
+        chartComponent: AnnouncementManager,
+        category: "system",
+        adminOnly: true,
+        defaultW: 8,
+        defaultH: 22,
+        minW: 6,
+        minH: 16
     },
 
     "Cluster Nodes Overview": {
@@ -175,6 +198,17 @@ const CardConfig = {
         minW: 1, minH: 1
     },
 
+    "Software Modules": {
+        description: "Browse available software modules on the cluster.",
+        icon: <AiOutlineCode size={30}/>,
+        chartComponent: SoftwareModulesPage,
+        category: "system",
+        defaultW: 12,
+        defaultH: 20,
+        minW: 2,
+        minH: 6
+    },
+
     "Quota Information": {
         description: "Shows disk quota usage and links for users and groups.",
         icon: <AiOutlineCluster size={30}/>,
@@ -195,7 +229,7 @@ const CardConfig = {
         minW: 1, minH: 1
     },
 
-    "Accounts": {
+    "Project Information": {
         description: "Provides information on user accounts and their roles.",
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: Accounts,
@@ -228,16 +262,6 @@ const CardConfig = {
         icon: <AiOutlineCluster size={30}/>,
 	chartComponent: AcknowledgementForm,
 	category: "user",
-        defaultW: 6,
-        defaultH: 12,
-        minW: 1, minH: 1
-    },
-
-    "Announcement": {
-        description: "The message of the day and other relevant notification popups.",
-        icon: <AiOutlineCluster size={30}/>,
-	chartComponent: Announcement,
-	category: "analytics",
         defaultW: 6,
         defaultH: 12,
         minW: 1, minH: 1

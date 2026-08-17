@@ -5,9 +5,8 @@ import Joyride from "react-joyride";
 import "./style.css";
 import SandboxGrid from "./SandboxGrid";
 import { createRoot } from "react-dom/client";
-import ChatbotComponent from "./framework/ChatbotComponent";
 import { Toaster } from "react-hot-toast";
-import { useChatbotVisibility, ChatbotVisibilityProvider } from "./framework/ChatbotVisibilityContext"; // Import the context provider
+import { ChatbotVisibilityProvider } from "./framework/ChatbotVisibilityContext";
 import { ThemeProvider, initializeTheme } from "./context/ThemeContext";
 
 const App = () => {
@@ -77,28 +76,14 @@ const App = () => {
             }}
           />
           <div className="px-2 py-2 md:p-2 min-h-screen theme-surface-alt">
-	    <SandboxGrid setRunTour={setRunTour} />
+            <SandboxGrid setRunTour={setRunTour} />
             <Toaster position="bottom-right" reverseorder={false} toastOptions={{ duration: 30000 }} />
-            <EnhancedChatbotComponent />
           </div>
         </DndProvider>
         </div>
       </ChatbotVisibilityProvider>
     </ThemeProvider>
   );
-};
-
-// Enhanced chatbot component that respects visibility context
-const EnhancedChatbotComponent = () => {
-  const { isChatbotVisible } = useChatbotVisibility();
-  
-  if (!isChatbotVisible) {
-    return null; // Don't render if not visible
-  }
-  
-  //Removed chatbot for now, doesn't work
-  return null;
-  return <ChatbotComponent />;
 };
 
 const root = createRoot(document.getElementById("root"));

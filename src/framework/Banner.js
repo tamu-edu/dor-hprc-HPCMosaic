@@ -29,6 +29,7 @@ import {
 } from "./dashboardLayoutPersistence";
 import { useChatbotVisibility } from "./ChatbotVisibilityContext";
 import config from "../../config.yml";
+import { get_base_url } from "../utils/api_config.js";
 
 const layoutItemsAreEqual = (left, right) =>
   left?.i === right?.i &&
@@ -79,6 +80,7 @@ const Banner = ({ setRunTour }) => {
   const [loadingLayouts, setLoadingLayouts] = useState(true);
   const [layoutLocked, setLayoutLocked] = useState(false);
   const [dashboardUpdatedAt, setDashboardUpdatedAt] = useState(new Date());
+  const [canManageAnnouncements, setCanManageAnnouncements] = useState(false);
 
   const { hideChatbot, showChatbot } = useChatbotVisibility();
   const { theme, themeName, setTheme, themes, cardFontSize, setCardFontSize, cardFontSizes, fontFamily, setFontFamily, fontFamilies } = useTheme();
@@ -218,9 +220,24 @@ const Banner = ({ setRunTour }) => {
 
     const hydrateDashboardLayout = async () => {
       const defaultLayout = defaultLayoutRef.current;
-      const validCardNames = new Set(Object.keys(CardConfig));
 
       try {
+        let announcementManagerAllowed = false;
+        try {
+          const capabilityResponse = await fetch(`${get_base_url()}/api/announcements`);
+          if (capabilityResponse.ok) {
+            const capabilityData = await capabilityResponse.json();
+            announcementManagerAllowed = capabilityData?.can_manage === true;
+          }
+        } catch (capabilityError) {
+          console.warn("Unable to determine announcement management access:", capabilityError);
+        }
+        const validCardNames = new Set(
+          Object.keys(CardConfig).filter(
+            (name) => !CardConfig[name].adminOnly || announcementManagerAllowed
+          )
+        );
+        setCanManageAnnouncements(announcementManagerAllowed);
         const savedLayoutPreference = await loadDashboardLayoutPreference();
         const hasSavedLayout = savedLayoutPreference && Array.isArray(savedLayoutPreference.layout);
         const restoredLayout = mergeDashboardLayout(
@@ -381,7 +398,11 @@ const Banner = ({ setRunTour }) => {
         Array.isArray(fetchedLayout) ||
         Array.isArray(fetchedLayout?.[0]) ||
         Array.isArray(fetchedLayout?.["0"]);
-      const validCardNames = new Set(Object.keys(CardConfig));
+      const validCardNames = new Set(
+        Object.keys(CardConfig).filter(
+          (name) => !CardConfig[name].adminOnly || canManageAnnouncements
+        )
+      );
       const normalizedLayout = normalizeDashboardLayout(
         getSavedLayoutItems(fetchedLayout),
         validCardNames
@@ -412,7 +433,7 @@ const Banner = ({ setRunTour }) => {
   };
 
   return (
-    <div className="mosaic-dashboard-root min-h-screen w-full flex flex-col theme-surface-alt overflow-x-hidden">
+    <div className="mosaic-dashboard-root min-h-screen w-full flex flex-col theme-surface-alt overflow-x-clip">
       {/* Tour Component */}
       <Joyride
         steps={tourSteps}
@@ -677,6 +698,7 @@ const Banner = ({ setRunTour }) => {
                   onRemoveItem={removeDashboardItem}
                   onCommitGridLayout={commitGridLayout}
 	          layoutLocked={layoutLocked}
+                  canManageAnnouncements={canManageAnnouncements}
                 />
               ) : (
                 <div className="flex min-h-[240px] items-center justify-center text-card-14 font-semibold text-mosaic-secondary">
@@ -692,7 +714,7 @@ const Banner = ({ setRunTour }) => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
           <span className="font-semibold theme-text-secondary">HPCMosaic Dashboard &mdash; Texas A&amp;M University</span>
           <span className="hidden sm:inline theme-text-muted">|</span>
-          <span>Developed by the Fishbowl Student Helpdesk, HPRC</span>
+          <span>Developed by the HPRC Fishbowl</span>
         </div>
         <div className="flex items-center gap-5">
           <a href="mailto:help@hprc.tamu.edu" className="theme-link hover:underline">help@hprc.tamu.edu</a>
@@ -700,7 +722,7 @@ const Banner = ({ setRunTour }) => {
           <a href="https://github.com/tamu-edu/dor-hprc-HPCMosaic/graphs/contributors" target="_blank" rel="noopener noreferrer" className="theme-link hover:underline">Contributors</a>
           <a href="https://forms.gle/7RwxdFgXVamGVVss8" target="_blank" rel="noopener noreferrer" className="theme-link hover:underline flex items-center gap-1">
             <MdFeedback className="text-base mr-1" />
-            Give Feedback
+            Feedback/Issues
           </a>
         </div>
       </footer>
@@ -767,7 +789,7 @@ const Banner = ({ setRunTour }) => {
             </div>
 
             <div className={`${sidebarMaximized ? 'h-[calc(80vh-64px)]' : 'h-[calc(40vh-64px)]'} transition-all duration-300`}>
-	      <Sidebar />
+	      <Sidebar canManageAnnouncements={canManageAnnouncements} />
             </div>
 	  </div>
         </div>

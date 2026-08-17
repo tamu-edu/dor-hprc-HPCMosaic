@@ -14,6 +14,7 @@ const DASHBOARD_COLUMNS = 12;
 const DEFAULT_CARD_SIZE = { w: 4, h: 10 };
 const CARD_NAME_ALIASES = {
   "GPU Utilization": "GPU Resources",
+  "Accounts Usage Summary": "Accounts",
 };
 
 const getCardConfig = (componentName) => CardConfig[CARD_NAME_ALIASES[componentName] || componentName];
@@ -47,14 +48,17 @@ const clampXForWidth = (x, w) => Math.max(0, Math.min(x, DASHBOARD_COLUMNS - w))
 const toGridLayout = (items) =>
   items.map(({ i, x, y, w, h }) => ({ i, x, y, w, h }));
 
-const Content = ({ layoutData, onAddItem, onRemoveItem, onCommitGridLayout, layoutLocked }) => {
+const Content = ({ layoutData, onAddItem, onRemoveItem, onCommitGridLayout, layoutLocked, canManageAnnouncements = false }) => {
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [placeholderPos, setPlaceholderPos] = useState({ x: 0, y: 0 });
   const [placeholderSize, setPlaceholderSize] = useState({ w: 4, h: 10 });
   const [currentDragItem, setCurrentDragItem] = useState(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const gridRef = useRef(null);
-  const items = Array.isArray(layoutData) ? layoutData : [];
+  const items = (Array.isArray(layoutData) ? layoutData : []).filter((item) => {
+    const config = getCardConfig(item.name);
+    return config && (!config.adminOnly || canManageAnnouncements);
+  });
   const gridLayout = toGridLayout(items);
 
   // Calculate grid position based on mouse position
