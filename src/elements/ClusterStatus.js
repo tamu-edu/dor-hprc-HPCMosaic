@@ -11,6 +11,8 @@ import {
   normalizeNodeState,
   refreshEventName,
 } from "./dashboardUtils";
+import { sharedGet } from "../utils/sharedGet.js";
+import { get_base_url } from "../utils/api_config.js";
 
 const summaryStatuses = NODE_STATUS_ORDER;
 const hiddenPartitionFilters = new Set(["STAFF"]);
@@ -283,13 +285,12 @@ const ClusterStatus = () => {
     return () => controller.abort();
   }, [selectedNodeName]);
 
-  const fetchNodes = useCallback(() => {
+  const fetchNodes = useCallback((event) => {
     setLoading(true);
 
-    const basePath = window.location.pathname.replace(/\/$/, "");
-    const apiUrl = `${basePath}/api/nodes`;
+    const apiUrl = `${get_base_url()}/api/nodes`;
 
-    fetch(apiUrl)
+    sharedGet(apiUrl, { refresh: event?.type === refreshEventName })
       .then((response) => response.json())
       .then((data) => {
         setRawNodes(Array.isArray(data) ? data : []);
