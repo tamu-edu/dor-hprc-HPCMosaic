@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get_base_url } from "../utils/api_config.js";
+import { sharedGet } from "../utils/sharedGet.js";
 
 export const refreshEventName = "mosaic-dashboard-refresh";
 
@@ -178,11 +179,13 @@ export const useApi = (endpoint) => {
   useEffect(() => {
     let cancelled = false;
 
-    const load = async () => {
+    const load = async (event) => {
       setState((previous) => ({ ...previous, loading: true, error: null }));
 
       try {
-        const response = await fetch(`${get_base_url()}${endpoint}`);
+        const response = await sharedGet(`${get_base_url()}${endpoint}`, {
+          refresh: event?.type === refreshEventName,
+        });
         const data = await response.json();
 
         if (!response.ok || data?.error) {
