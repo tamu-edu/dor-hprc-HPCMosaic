@@ -8,6 +8,7 @@ from flask import jsonify, request
 
 from . import api
 from .jobs import get_active_jobs
+from .slurm_jobs import get_scontrol_job_fields
 from .utils import run_process_output, safe_float, safe_int
 
 
@@ -79,20 +80,11 @@ def get_job_details(job_id):
     if not _valid_job_id(job_id):
         return None
 
-    output = _try_slurm_command(["scontrol", "show", "job", "-o", str(job_id)])
-    if not output:
+    try:
+        fields = get_scontrol_job_fields(job_id)
+    except Exception as exc:
+        logging.warning("Slurm command failed (scontrol): %s", exc)
         return None
-
-    # ``-o`` emits one record per line.  Values such as Command and WorkDir may
-    # contain spaces, so a plain ``split`` is not sufficient here.
-    fields = {}
-    # Slurm includes colon-bearing keys such as ``AllocNode:Sid``.  Treat
-    # those as field boundaries so their text is not appended to the value
-    # immediately before them (most visibly the Partition field).
-    key_pattern = r"[A-Za-z][A-Za-z0-9_/:]*"
-    pattern = rf"(?:^|\s)({key_pattern})=((?:(?!\s+{key_pattern}=).)*)"
-    for key, value in re.findall(pattern, output.splitlines()[0]):
-        fields[key] = value.strip()
     return fields or None
 
 
