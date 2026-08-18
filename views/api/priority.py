@@ -352,18 +352,6 @@ def get_queue_statistics(job, partition_jobs=_QUEUE_NOT_PROVIDED):
     }
 
 
-def build_user_queue_insights(username=None):
-    """Return lightweight selector data for a user's pending jobs."""
-    username = str(username or os.getenv("USER") or "").strip()
-    if not username:
-        return {"error": "Unable to determine the current user"}
-
-    jobs = _get_user_pending_jobs(username)
-    if jobs is None:
-        return {"error": "Unable to query pending jobs"}
-    return {"jobs": jobs, "pending_job_count": len(jobs)}
-
-
 @api.route("/priority/queue-insight", methods=["GET"])
 def get_queue_insights():
     job_id = request.args.get("job_id", "").strip()
@@ -375,9 +363,3 @@ def get_queue_insights():
         return jsonify({"error": "Job is not pending or does not belong to the current user"}), 404
     result = build_queue_insight(job_id)
     return jsonify(result), (400 if result.get("error") == "A valid job_id is required" else 200)
-
-
-@api.route("/priority/queue-insights", methods=["GET"])
-def get_user_queue_insights():
-    result = build_user_queue_insights()
-    return jsonify(result), (503 if result.get("error") else 200)
