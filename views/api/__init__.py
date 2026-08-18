@@ -39,8 +39,9 @@ All routes are registered under the /api prefix (set in app.py).
   jobs.py         — SLURM job and project management
     GET    /jobs                      Active jobs for current user (squeue only)
     GET    /jobs/list                 Paginated Job Explorer rows (squeue or scoped sacct)
-    GET    /jobs/past_jobs            Paginated 24-hour history for the current user
+    GET    /jobs/past_jobs            Searchable, filterable history for the current user
     GET    /jobs/<job_id>             Lazy single-job details (scontrol)
+    GET    /jobs/<job_id>/jobstats    Optional historical jobstats time series
     GET    /jobs/details              Legacy active Slurm job records for Job Explorer
     GET    /jobs/summary              Aggregate Slurm job counts for Job Explorer
     POST   /cancel_job/<job_id>       Cancel a job via scancel
@@ -84,3 +85,4 @@ from . import modules      # /get_env, /delete_env, /get_py_versions, /create_ve
 from . import jobs         # /jobs, /cancel_job, /projectinfo, /set_default_account, /utilization
 from . import bot_requests # /quota, /group, /help, /software, /account, /submit_acknowledgement
 from . import announcement # /announcements
+from . import priority     # /priority/queue-insight
