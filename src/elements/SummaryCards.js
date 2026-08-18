@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
+import config from "../../config.yml";
 import {
   AiOutlineApartment,
   AiOutlineDatabase,
   AiOutlineHdd,
-  AiOutlineUnorderedList,
 } from "react-icons/ai";
 import {
   MdCheckCircleOutline,
@@ -14,7 +14,6 @@ import {
   MdInfoOutline,
   MdMenuBook,
   MdOpenInNew,
-  MdRefresh,
   MdWarningAmber,
 } from "react-icons/md";
 import QuotaButton from "./QuotaButton";
@@ -33,7 +32,6 @@ import {
   NODE_STATUS_LABELS,
   NODE_STATUS_ORDER,
   normalizeNodeState,
-  normalizeState,
   parseNumeric,
   parseStorageToMiB,
   useApi,
@@ -54,22 +52,6 @@ const getUniqueNodeKey = (groupName, node, seenKeys) => {
   const duplicateCount = seenKeys.get(baseKey) + 1;
   seenKeys.set(baseKey, duplicateCount);
   return `${baseKey}-${duplicateCount}`;
-};
-
-const summaryStatTextClass = (tone) => {
-  if (tone === "green") return "text-mosaic-success";
-  if (tone === "amber") return "text-mosaic-caution";
-  if (tone === "red") return "text-mosaic-danger";
-  return "text-mosaic-primary";
-};
-
-const statusBadgeClass = (state) => {
-  const normalized = normalizeState(state);
-  if (normalized === "running") return "bg-mosaic-success-bg";
-  if (normalized === "pending") return "bg-mosaic-caution-bg";
-  if (normalized === "failed") return "bg-mosaic-danger-bg";
-  if (normalized === "completed") return "bg-mosaic-border-strong";
-  return "bg-mosaic-muted";
 };
 
 const dotButtonClass = (active) => cx(
@@ -95,200 +77,7 @@ const usageBar = (percent, tone, label, extraClass = "") => (
   </span>
 );
 
-export const MyJobsSummaryCard = () => {
-  const [refreshNonce, setRefreshNonce] = useState(0);
-  const { data, loading, error } = useApi(`/api/jobs?refresh=${refreshNonce}`);
-  const [selectedJobId, setSelectedJobId] = useState(null);
-  const [cancelingJobId, setCancelingJobId] = useState(null);
-  const [localError, setLocalError] = useState("");
-  const baseUrl = get_base_url();
-  const jobs = Array.isArray(data?.jobs) ? data.jobs : [];
-  const getJobId = (job, index) => String(job.job_id || job.id || `job-${index}`);
-  const counts = jobs.reduce((summary, job) => {
-    summary[normalizeState(job.state)] = (summary[normalizeState(job.state)] || 0) + 1;
-    return summary;
-  }, {});
-
-  useEffect(() => {
-    if (selectedJobId && !jobs.some((job, index) => getJobId(job, index) === selectedJobId)) {
-      setSelectedJobId(null);
-    }
-  }, [jobs, selectedJobId]);
-
-  const refreshJobs = () => {
-    setLocalError("");
-    setRefreshNonce((nonce) => nonce + 1);
-  };
-  const getJobRuntime = (job) => job.runtime || job.time_elapsed || "--";
-  const getJobNodeCount = (job) => {
-    if (job.node_count !== undefined) return job.node_count;
-    if (job.num_nodes !== undefined) return job.num_nodes;
-    if (typeof job.nodes === "number") return job.nodes;
-    const nodeList = job.node_list || job.nodelist;
-    if (!nodeList) return "--";
-    return String(nodeList).split(",").filter(Boolean).length || "--";
-  };
-  const getJobMemory = (job) => job.memory || job.mem || job.mem_per_node || job.mem_per_cpu || "--";
-  const getJobCpus = (job) => job.cpus ?? job.cpu_count ?? "--";
-  const getJobGpus = (job) => job.gpus ?? job.gpu_count ?? "--";
-  const getResourceSummary = (job) => {
-    const partition = job.partition || "--";
-    const nodeCount = getJobNodeCount(job);
-    const cpus = getJobCpus(job);
-    const gpus = getJobGpus(job);
-    const gpuCount = Number(gpus);
-    const showGpus = gpus !== "--" && (isGpuPartition(partition) || (Number.isFinite(gpuCount) && gpuCount > 0));
-    const resourceTail = showGpus
-      ? `${gpus} GPU`
-      : nodeCount === "--" ? null : `${nodeCount} ${Number(nodeCount) === 1 ? "Node" : "Nodes"}`;
-
-    return [
-      partition,
-      cpus === "--" ? null : `${cpus} CPU`,
-      resourceTail,
-    ].filter(Boolean).join(" • ");
-  };
-  const getJobStatusLabel = (state) => {
-    const normalized = normalizeState(state);
-    if (normalized === "unknown") return state || "Unknown";
-    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
-  };
-  const getPendingReason = (job) => job.reason || job.pending_reason || job.state_reason || job.reason_list || "";
-  const getPendingReasonMessage = (reason) => {
-    const value = String(reason || "").trim();
-    const normalized = value.toLowerCase();
-    if (!value || value === "--" || normalized === "none") return "The scheduler has not provided a pending reason yet.";
-    if (normalized.includes("priority")) return "This job is waiting because other queued jobs currently have higher priority.";
-    if (normalized.includes("resources")) return "This job is waiting for enough requested resources to become available.";
-    if (normalized.includes("dependency")) return "This job is waiting for another job or dependency to finish first.";
-    if (normalized.includes("jobhelduser")) return "This job is on hold. Release the hold when you are ready for it to run.";
-    if (normalized.includes("jobheldadmin")) return "This job is on hold by an administrator.";
-    if (normalized.includes("reqnodenotavail")) return "Some requested nodes are unavailable, down, drained, or reserved.";
-    if (normalized.includes("partitiontimelimit") || normalized.includes("timelimit")) return "The requested time may exceed a limit for this partition.";
-    if (normalized.includes("begintime")) return "This job is scheduled to become eligible at a later start time.";
-    if (normalized.includes("license")) return "This job is waiting for a required software license to become available.";
-    if (normalized.includes("qos") || normalized.includes("assocgrp")) return "This job is waiting because an account, group, or QOS usage limit is currently reached.";
-    if (normalized.includes("invalidaccount")) return "The selected account is not valid for this job.";
-    if (normalized.includes("badconstraints")) return "The requested job constraints cannot currently be satisfied.";
-
-    return `Scheduler reason: ${value}`;
-  };
-  const toggleJob = (jobId) => {
-    setSelectedJobId((currentJobId) => currentJobId === jobId ? null : jobId);
-  };
-  const handleRowKeyDown = (event, jobId) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      toggleJob(jobId);
-    }
-  };
-  const cancelJob = (jobId) => {
-    if (!jobId) return;
-    if (!window.confirm(`Cancel job ${jobId}?`)) return;
-
-    setCancelingJobId(jobId);
-    setLocalError("");
-
-    fetch(`${baseUrl}/api/cancel_job/${jobId}`, { method: "POST" })
-      .then((res) => res.json())
-      .then((response) => {
-        if (response.error) throw new Error(response.error);
-        setSelectedJobId((currentJobId) => currentJobId === jobId ? null : currentJobId);
-        refreshJobs();
-      })
-      .catch((cancelError) => setLocalError(cancelError.message))
-      .finally(() => setCancelingJobId(null));
-  };
-
-  return (
-    <section className={cx(cardClasses.shellPadded, "box-border flex min-h-0 min-w-0 flex-col")}>
-      <div className={cx(cardClasses.title, "shrink-0 pr-8")}>
-        <span className={cardClasses.icon}><AiOutlineUnorderedList /></span>
-        <h3 className={cardClasses.titleText}>My Jobs</h3>
-        <button type="button" className={cx(cardClasses.link, "inline-flex min-h-6 items-center gap-1 py-0.5")} onClick={refreshJobs} aria-label="Refresh jobs" title="Refresh jobs">
-          <MdRefresh className="shrink-0 text-card-15" />
-          <span>Refresh</span>
-        </button>
-      </div>
-      {loading ? <div className={cardClasses.loading}>Loading</div> : error ? <div className={cardClasses.empty}>Unavailable</div> : (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable]">
-          <div className="mb-2 grid shrink-0 grid-cols-2 gap-2 border-b border-mosaic-border px-0 pb-2 pt-px">
-            <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("green"))}>{counts.running || 0}</strong>Running</span>
-            <span className="text-center text-card-11 text-mosaic-muted"><strong className={cx("block text-card-19", summaryStatTextClass("amber"))}>{counts.pending || 0}</strong>Pending</span>
-          </div>
-          {localError && <div className="mb-2 shrink-0 text-card-12 font-semibold text-mosaic-danger">{localError}</div>}
-          {jobs.length > 0 ? (
-            <div className="grid shrink-0 content-start gap-[7px]" aria-label="Jobs">
-              {jobs.map((job, index) => {
-                const jobId = getJobId(job, index);
-                const isExpanded = selectedJobId === jobId;
-                const resourceSummary = getResourceSummary(job);
-
-                return (
-                  <div
-                    className={cx(
-                      "non-draggable grid min-w-0 cursor-pointer gap-0 overflow-hidden rounded-[5px] border border-l-[3px] bg-mosaic-table transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-mosaic-accent-hover",
-                      isExpanded
-                        ? "border-mosaic-border-strong border-l-mosaic-accent-hover bg-mosaic-surface-hover"
-                        : "border-mosaic-border border-l-transparent hover:border-mosaic-border-strong hover:bg-mosaic-surface-hover"
-                    )}
-                    key={`${jobId}-${index}`}
-                    onClick={() => toggleJob(jobId)}
-                    onKeyDown={(event) => handleRowKeyDown(event, jobId)}
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={isExpanded}
-                  >
-                    <div className="grid min-w-0 grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2 px-2.5 py-[9px] pl-2">
-                      <MdChevronRight className={cx("text-card-18 text-mosaic-muted transition-transform duration-150", isExpanded && "rotate-90 text-mosaic-secondary")} aria-hidden="true" />
-                      <div className="grid min-w-0 gap-[3px]">
-                        <strong className="[overflow-wrap:anywhere] text-card-12 font-extrabold text-mosaic-primary">{job.job_id || "-"}</strong>
-                        <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-11 font-semibold text-mosaic-secondary">{resourceSummary}</span>
-                      </div>
-                      <span className={cx("inline-flex rounded px-[5px] py-0.5 text-card-9 font-extrabold text-white", statusBadgeClass(job.state))}>{getJobStatusLabel(job.state)}</span>
-                    </div>
-                    <div className={cx("grid overflow-hidden transition-[grid-template-rows] duration-200", isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]")}>
-                      <div className={cx("ml-[26px] grid min-h-0 gap-[9px] overflow-hidden px-2.5 transition-opacity duration-150", isExpanded ? "border-t border-mosaic-border pb-2.5 opacity-100" : "opacity-0")}>
-                        <dl className="mt-[9px] grid grid-cols-3 gap-x-[9px] gap-y-[7px] max-[760px]:grid-cols-2 [&_dd]:m-0 [&_dd]:mt-px [&_dd]:[overflow-wrap:anywhere] [&_dd]:text-card-12 [&_dd]:font-semibold [&_dd]:text-mosaic-primary [&_dt]:text-card-10 [&_dt]:font-extrabold [&_dt]:uppercase [&_dt]:text-mosaic-muted">
-                          <div><dt>Partition</dt><dd>{job.partition || "--"}</dd></div>
-                          <div><dt>Runtime</dt><dd>{getJobRuntime(job)}</dd></div>
-                          <div><dt>Nodes</dt><dd>{getJobNodeCount(job)}</dd></div>
-                          <div><dt>CPUs</dt><dd>{getJobCpus(job)}</dd></div>
-                          <div><dt>GPUs</dt><dd>{getJobGpus(job)}</dd></div>
-                          <div><dt>Memory</dt><dd>{getJobMemory(job)}</dd></div>
-                        </dl>
-                        {normalizeState(job.state) === "pending" && (
-                          <div className="grid gap-[3px] rounded-[5px] border border-mosaic-border bg-mosaic-app px-[9px] py-2">
-                            <strong className="text-card-10 font-extrabold uppercase text-mosaic-caution">Why pending</strong>
-                            <span className="text-card-12 font-semibold text-mosaic-primary">{getPendingReasonMessage(getPendingReason(job))}</span>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          className="non-draggable w-auto justify-self-start rounded-[5px] bg-mosaic-danger-bg px-2.5 py-2 text-card-12 font-extrabold text-mosaic-accent-text hover:bg-mosaic-danger-hover disabled:cursor-not-allowed disabled:bg-mosaic-disabled-bg disabled:text-mosaic-disabled"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            cancelJob(job.job_id);
-                          }}
-                          onKeyDown={(event) => event.stopPropagation()}
-                          disabled={cancelingJobId === job.job_id || !job.job_id}
-                        >
-                          {cancelingJobId === job.job_id ? "Canceling..." : "Cancel Job"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className={cardClasses.empty}>No active jobs</div>
-          )}
-        </div>
-      )}
-    </section>
-  );
-};
+export { default as MyJobsSummaryCard } from "./MyJobsCard";
 
 export const MyQuotasSummaryCard = () => {
   const { data, loading, error } = useApi("/api/showquota");
@@ -745,6 +534,31 @@ export const AnnouncementsSummaryCard = () => {
 };
 
 export const GettingStartedCard = () => {
+  const configuredCluster = String(
+    config.production?.cluster_name || config.development?.cluster_name || ""
+  ).trim().toLowerCase();
+  const clusterGuides = {
+    aces: {
+      name: "ACES",
+      href: "https://hprc.tamu.edu/kb/User-Guides/ACES/",
+    },
+    grace: {
+      name: "Grace",
+      href: "https://hprc.tamu.edu/kb/User-Guides/Grace/",
+    },
+    faster: {
+      name: "FASTER",
+      href: "https://hprc.tamu.edu/kb/User-Guides/FASTER/",
+    },
+    launch: {
+      name: "Launch",
+      href: "https://hprc.tamu.edu/kb/User-Guides/Launch/",
+    },
+  };
+  const clusterGuide = clusterGuides[configuredCluster] || {
+    name: config.production?.cluster_name || config.development?.cluster_name || "HPRC",
+    href: "https://hprc.tamu.edu/kb/User-Guides/",
+  };
   const resources = [
     {
       title: "New User Information",
@@ -757,9 +571,9 @@ export const GettingStartedCard = () => {
       href: "https://hprc.tamu.edu/kb/",
     },
     {
-      title: "ACES Quick Start",
-      description: "Connect to Grace and submit your first job",
-      href: "https://hprc.tamu.edu/kb/User-Guides/ACES/",
+      title: `${clusterGuide.name} Quick Start Guide`,
+      description: `Connect to ${clusterGuide.name} and submit your first job`,
+      href: clusterGuide.href,
     },
     {
       title: "Open OnDemand Portal",
@@ -779,17 +593,17 @@ export const GettingStartedCard = () => {
     {
       title: "Youtube Channel",
       description: "Watch introductory videos and shortcourse vods",
-      href: "youtube.com/channel/UCgeDEHE5GwkxYUGS0FDLmPw/",
+      href: "https://youtube.com/channel/UCgeDEHE5GwkxYUGS0FDLmPw/",
     },
   ];
 
   return (
-    <section className={cardClasses.shellPadded}>
-      <div className={cardClasses.title}>
+    <section className={cx(cardClasses.shellPadded, "flex min-h-0 flex-col")}>
+      <div className={cx(cardClasses.title, "shrink-0")}>
         <span className={cardClasses.icon}><MdMenuBook /></span>
         <h3 className={cardClasses.titleText}>Getting Started</h3>
       </div>
-      <div className="flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pr-1 [scrollbar-gutter:stable]">
         {resources.map(({ title, description, href }) => (
           <a
             aria-label={`${title} (opens in a new tab)`}
