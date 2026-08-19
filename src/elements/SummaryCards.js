@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import config from "../../config.yml";
 import {
   AiOutlineApartment,
@@ -80,6 +80,8 @@ const usageBar = (percent, tone, label, extraClass = "") => (
 export { default as MyJobsSummaryCard } from "./MyJobsCard";
 
 export const MyQuotasSummaryCard = () => {
+  const rootRef = useRef(null);
+  const [cardWidth, setCardWidth] = useState(null);
   const { data, loading, error } = useApi("/api/showquota");
   const quotas = Array.isArray(data?.quotas) ? data.quotas : [];
   const isHomeDirectory = (disk = "") => String(disk).includes("/home");
@@ -91,6 +93,22 @@ export const MyQuotasSummaryCard = () => {
   const renderQuotaPath = (disk) => (
     String(disk).startsWith("/") ? generate_file_explorer_path_for_disk(disk) : disk
   );
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return undefined;
+    const updateWidth = () => setCardWidth(node.getBoundingClientRect().width);
+    updateWidth();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateWidth);
+      return () => window.removeEventListener("resize", updateWidth);
+    }
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const isNarrow = cardWidth !== null && cardWidth < 400;
 
   const getQuotaUsage = (quota) => {
     const used = Number.isFinite(quota.disk_usage_mib) ? quota.disk_usage_mib : parseStorageToMiB(quota.disk_usage);
@@ -115,7 +133,7 @@ export const MyQuotasSummaryCard = () => {
   };
 
   return (
-    <section className={cx(cardClasses.shellPadded, "box-border flex min-h-0 min-w-0 flex-col")}>
+    <section ref={rootRef} className={cx(cardClasses.shellPadded, "box-border flex min-h-0 min-w-0 flex-col")}>
       <div className={cx(cardClasses.title, "shrink-0")}>
         <span className={cardClasses.icon}><AiOutlineDatabase /></span>
         <h3 className={cardClasses.titleText}>My Quotas</h3>
@@ -132,7 +150,7 @@ export const MyQuotasSummaryCard = () => {
               const quotaExpirationHasPassed = isIsoDateBeforeToday(quota.expiration_date);
 
               return (
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px] max-[520px]:grid-cols-1" key={`${disk}-${index}`} title={quota.additional_info || disk}>
+                <div className={cx("grid items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px]", isNarrow ? "grid-cols-1" : "grid-cols-[minmax(0,1fr)_auto]")} key={`${disk}-${index}`} title={quota.additional_info || disk}>
                   <div className="grid min-w-0 gap-[5px]">
                     <strong className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-12 font-bold text-mosaic-primary [&_a]:block [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap">{renderQuotaPath(disk)}</strong>
                     {quota.expiration_date && (
@@ -141,32 +159,32 @@ export const MyQuotasSummaryCard = () => {
                         <time dateTime={quota.expiration_date}>{formatIsoDate(quota.expiration_date)}</time>
                       </span>
                     )}
-                    <div className="grid grid-cols-2 gap-[7px] max-[520px]:grid-cols-1">
+                    <div className={cx("grid gap-[7px]", isNarrow ? "grid-cols-1" : "grid-cols-2")}>
                       <div className="grid min-w-0 gap-1">
-                        <span className="flex justify-between gap-[5px] text-card-11-5 text-mosaic-secondary">
-                          Disk <strong className={cx("whitespace-nowrap", getUsageToneClass(diskTone))}>{diskPercent}%{diskOverQuota && " · Over quota"}</strong>
+                        <span className={cx("gap-[5px] text-card-11-5 text-mosaic-secondary", isNarrow ? "grid min-w-0 grid-cols-[auto_minmax(0,1fr)]" : "flex justify-between")}>
+                          <span>Disk</span><strong className={cx("min-w-0 text-right", !isNarrow && "whitespace-nowrap", getUsageToneClass(diskTone))}>{diskPercent}%{diskOverQuota && " · Over quota"}</strong>
                         </span>
                         {usageBar(diskPercent, diskTone, `Disk usage ${diskUsageLabel}`, "h-1.5")}
                       </div>
                       <div className="grid min-w-0 gap-1">
-                        <span className="flex justify-between gap-[5px] text-card-11-5 text-mosaic-secondary">
-                          Files <strong className={cx("whitespace-nowrap", getUsageToneClass(fileTone))}>{filePercent}%{fileOverQuota && " · Over quota"}</strong>
+                        <span className={cx("gap-[5px] text-card-11-5 text-mosaic-secondary", isNarrow ? "grid min-w-0 grid-cols-[auto_minmax(0,1fr)]" : "flex justify-between")}>
+                          <span>Files</span><strong className={cx("min-w-0 text-right", !isNarrow && "whitespace-nowrap", getUsageToneClass(fileTone))}>{filePercent}%{fileOverQuota && " · Over quota"}</strong>
                         </span>
                         {usageBar(filePercent, fileTone, `File usage ${fileUsageLabel}`, "h-1.5")}
                       </div>
                     </div>
                   </div>
-                  <div className="flex justify-end max-[520px]:justify-start">
+                  <div className={cx("flex min-w-0", isNarrow ? "justify-start" : "justify-end")}>
                     {isExpandable ? (
                       <QuotaButton
                         disk={disk}
                         currentQuota={quota.disk_limit}
                         currentFileLimit={quota.file_limit}
                         buttonText="Request"
-                        buttonClassName="min-h-[22px] whitespace-nowrap rounded border border-mosaic-accent-hover bg-mosaic-accent px-2 py-[3px] text-card-11 font-bold leading-none text-mosaic-accent-text no-underline"
+                        buttonClassName={cx("min-h-[22px] max-w-full rounded border border-mosaic-accent-hover bg-mosaic-accent px-2 py-[3px] text-card-11 font-bold text-mosaic-accent-text no-underline", isNarrow ? "whitespace-normal leading-tight" : "whitespace-nowrap leading-none")}
                       />
                     ) : (
-                      <span className="whitespace-nowrap text-card-11 font-bold text-mosaic-muted">Not expandable</span>
+                      <span className={cx("text-card-11 font-bold text-mosaic-muted", !isNarrow && "whitespace-nowrap")}>Not expandable</span>
                     )}
                   </div>
                 </div>
