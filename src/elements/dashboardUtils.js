@@ -64,7 +64,8 @@ export const normalizeNodeState = (state = "") => {
   if (value.includes("down")) return "down";
   if (value.includes("drain")) return "drained";
   if (value.includes("fail")) return "down";
-  if (value.includes("maint") || value.includes("reserv")) return "maintenance";
+  if (value.includes("reserv")) return "reserved";
+  if (value.includes("maint")) return "maintenance";
   if (value.includes("mix")) return "mixed";
   if (value.includes("alloc") || value.includes("comp")) return "allocated";
   if (value.includes("idle")) return "idle";
@@ -75,6 +76,7 @@ export const NODE_STATUS_COLORS = {
   idle: "#277DA1",
   allocated: "#43AA8B",
   mixed: "#90BE6D",
+  reserved: "#7C6CB0",
   drained: "#F9844A",
   down: "#DC2626",
   maintenance: "#F9C74F",
@@ -85,6 +87,7 @@ export const NODE_STATUS_LABELS = {
   idle: "Idle",
   allocated: "Allocated",
   mixed: "Mixed",
+  reserved: "Reserved",
   down: "Down",
   drained: "Drained",
   maintenance: "Maintenance",
@@ -95,6 +98,7 @@ export const NODE_STATUS_SYMBOLS = {
   idle: "✓",
   allocated: "●",
   mixed: "◐",
+  reserved: "R",
   drained: "⏸",
   down: "✕",
   maintenance: "M",
@@ -105,6 +109,7 @@ export const NODE_STATUS_TEXT_COLORS = {
   idle: "#ffffff",
   allocated: "#111827",
   mixed: "#111827",
+  reserved: "#ffffff",
   drained: "#111827",
   down: "#ffffff",
   maintenance: "#111827",

@@ -14,7 +14,11 @@ import {
 import { sharedGet } from "../utils/sharedGet.js";
 import { get_base_url } from "../utils/api_config.js";
 
-const summaryStatuses = NODE_STATUS_ORDER;
+const summaryStatuses = [
+  ...NODE_STATUS_ORDER.slice(0, 5),
+  "reserved",
+  ...NODE_STATUS_ORDER.slice(5),
+];
 const hiddenPartitionFilters = new Set(["STAFF"]);
 const nodeCardClass = cx(cardClasses.shell, "flex min-h-0 flex-col gap-2.5");
 const nodeHeaderClass = "flex items-start justify-between gap-3 border-b border-mosaic-border pb-2.5 pr-10";
