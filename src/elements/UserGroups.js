@@ -7,6 +7,7 @@ import GroupButton from "./GroupButton"; // Import GroupButton component
 
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
 import { get_base_url } from "../utils/api_config.js"
+import { sharedGet } from "../utils/sharedGet.js";
 import { cardClasses, cx } from "./dashboardUtils";
 
 const UserGroups = ({ description }) => {
@@ -18,7 +19,7 @@ const UserGroups = ({ description }) => {
   
   // Fetch user groups
   useEffect(() => {
-    fetch(`${baseUrl}/api/groups`)
+    sharedGet(`${baseUrl}/api/groups`)
       .then((response) => {
         if (!response.ok) {
           return response.json().then((data) => {
@@ -37,7 +38,7 @@ const UserGroups = ({ description }) => {
 
   // Fetch quotas
   useEffect(() => {
-    fetch(`${baseUrl}/api/showquota`)
+    sharedGet(`${baseUrl}/api/showquota`)
       .then((response) => {
         if (!response.ok) {
           return response.json().then((data) => {

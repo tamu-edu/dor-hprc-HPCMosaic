@@ -11,6 +11,7 @@ import logging
 from datetime import datetime
 from flask import jsonify
 from . import api
+from .cache import TTLCache
 from .utils import (
     get_user_email,
     parse_key_value_tokens,
@@ -23,6 +24,8 @@ from .utils import (
 
 SAFE_NODE_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
 GPU_PARTITION = "gpu"
+_NODE_SNAPSHOT_TTL = 20
+_info_cache = TTLCache()
 QUOTA_EXPIRATION_LINE = re.compile(
     r"^\s*\*?\s*Quota increase for ['\"]?(?P<disk>/\S+?)['\"]? "
     r"will expire on (?P<date>.+?)\s*$"
@@ -98,6 +101,45 @@ def _parse_scontrol_nodes_output(output):
         nodes.append(current)
 
     return nodes
+
+
+def _parse_sinfo_nodes_output(output):
+    nodes = []
+    for line in output.splitlines():
+        if not line.strip():
+            continue
+        fields = line.split("|", 2)
+        if len(fields) != 3:
+            continue
+        name, status, partition = fields
+        nodes.append({
+            "name": name.strip(),
+            "status": status.strip(),
+            "partition": partition.strip(),
+        })
+    return nodes
+
+
+def _get_sinfo_node_snapshot():
+    """Return the complete sinfo inventory used by node-status cards."""
+    return _info_cache.get_or_set(
+        ("sinfo-nodes",),
+        _NODE_SNAPSHOT_TTL,
+        lambda: _parse_sinfo_nodes_output(
+            run_process_output(["sinfo", "-N", "-h", "-o", "%N|%T|%P"])
+        ),
+    )
+
+
+def _get_scontrol_node_snapshot():
+    """Return detailed node resource fields used for GPU accounting."""
+    return _info_cache.get_or_set(
+        ("scontrol-nodes",),
+        _NODE_SNAPSHOT_TTL,
+        lambda: _parse_scontrol_nodes_output(
+            run_process_output(["scontrol", "show", "nodes"])
+        ),
+    )
 
 
 def _get_scontrol_value(output, key):
@@ -296,30 +338,10 @@ def get_user_groups():
 @api.route('/nodes', methods=['GET'])
 def get_nodes():
     try:
-        result = subprocess.check_output(
-            ['sinfo', '-N', '-h', '-o', '%N|%T|%P'],
-            universal_newlines=True,
-            stderr=subprocess.STDOUT
-        )
+        return jsonify(_get_sinfo_node_snapshot()), 200
 
-        nodes = []
-
-        for line in result.strip().split('\n'):
-            if not line:
-                continue
-
-            name, status, partition = line.split('|', 2)
-
-            nodes.append({
-                'name': name,
-                'status': status,
-                'partition': partition
-            })
-
-        return jsonify(nodes), 200
-
-    except subprocess.CalledProcessError as e:
-        return jsonify({'error': e.output}), 500
+    except (FileNotFoundError, RuntimeError) as e:
+        return jsonify({'error': str(e)}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -327,27 +349,38 @@ def get_nodes():
 @api.route('/gpu-resources', methods=['GET'])
 def get_gpu_resources():
     try:
-        output = run_process_output(["scontrol", "show", "nodes"])
-
         total_nodes = 0
         busy_nodes = 0
         available_nodes = 0
         total_gpus = 0
         allocated_gpus = 0
 
-        for node in _parse_scontrol_nodes_output(output):
-            partitions = [
-                partition.strip()
-                for partition in (node.get("Partitions") or "").split(",")
-                if partition.strip()
-            ]
-
-            if not _is_gpu_partition_member(partitions):
+        detailed_nodes = {
+            node.get("NodeName"): node
+            for node in _get_scontrol_node_snapshot()
+            if node.get("NodeName")
+        }
+        gpu_inventory = {}
+        state_priority = {
+            "unknown": 0,
+            "idle": 1,
+            "allocated": 2,
+            "mixed": 3,
+            "maintenance": 4,
+            "down": 5,
+        }
+        for node in _get_sinfo_node_snapshot():
+            if not _is_gpu_partition_member([node.get("partition")]):
                 continue
+            current = gpu_inventory.get(node["name"])
+            state = _normalize_slurm_node_state(node.get("status"))
+            if current is None or state_priority[state] > state_priority[current]:
+                gpu_inventory[node["name"]] = state
 
-            state = _normalize_slurm_node_state(node.get("State"))
-            configured_gpus = _parse_gpu_tres_count(node.get("CfgTRES")) or _parse_gpu_tres_count(node.get("Gres"))
-            allocated_node_gpus = _parse_gpu_tres_count(node.get("AllocTRES"))
+        for node_name, state in gpu_inventory.items():
+            details = detailed_nodes.get(node_name, {})
+            configured_gpus = _parse_gpu_tres_count(details.get("CfgTRES")) or _parse_gpu_tres_count(details.get("Gres"))
+            allocated_node_gpus = _parse_gpu_tres_count(details.get("AllocTRES"))
 
             total_nodes += 1
             total_gpus += configured_gpus

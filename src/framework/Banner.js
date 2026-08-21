@@ -30,6 +30,7 @@ import {
 import { useChatbotVisibility } from "./ChatbotVisibilityContext";
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js";
+import { sharedGet } from "../utils/sharedGet.js";
 
 const layoutItemsAreEqual = (left, right) =>
   left?.i === right?.i &&
@@ -224,7 +225,7 @@ const Banner = ({ setRunTour }) => {
       try {
         let announcementManagerAllowed = false;
         try {
-          const capabilityResponse = await fetch(`${get_base_url()}/api/announcements`);
+          const capabilityResponse = await sharedGet(`${get_base_url()}/api/announcements`);
           if (capabilityResponse.ok) {
             const capabilityData = await capabilityResponse.json();
             announcementManagerAllowed = capabilityData?.can_manage === true;

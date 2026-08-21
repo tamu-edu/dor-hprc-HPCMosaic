@@ -148,6 +148,18 @@ const SoftwareModulesPage = () => {
   const filteredModules = useMemo(() => {
     const query = searchQuery.trim().toLocaleLowerCase();
 
+    const searchRank = (module) => {
+      if (!query) return 0;
+
+      const name = module.name.toLocaleLowerCase();
+      const fullName = module.fullName.toLocaleLowerCase();
+
+      if (name === query) return 0;
+      if (name.startsWith(query)) return 1;
+      if (fullName.startsWith(query)) return 2;
+      return 3;
+    };
+
     const matches = modules.filter((module) => {
       const matchesSearch =
         !query ||
@@ -165,6 +177,9 @@ const SoftwareModulesPage = () => {
     });
 
     return matches.sort((left, right) => {
+      const rankDifference = searchRank(left) - searchRank(right);
+      if (rankDifference !== 0) return rankDifference;
+
       switch (sortOrder) {
         case "name-desc":
           return right.name.localeCompare(left.name, undefined, {

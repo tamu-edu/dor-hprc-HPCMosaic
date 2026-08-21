@@ -36,17 +36,20 @@ All routes are registered under the /api prefix (set in app.py).
     GET    /available_modules/summary  Grouped module card summaries
     GET    /available_modules/details  Details for one named module
 
-  jobs.py         — SLURM job and project management
+  jobs.py         — SLURM job management
     GET    /jobs                      Active jobs for current user (squeue only)
-    GET    /jobs/list                 Paginated Job Explorer rows (squeue or scoped sacct)
-    GET    /jobs/past_jobs            Paginated 24-hour history for the current user
+    GET    /jobs/past_jobs            Searchable, filterable history for the current user
     GET    /jobs/<job_id>             Lazy single-job details (scontrol)
-    GET    /jobs/details              Legacy active Slurm job records for Job Explorer
-    GET    /jobs/summary              Aggregate Slurm job counts for Job Explorer
+    GET    /jobs/summary              Aggregate Slurm job counts for dashboard KPIs
     POST   /cancel_job/<job_id>       Cancel a job via scancel
+    GET    /utilization               Cluster-wide node/CPU/job utilization (pestat)
+
+  jobstats.py      — Optional per-job monitoring data
+    GET    /jobs/<job_id>/jobstats    Historical jobstats time series
+
+  projects.py      — Project-account management
     GET    /projectinfo               Project accounts, job history, or pending jobs
     POST   /set_default_account       Set default myproject account
-    GET    /utilization               Cluster-wide node/CPU/job utilization (pestat)
 
   bot_requests.py — HPRC support request form submissions
     POST   /quota                     Quota increase request (bot, falls back to email)
@@ -81,6 +84,9 @@ from . import layout       # /save_layout, /get_layouts, /load_layout, /delete_l
 from . import preferences  # /get_preferences, /save_preferences
 from . import info         # /user-data, /sinfo, /showquota, /groups, /cpuavail
 from . import modules      # /get_env, /delete_env, /get_py_versions, /create_venv
-from . import jobs         # /jobs, /cancel_job, /projectinfo, /set_default_account, /utilization
+from . import jobs         # /jobs, /cancel_job, /utilization
+from . import jobstats     # /jobs/<job_id>/jobstats
+from . import projects     # /projectinfo, /set_default_account
 from . import bot_requests # /quota, /group, /help, /software, /account, /submit_acknowledgement
 from . import announcement # /announcements
+from . import priority     # /priority/queue-insight

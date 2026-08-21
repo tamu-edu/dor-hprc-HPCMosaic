@@ -7,6 +7,7 @@ import QuotaButton from "./QuotaButton"; // Import QuotaButton component
 import { generate_file_explorer_path_for_disk } from '../utils/generate_filepath';
 import { useTheme } from "../context/ThemeContext";
 import { get_base_url } from "../utils/api_config.js"
+import { sharedGet } from "../utils/sharedGet.js";
 import { formatIsoDate, isIsoDateBeforeToday } from "../utils/format_date.js";
 
 const QuotaInfo = ({ description }) => {
@@ -55,7 +56,7 @@ const QuotaInfo = ({ description }) => {
   };
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/showquota`)
+    sharedGet(`${baseUrl}/api/showquota`)
       .then((response) => {
         if (!response.ok) {
           return response.json().then((data) => {

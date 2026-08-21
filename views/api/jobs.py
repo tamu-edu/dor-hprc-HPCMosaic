@@ -1,35 +1,51 @@
-"""
-Job and project interaction routes.
-
-Covers the User Jobs widget (squeue/scontrol) and the Accounts widget
-(myproject, set default account, node/CPU utilization via pestat/squeue).
-
-Parser functions are kept in this file since they're specific to this domain
-and have no use elsewhere.
-"""
+"""Slurm job listing, detail, cancellation, summary, and utilization routes."""
 import os
 import re
 import subprocess
-import logging
 from flask import request, jsonify
 from . import api
 from .cache import TTLCache
-from .utils import parse_key_value_tokens, parse_positive_int, run_process_output, safe_int
+from .slurm_jobs import get_scontrol_job_fields, parse_scontrol_job_output
+from .utils import parse_positive_int, run_process_output, safe_int
 
 _slurm_cache = TTLCache()
-_HISTORICAL_STATES = {"completed", "complete", "failed", "fail", "cancelled", "canceled", "timeout", "history", "historical"}
 _SUMMARY_HISTORY_WINDOW = "24h"
 _DEFAULT_HISTORY_WINDOW = "24h"
 _ACTIVE_LIST_TTL = 10
 _SUMMARY_TTL = 20
 _SACCT_TTL = 300
+_PAST_JOB_SORTS = {
+    "newest",
+    "oldest",
+    "status_asc",
+    "status_desc",
+    "partition_asc",
+    "partition_desc",
+}
+_SACCT_FIELDS = (
+    "JobID", "JobName", "User", "Account", "Partition", "State", "NNodes",
+    "NCPUS", "ReqCPUS", "AllocCPUS", "ReqMem", "NodeList", "ReqTRES",
+    "AllocTRES", "Elapsed", "Timelimit", "Submit", "Start", "End",
+    "TotalCPU", "UserCPU", "SystemCPU", "MaxRSS", "MaxRSSNode",
+    "MaxDiskRead", "MaxDiskReadNode", "MaxDiskWrite", "MaxDiskWriteNode",
+    "ExitCode", "DerivedExitCode", "WorkDir", "StdOut", "StdErr",
+)
+_SACCT_BASE_FIELD_COUNT = 30
+_SACCT_USAGE_FIELDS = {
+    "total_cpu": ("duration", None),
+    "user_cpu": ("duration", None),
+    "system_cpu": ("duration", None),
+    "max_rss": ("size", "max_rss_node"),
+    "max_disk_read": ("size", "max_disk_read_node"),
+    "max_disk_write": ("size", "max_disk_write_node"),
+}
 
 # ---------------------------------------------------------------------------
 # Output parsers — these translate raw CLI output into structured dicts
 # ---------------------------------------------------------------------------
 
-def _parse_scontrol_output(output):
-    """Parse `scontrol show job <jobid>` output into a flat dict."""
+def _map_scontrol_fields(fields):
+    """Map raw scontrol fields to the job drawer's field names."""
     job_info = {}
     key_map = {
         "JobId":     "job_id",
@@ -50,18 +66,35 @@ def _parse_scontrol_output(output):
         "NumTasks":  "task_count",
         "Command":   "submit_line",
         "WorkDir":   "submit_dir",
+        "StdOut":    "stdout_path",
+        "StdErr":    "stderr_path",
+        "ReqTRES":   "req_tres",
+        "AllocTRES": "alloc_tres",
     }
 
-    for key, value in parse_key_value_tokens(output).items():
+    for key, value in fields.items():
         if key in key_map:
             job_info[key_map[key]] = value
 
-        elif key == "ReqTRES":
-            gpu_match = re.search(r"gres/gpu=(\d+)", value)
-            job_info["gpus"] = int(gpu_match.group(1)) if gpu_match else 0
+        if key == "ReqTRES":
+            job_info["gpus"] = _parse_gpu_count(value)
+        elif key == "AllocTRES":
+            job_info["allocated_gpus"] = _parse_gpu_count(value)
 
     job_info.setdefault("gpus", 0)
+    return job_info
+
+
+def _parse_scontrol_output(output):
+    """Parse `scontrol show job -o <jobid>` output into drawer fields."""
+    job_info = _map_scontrol_fields(parse_scontrol_job_output(output))
     return {"job_details": job_info}
+
+
+def _parse_tres_metric(value, metric):
+    """Return one numeric/text value from a Slurm TRES list."""
+    match = re.search(rf"(?:^|,){re.escape(metric)}=([^,]+)", str(value or ""))
+    return match.group(1) if match else None
 
 
 def _normalize_job_state(state):
@@ -84,6 +117,13 @@ def _normalize_job_state(state):
         "TO": "Timeout",
         "TIMEOUT": "Timeout",
         "TIMEOUT+": "Timeout",
+        "OUT_OF_MEMORY": "Out of memory",
+        "OOM": "Out of memory",
+        "NODE_FAIL": "Node failure",
+        "PREEMPTED": "Preempted",
+        "BOOT_FAIL": "Boot failure",
+        "DEADLINE": "Deadline",
+        "REVOKED": "Revoked",
         "CG": "Completing",
         "COMPLETING": "Completing",
         "S": "Suspended",
@@ -93,26 +133,63 @@ def _normalize_job_state(state):
 
 
 def _parse_gpu_count(value):
+    """Return the total GPUs from Slurm TRES or GRES output.
+
+    Slurm reports generic requests as ``gres/gpu=1`` or ``gpu:1`` and
+    typed requests as ``gres/gpu:h100=1`` or ``gpu:h100:1``.  A request
+    can also contain more than one typed GPU entry, so add every entry
+    rather than returning only the first match.
+    """
     if not value or value in {"N/A", "(null)"}:
         return 0
 
-    gpu_match = re.search(r"(?:gpu|gres/gpu)[:=](\d+)", str(value))
-    if gpu_match:
-        return int(gpu_match.group(1))
+    text = str(value)
+    # Slurm commonly emits both the generic total and its typed breakdown,
+    # e.g. ``gres/gpu=1,gres/gpu:a100=1``.  Those are two descriptions of
+    # the same allocation, not two GPUs, so prefer the generic total.
+    generic_tres = re.findall(r"(?:^|,)gres/gpu=(\d+)", text)
+    if generic_tres:
+        return sum(int(count) for count in generic_tres)
 
-    return safe_int(value, 0)
+    typed_tres = re.findall(r"(?:^|,)gres/gpu(?:[:/][^=,]+)=(\d+)", text)
+    if typed_tres:
+        return sum(int(count) for count in typed_tres)
+
+    generic_gres = re.findall(r"(?:^|,)(?:gres/)?gpu:(\d+)(?:\([^)]*\))?(?=,|$)", text)
+    if generic_gres:
+        return sum(int(count) for count in generic_gres)
+
+    typed_gres = re.findall(r"(?:^|,)(?:gres/)?gpu:[^:,()]+:(\d+)", text)
+    if typed_gres:
+        return sum(int(count) for count in typed_gres)
+
+    return safe_int(text, 0)
 
 
-def _run_slurm_command(command, timeout=20):
-    return run_process_output(command, timeout=timeout)
+def _slurm_usage_sort_value(value, value_type):
+    """Convert sacct usage values to comparable base units."""
+    if not value or str(value).strip().upper() in {"N/A", "(NULL)", "UNKNOWN"}:
+        return None
 
+    text = str(value).strip()
+    if value_type == "size":
+        match = re.fullmatch(r"(\d+(?:\.\d+)?)\s*([KMGTPE]?)B?", text, re.IGNORECASE)
+        if not match:
+            return None
+        units = {"": 0, "K": 1, "M": 2, "G": 3, "T": 4, "P": 5, "E": 6}
+        return float(match.group(1)) * (1024 ** units[match.group(2).upper()])
 
-def _run_cached_slurm_command(command, ttl_seconds, timeout=20):
-    key = ("slurm-command", tuple(command))
-    return _slurm_cache.get_or_set(
-        key,
-        ttl_seconds,
-        lambda: _run_slurm_command(command, timeout=timeout),
+    match = re.fullmatch(
+        r"(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)", text
+    )
+    if not match:
+        return None
+    days, hours, minutes, seconds = match.groups()
+    return (
+        safe_int(days, 0) * 86400
+        + safe_int(hours, 0) * 3600
+        + safe_int(minutes, 0) * 60
+        + float(seconds)
     )
 
 
@@ -121,16 +198,19 @@ def _invalidate_active_job_caches():
         if not isinstance(key, tuple) or not key:
             return False
 
-        if key[0] == "jobs-summary":
+        if key[0] in {"active-jobs", "jobs-summary", "utilization"}:
             return True
-
-        if key[0] != "slurm-command" or len(key) < 2:
-            return False
-
-        command = key[1]
-        return bool(command) and command[0] == "squeue"
+        return False
 
     return _slurm_cache.invalidate_matching(_is_active_job_cache_key)
+
+
+def _invalidate_sacct_caches():
+    """Invalidate cached historical accounting queries for a manual refresh."""
+    def _is_sacct_cache_key(key):
+        return isinstance(key, tuple) and bool(key) and key[0] == "sacct-jobs"
+
+    return _slurm_cache.invalidate_matching(_is_sacct_cache_key)
 
 
 def _parse_squeue_details(output):
@@ -159,6 +239,7 @@ def _parse_squeue_details(output):
             submit_time,
         ) = fields[:12]
         reason = fields[12] if len(fields) > 12 else ""
+        priority = safe_int(fields[13]) if len(fields) > 13 else None
 
         jobs.append({
             "job_id": job_id,
@@ -171,10 +252,12 @@ def _parse_squeue_details(output):
             "nodes": safe_int(nodes, 0),
             "cpus": safe_int(cpus, 0),
             "gpus": _parse_gpu_count(gpus),
+            "gres": None if gpus in {"", "N/A", "(null)"} else gpus,
             "runtime": runtime,
             "time_limit": time_limit,
             "submit_time": submit_time,
             "reason": reason,
+            "priority": priority,
             "source": "squeue",
         })
 
@@ -182,8 +265,9 @@ def _parse_squeue_details(output):
 
 
 def _parse_sacct_details(output):
-    jobs = []
-    seen = set()
+    parent_jobs = {}
+    parent_order = []
+    usage_maxima = {}
 
     for line in output.splitlines():
         if not line.strip():
@@ -193,28 +277,33 @@ def _parse_sacct_details(output):
         if len(fields) < 12:
             continue
 
-        (
-            job_id,
-            job_name,
-            user,
-            account,
-            partition,
-            state,
-            nodes,
-            cpus,
-            elapsed,
-            time_limit,
-            submit_time,
-            exit_code,
-        ) = fields[:12]
+        if len(fields) >= _SACCT_BASE_FIELD_COUNT:
+            (
+                job_id, job_name, user, account, partition, state, nodes, cpus,
+                req_cpus, alloc_cpus, req_mem, node_list, req_tres, alloc_tres,
+                elapsed, time_limit, submit_time, start_time, end_time, total_cpu,
+                user_cpu, system_cpu, max_rss, max_rss_node, max_disk_read,
+                max_disk_read_node, max_disk_write, max_disk_write_node, exit_code,
+                derived_exit_code,
+            ) = fields[:_SACCT_BASE_FIELD_COUNT]
+            work_dir, stdout_path, stderr_path = (fields[_SACCT_BASE_FIELD_COUNT:] + ["", "", ""])[:3]
+        else:
+            # Continue to accept the former 12-column layout for callers that
+            # supply captured/legacy sacct output directly to this parser.
+            (
+                job_id, job_name, user, account, partition, state, nodes, cpus,
+                elapsed, time_limit, submit_time, exit_code,
+            ) = fields[:12]
+            (
+                req_cpus, alloc_cpus, req_mem, node_list, req_tres, alloc_tres,
+                start_time, end_time, total_cpu, user_cpu, system_cpu, max_rss,
+                max_rss_node, max_disk_read, max_disk_read_node, max_disk_write,
+                max_disk_write_node, derived_exit_code,
+            ) = ("",) * 18
+            work_dir, stdout_path, stderr_path = "", "", ""
 
-        # Skip batch/extern/step records so each Slurm job appears once.
         base_job_id = job_id.split(".")[0]
-        if "." in job_id or base_job_id in seen:
-            continue
-
-        seen.add(base_job_id)
-        jobs.append({
+        record = {
             "job_id": base_job_id,
             "job_name": job_name,
             "user": user,
@@ -224,13 +313,71 @@ def _parse_sacct_details(output):
             "state_raw": state,
             "nodes": safe_int(nodes, 0),
             "cpus": safe_int(cpus, 0),
-            "gpus": 0,
+            "req_cpus": safe_int(req_cpus, 0),
+            "alloc_cpus": safe_int(alloc_cpus, 0),
+            "req_mem": req_mem,
+            "node_list": node_list,
+            "req_tres": req_tres,
+            "alloc_tres": alloc_tres,
+            "gpus": _parse_gpu_count(req_tres),
             "runtime": elapsed,
             "time_limit": time_limit,
             "submit_time": submit_time,
+            "start_time": start_time,
+            "end_time": end_time,
+            "total_cpu": total_cpu,
+            "user_cpu": user_cpu,
+            "system_cpu": system_cpu,
+            "max_rss": max_rss,
+            "max_rss_node": max_rss_node,
+            "max_disk_read": max_disk_read,
+            "max_disk_read_node": max_disk_read_node,
+            "max_disk_write": max_disk_write,
+            "max_disk_write_node": max_disk_write_node,
             "exit_code": exit_code,
+            "derived_exit_code": derived_exit_code,
             "source": "sacct",
-        })
+        }
+        if work_dir:
+            record["working_directory"] = work_dir
+        if stdout_path:
+            record["stdout_path"] = stdout_path
+        if stderr_path:
+            record["stderr_path"] = stderr_path
+
+        # Usage can be reported on any child step, and step names differ by
+        # cluster and workload. Aggregate by the base ID instead of naming
+        # particular steps. Node fields travel with their winning metric.
+        job_usage = usage_maxima.setdefault(base_job_id, {})
+        for metric, (value_type, node_field) in _SACCT_USAGE_FIELDS.items():
+            sort_value = _slurm_usage_sort_value(record[metric], value_type)
+            if sort_value is None:
+                continue
+            current = job_usage.get(metric)
+            if current is None or sort_value > current[0]:
+                job_usage[metric] = (
+                    sort_value,
+                    record[metric],
+                    record[node_field] if node_field else None,
+                )
+
+        # Only parent jobs are returned, preserving the existing one-row-per-job behavior.
+        if "." in job_id or base_job_id in parent_jobs:
+            continue
+        parent_jobs[base_job_id] = record
+        parent_order.append(base_job_id)
+
+    jobs = []
+    for base_job_id in parent_order:
+        job = parent_jobs[base_job_id]
+        for metric, (_, node_field) in _SACCT_USAGE_FIELDS.items():
+            maximum = usage_maxima.get(base_job_id, {}).get(metric)
+            if maximum is None:
+                continue
+            job[metric] = maximum[1]
+            if node_field:
+                job[node_field] = maximum[2]
+        jobs.append(job)
 
     return jobs
 
@@ -241,18 +388,23 @@ def _merge_job_records(active_jobs, historical_jobs):
     return list(merged.values())
 
 
-def _get_squeue_jobs(user=None):
+def get_active_jobs(user=None):
+    """Return normalized active Slurm jobs, using the shared short-lived cache."""
     command = [
         "squeue",
         "--noheader",
-        "--format=%i|%j|%u|%a|%P|%t|%D|%C|%b|%M|%l|%V|%R",
+        "--format=%i|%j|%u|%a|%P|%t|%D|%C|%b|%M|%l|%V|%R|%Q",
     ]
 
     if user and user != "all":
         command.extend(["-u", user])
 
-    output = _run_cached_slurm_command(command, _ACTIVE_LIST_TTL)
-    return _parse_squeue_details(output)
+    cache_key = ("active-jobs", user or "all")
+    return _slurm_cache.get_or_set(
+        cache_key,
+        _ACTIVE_LIST_TTL,
+        lambda: _parse_squeue_details(run_process_output(command, timeout=20)),
+    )
 
 
 def _normalize_history_window(window):
@@ -268,28 +420,33 @@ def _normalize_history_window(window):
 
 
 def _get_sacct_jobs(history_window=None, user=None, all_users=False):
+    normalized_window = _normalize_history_window(history_window)
+    selected_user = None if all_users else user or os.getenv("USER")
     command = [
         "sacct",
         "--noheader",
         "--parsable2",
-        f"--starttime={_normalize_history_window(history_window)}",
-        "--format=JobID,JobName,User,Account,Partition,State,NNodes,NCPUS,Elapsed,Timelimit,Submit,ExitCode",
+        f"--starttime={normalized_window}",
+        f"--format={','.join(_SACCT_FIELDS)}",
     ]
 
     if all_users:
         command.append("--allusers")
     else:
-        selected_user = user or os.getenv("USER")
         if selected_user:
             command.extend(["--user", selected_user])
 
-    output = _run_cached_slurm_command(command, _SACCT_TTL, timeout=30)
-    return _parse_sacct_details(output)
+    cache_key = ("sacct-jobs", normalized_window, selected_user, bool(all_users))
+    return _slurm_cache.get_or_set(
+        cache_key,
+        _SACCT_TTL,
+        lambda: _parse_sacct_details(run_process_output(command, timeout=30)),
+    )
 
 
 def _get_job_detail(job_id):
-    output = _run_slurm_command(["scontrol", "show", "job", str(job_id)])
-    details = _parse_scontrol_output(output)["job_details"]
+    raw_fields = get_scontrol_job_fields(job_id)
+    details = _map_scontrol_fields(raw_fields)
     return {
         "job_id": details.get("job_id", str(job_id)),
         "job_name": details.get("job_name"),
@@ -300,12 +457,21 @@ def _get_job_detail(job_id):
         "node_list": details.get("nodelist"),
         "working_directory": details.get("submit_dir"),
         "submit_command": details.get("submit_line"),
+        "stdout_path": details.get("stdout_path"),
+        "stderr_path": details.get("stderr_path"),
         "runtime": details.get("time_elapsed"),
         "time_limit": details.get("time_requested"),
         "exit_code": details.get("exit_code"),
         "nodes": safe_int(details.get("node_count"), 0),
         "cpus": safe_int(details.get("cores"), 0),
+        "req_cpus": safe_int(_parse_tres_metric(details.get("req_tres"), "cpu"), 0),
+        "alloc_cpus": safe_int(_parse_tres_metric(details.get("alloc_tres"), "cpu"), 0),
+        "req_nodes": safe_int(_parse_tres_metric(details.get("req_tres"), "node"), 0),
+        "alloc_nodes": safe_int(_parse_tres_metric(details.get("alloc_tres"), "node"), 0),
+        "req_mem": _parse_tres_metric(details.get("req_tres"), "mem"),
+        "alloc_mem": _parse_tres_metric(details.get("alloc_tres"), "mem"),
         "gpus": details.get("gpus", 0),
+        "allocated_gpus": details.get("allocated_gpus", 0),
         "raw": details,
     }
 
@@ -352,11 +518,9 @@ def _state_matches_filter(job_state, state_filter):
     return job_state.lower() == _normalize_job_state(normalized_filter).lower()
 
 
-def _filter_jobs(jobs, state="", partition="", user="", account="", search=""):
+def _filter_jobs(jobs, state="", partition="", search="", search_fields=None):
     search_value = (search or "").strip().lower()
     partition_value = (partition or "").strip().lower()
-    user_value = (user or "").strip().lower()
-    account_value = (account or "").strip().lower()
 
     filtered = []
     for job in jobs:
@@ -364,14 +528,10 @@ def _filter_jobs(jobs, state="", partition="", user="", account="", search=""):
             continue
         if partition_value and str(job.get("partition") or "").lower() != partition_value:
             continue
-        if user_value and user_value != "all" and str(job.get("user") or "").lower() != user_value:
-            continue
-        if account_value and str(job.get("account") or "").lower() != account_value:
-            continue
         if search_value:
             haystack = " ".join(
                 str(job.get(key) or "").lower()
-                for key in ["job_id", "job_name", "user", "account", "partition", "state"]
+                for key in (search_fields or ["job_id", "job_name", "partition", "state"])
             )
             if search_value not in haystack:
                 continue
@@ -381,9 +541,51 @@ def _filter_jobs(jobs, state="", partition="", user="", account="", search=""):
     return filtered
 
 
-def _is_history_state(state):
-    normalized = (state or "").strip().lower()
-    return normalized in _HISTORICAL_STATES
+def _sort_past_jobs(jobs, sort="newest"):
+    """Sort past jobs predictably, keeping blank text values at the end."""
+    selected_sort = sort if sort in _PAST_JOB_SORTS else "newest"
+
+    # Establish the secondary order first; Python's sort is stable.
+    sorted_jobs = sorted(
+        jobs,
+        key=lambda job: job.get("submit_time") or "",
+        reverse=True,
+    )
+    if selected_sort == "newest":
+        return sorted_jobs
+    if selected_sort == "oldest":
+        return sorted(
+            jobs,
+            key=lambda job: (
+                not bool(job.get("submit_time")),
+                job.get("submit_time") or "",
+            ),
+        )
+
+    field, direction = selected_sort.rsplit("_", 1)
+    if field == "status":
+        field = "state"
+    present = [job for job in sorted_jobs if str(job.get(field) or "").strip()]
+    missing = [job for job in sorted_jobs if not str(job.get(field) or "").strip()]
+    present.sort(
+        key=lambda job: str(job.get(field)).casefold(),
+        reverse=direction == "desc",
+    )
+    return present + missing
+
+
+def _past_job_filter_options(jobs):
+    """Return complete filter choices for the selected history window."""
+    return {
+        "states": sorted(
+            {str(job.get("state")) for job in jobs if job.get("state")},
+            key=str.casefold,
+        ),
+        "partitions": sorted(
+            {str(job.get("partition")) for job in jobs if job.get("partition")},
+            key=str.casefold,
+        ),
+    }
 
 
 def _paginate_jobs(jobs, page, page_size):
@@ -402,7 +604,7 @@ def _get_jobs_summary_cached():
         historical_jobs = []
 
         try:
-            active_jobs = _get_squeue_jobs()
+            active_jobs = get_active_jobs()
         except Exception as e:
             errors.append(f"squeue: {str(e)}")
 
@@ -423,213 +625,13 @@ def _get_jobs_summary_cached():
     return _slurm_cache.get_or_set(("jobs-summary", _SUMMARY_HISTORY_WINDOW, summary_user), _SUMMARY_TTL, _load)
 
 
-def _parse_project_accounts(output):
-    """Parse default `myproject` output into a list of project account records."""
-    lines = output.split("\n")
-    start = next((i for i, l in enumerate(lines) if "|  Account" in l), -1)
-
-    if start == -1 or len(lines) <= start + 2:
-        return {"error": "Unexpected output format from myproject"}
-
-    projects = []
-
-    for line in lines[start + 2:]:
-        if line.strip().startswith("|"):
-            fields = [f.strip() for f in line.split("|")[1:-1]]
-            if len(fields) == 7:
-                projects.append({
-                    "account":          fields[0],
-                    "fy":               fields[1],
-                    "default":          fields[2],
-                    "allocation":       float(fields[3]) if fields[3].replace('.', '', 1).isdigit() else 0.0,
-                    "used_pending_sus": float(fields[4]) if fields[4].replace('.', '', 1).isdigit() else 0.0,
-                    "balance":          float(fields[5]) if fields[5].replace('.', '', 1).isdigit() else 0.0,
-                    "pi":               fields[6],
-                })
-    return {"projects": projects}
-
-def _parse_pending_jobs(output):
-    """Parse `myproject -p <account>` output into a list of pending job records."""
-    jobs = []
-    for line in output.split("\n")[2:]:
-        if line.strip().startswith("|") and len(line.split("|")) >= 6:
-            fields = [f.strip() for f in line.split("|")[1:-1]]
-            if len(fields) == 5:
-                jobs.append({
-                    "job_id":           fields[0],
-                    "state":            fields[1],
-                    "cores":            fields[2],
-                    "effective_cores":  fields[3],
-                    "walltime_hours":   fields[4],
-                })
-    return {"pending_jobs": jobs}
-
-
-def _parse_job_history(output):
-    """Parse `myproject -j <account>` output into a list of historical job records."""
-    lines = output.split("\n")
-    start = next((i for i, l in enumerate(lines) if "JobID" in l and "SubmitTime" in l), -1)
-
-    if start == -1 or len(lines) <= start + 1:
-        return {"error": "Unexpected output format from myproject"}
-
-    history = []
-    for line in lines[start + 1:]:
-        fields = [f.strip() for f in line.split("|") if f.strip()]
-        if len(fields) >= 8:
-            history.append({
-                "job_id":       fields[1],
-                "submit_time":  fields[3],
-                "start_time":   fields[4],
-                "end_time":     fields[5],
-                "walltime":     fields[6],
-                "total_slots":  fields[7],
-                "used_sus":     fields[8],
-            })
-
-    return {"job_history": history}
-
-# ---------------------------------------------------------------------------
-# Routes
-# ---------------------------------------------------------------------------
-
-@api.route('/projectinfo', methods=['GET'])
-def get_projectinfo():
-    """Retrieve project accounts, job history, or pending jobs via myproject."""
-    try:
-        account      = request.args.get("account")
-        job_history  = request.args.get("job_history")
-        pending_jobs = request.args.get("pending_jobs")
-
-        if pending_jobs and account:
-            command = f"/sw/local/bin/myproject -p {account}"
-        elif job_history and account:
-            command = f"/sw/local/bin/myproject -j {account}"
-        else:
-            command = "/sw/local/bin/myproject"
-
-        logging.info(f"Executing: {command}")
-        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-        output = result.decode("utf-8").strip()
-
-        response_data = {"executed_command": command, "raw_output": output}
-
-        if pending_jobs and account:
-            response_data["pending_jobs"] = _parse_pending_jobs(output)
-        elif job_history and account:
-            response_data["job_history"] = _parse_job_history(output)
-        else:
-            response_data["projects"] = _parse_project_accounts(output)
-
-        return jsonify(response_data), 200
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Command failed: {e.output.decode('utf-8')}"}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api.route('/set_default_account', methods=['POST'])
-def set_default_account():
-    try:
-        account_no = request.json.get("account_no")
-        if not account_no:
-            return jsonify({"error": "Missing account_no"}), 400
-
-        command = f"/sw/local/bin/myproject -d {account_no}"
-        result = subprocess.run(
-            command, shell=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8'
-        )
-
-        if result.returncode != 0:
-            error_msg = result.stderr.strip() or result.stdout.strip()
-            return jsonify({"error": f"Failed to set default account: {error_msg}"}), 500
-
-        return jsonify({"message": f"Default account set to {account_no} successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 @api.route("/jobs", methods=["GET"])
 def get_user_jobs():
     try:
-        jobs = _get_squeue_jobs(user=os.getenv("USER"))
+        if request.args.get("refresh", "").lower() in {"1", "true", "yes"}:
+            _invalidate_active_job_caches()
+        jobs = get_active_jobs(user=os.getenv("USER"))
         return jsonify({"jobs": jobs}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api.route("/jobs/list", methods=["GET"])
-def get_jobs_list():
-    """Return a paginated job list without per-job scontrol enrichment."""
-    try:
-        page = parse_positive_int(request.args.get("page"), 1)
-        page_size = parse_positive_int(request.args.get("page_size"), 50, maximum=200)
-        state = request.args.get("state", "active")
-        partition = request.args.get("partition", "")
-        user = request.args.get("user", "")
-        account = request.args.get("account", "")
-        search = request.args.get("search", "")
-        history_window = request.args.get("history_window", _DEFAULT_HISTORY_WINDOW)
-        all_users = request.args.get("all_users", "").lower() in {"1", "true", "yes"} or user == "all"
-
-        if _is_history_state(state):
-            jobs = _get_sacct_jobs(
-                history_window=history_window,
-                user=None if all_users else user or os.getenv("USER"),
-                all_users=all_users,
-            )
-        else:
-            jobs = _get_squeue_jobs(user=None if user == "all" else user or None)
-
-        filtered_jobs = _filter_jobs(
-            jobs,
-            state=state,
-            partition=partition,
-            user="" if user == "all" else user,
-            account=account,
-            search=search,
-        )
-        page_jobs, total, has_next = _paginate_jobs(filtered_jobs, page, page_size)
-
-        return jsonify({
-            "jobs": page_jobs,
-            "page": page,
-            "page_size": page_size,
-            "total": total,
-            "has_next": has_next,
-        }), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api.route("/jobs/details", methods=["GET"])
-def get_jobs_details():
-    """Legacy route kept for compatibility; prefer /jobs/list and /jobs/<job_id>."""
-    try:
-        job_id = request.args.get("job_id")
-        if job_id:
-            return jsonify({"error": "Use /api/jobs/<job_id> for job details"}), 410
-
-        errors = []
-        active_jobs = []
-
-        try:
-            active_jobs = _get_squeue_jobs()
-        except Exception as e:
-            errors.append(f"squeue: {str(e)}")
-
-        response = {
-            "jobs": active_jobs,
-            "summary": _get_jobs_summary_cached(),
-        }
-
-        if errors:
-            response["warnings"] = errors
-
-        return jsonify(response), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -637,18 +639,35 @@ def get_jobs_details():
 
 @api.route("/jobs/past_jobs", methods=["GET"])
 def get_past_user_jobs():
-    """Return the current user's recent jobs, newest first."""
+    """Return searchable, filterable history for the current user."""
     try:
+        if request.args.get("refresh", "").lower() in {"1", "true", "yes"}:
+            _invalidate_sacct_caches()
         page = parse_positive_int(request.args.get("page"), 1)
         page_size = parse_positive_int(request.args.get("page_size"), 25, maximum=200)
+        history_window = request.args.get("history_window", _DEFAULT_HISTORY_WINDOW)
+        search = request.args.get("search", "")
+        state = request.args.get("state", "")
+        partition = request.args.get("partition", "")
+        selected_sort = request.args.get("sort", "newest").strip().lower()
+        if selected_sort not in _PAST_JOB_SORTS:
+            selected_sort = "newest"
 
         jobs = _get_sacct_jobs(
-            history_window=_DEFAULT_HISTORY_WINDOW,
+            history_window=history_window,
             user=os.getenv("USER"),
             all_users=False,
         )
-        jobs.sort(key=lambda job: job.get("submit_time") or "", reverse=True)
-        page_jobs, total, has_next = _paginate_jobs(jobs, page, page_size)
+        filter_options = _past_job_filter_options(jobs)
+        filtered_jobs = _filter_jobs(
+            jobs,
+            state=state,
+            partition=partition,
+            search=search,
+            search_fields=("job_id", "job_name"),
+        )
+        sorted_jobs = _sort_past_jobs(filtered_jobs, selected_sort)
+        page_jobs, total, has_next = _paginate_jobs(sorted_jobs, page, page_size)
 
         return jsonify({
             "jobs": page_jobs,
@@ -656,6 +675,7 @@ def get_past_user_jobs():
             "total": total,
             "page_size": page_size,
             "has_next": has_next,
+            "filter_options": filter_options,
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -704,37 +724,50 @@ def cancel_job(job_id):
 @api.route("/utilization", methods=["GET"])
 def get_utilization():
     try:
-        def _count(cmd):
-            return _slurm_cache.get_or_set(
-                ("shell-count", cmd),
-                _SUMMARY_TTL,
-                lambda: int(subprocess.check_output(cmd, shell=True, timeout=20).decode("utf-8").strip()),
+        def _load_utilization():
+            pestat_output = run_process_output(
+                ["/sw/local/bin/pestat", "-s", "alloc,mix,idle"],
+                timeout=20,
             )
+            node_counts = {"allocated": 0, "mixed": 0, "idle": 0}
+            allocated_cpus = 0
+            total_cpus = 0
 
-        allocated_nodes = _count("/sw/local/bin/pestat -s alloc | tail -n+4 | wc -l")
-        mixed_nodes     = _count("/sw/local/bin/pestat -s mix  | tail -n+4 | wc -l")
-        idle_nodes      = _count("/sw/local/bin/pestat -s idle | tail -n+4 | wc -l")
+            for line in pestat_output.splitlines():
+                fields = line.split()
+                if len(fields) < 5:
+                    continue
+                state = fields[2].strip().lower()
+                state_key = {"alloc": "allocated", "mix": "mixed", "idle": "idle"}.get(state)
+                if state_key is None:
+                    continue
+                try:
+                    used_cpus = int(fields[3])
+                    node_cpus = int(fields[4])
+                except ValueError:
+                    continue
+                node_counts[state_key] += 1
+                allocated_cpus += used_cpus
+                total_cpus += node_cpus
 
-        allocated_cpus = _count(
-            "/sw/local/bin/pestat -s alloc,mix,idle | tail -n+4 | awk '{print $4}' "
-            "| awk 'NR>3' | awk '{s+=$1} END {printf \"%.0f\", s}'"
+            active_jobs = get_active_jobs()
+            running_jobs = sum(job.get("state") == "Running" for job in active_jobs)
+            pending_jobs = sum(job.get("state") == "Pending" for job in active_jobs)
+            return {
+                "nodes": node_counts,
+                "cores": {
+                    "allocated": allocated_cpus,
+                    "idle": max(0, total_cpus - allocated_cpus),
+                },
+                "jobs": {"running": running_jobs, "pending": pending_jobs},
+            }
+
+        response = _slurm_cache.get_or_set(
+            ("utilization",),
+            _SUMMARY_TTL,
+            _load_utilization,
         )
+        return jsonify(response), 200
 
-        total_cpus = _count(
-            "/sw/local/bin/pestat -s alloc,mix,idle | tail -n+4 | awk '{print $5}' "
-            "| awk 'NR>3' | awk '{s+=$1} END {printf \"%.0f\", s}'"
-        )
-
-        running_jobs = _count("/usr/bin/squeue --noheader --states=RUNNING | wc -l")
-        pending_jobs = _count("/usr/bin/squeue --noheader --states=PENDING | wc -l")
-
-        return jsonify({
-            "nodes":  {"allocated": allocated_nodes, "mixed": mixed_nodes, "idle": idle_nodes},
-            "cores":  {"allocated": allocated_cpus,  "idle": total_cpus - allocated_cpus},
-            "jobs":   {"running": running_jobs, "pending": pending_jobs},
-        }), 200
-
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Command failed: {e.output.decode('utf-8')}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
