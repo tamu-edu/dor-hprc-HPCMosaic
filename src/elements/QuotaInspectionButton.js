@@ -111,7 +111,7 @@ const QuotaInspectionButton = ({ disk }) => {
                   {generate_file_explorer_path_for_disk(disk)}
                 </div>
                 {isHomeDirectory && (
-                  <aside className="mt-3 rounded border border-mosaic-caution bg-mosaic-caution-bg px-3 py-2 text-sm leading-relaxed text-mosaic-secondary">
+                  <aside className="mt-3 rounded border border-mosaic-border border-l-4 border-l-mosaic-accent bg-mosaic-app px-3 py-2 text-sm leading-relaxed text-mosaic-secondary">
                     <strong className="text-mosaic-primary">Home directory tip:</strong>{" "}
                     Hidden folders such as <code>.local</code>, <code>.cache</code>, and <code>.vscode-server</code> can consume much of your quota. Instead of deleting files you need, move large hidden folders to scratch and link them back to home.{" "}
                     <a href={QUOTA_FAQ_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-mosaic-link underline">

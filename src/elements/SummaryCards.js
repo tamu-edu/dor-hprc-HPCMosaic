@@ -151,7 +151,7 @@ export const MyQuotasSummaryCard = () => {
               const quotaExpirationHasPassed = isIsoDateBeforeToday(quota.expiration_date);
 
               return (
-                <div className={cx("grid items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px]", isNarrow ? "grid-cols-1" : "grid-cols-[minmax(0,1fr)_auto]")} key={`${disk}-${index}`} title={quota.additional_info || disk}>
+                <div className={cx("grid items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px]", isNarrow ? "grid-cols-1" : "grid-cols-[minmax(0,1fr)_9rem]")} key={`${disk}-${index}`} title={quota.additional_info || disk}>
                   <div className="grid min-w-0 gap-[5px]">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                       <strong className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-card-12 font-bold text-mosaic-primary [&_a]:block [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap">{renderQuotaPath(disk)}</strong>
