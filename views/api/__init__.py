@@ -27,6 +27,9 @@ All routes are registered under the /api prefix (set in app.py).
     GET    /node/<node_name>          Detailed SLURM node information
     GET    /node/<node_name>/jobs     Jobs currently running on a node
 
+  quota_inspection.py — On-demand storage investigation
+    POST   /quota/inspection          Top directories and files for a quota path
+
   modules.py      — Python virtual environment management
     GET    /get_env                   List existing venvs from metadata.json
     DELETE /delete_env/<name>         Delete a named venv
@@ -83,6 +86,7 @@ api = Blueprint('api', __name__)
 from . import layout       # /save_layout, /get_layouts, /load_layout, /delete_layout, /rename_layout
 from . import preferences  # /get_preferences, /save_preferences
 from . import info         # /user-data, /sinfo, /showquota, /groups, /cpuavail
+from . import quota_inspection  # /quota/inspection
 from . import modules      # /get_env, /delete_env, /get_py_versions, /create_venv
 from . import jobs         # /jobs, /cancel_job, /utilization
 from . import jobstats     # /jobs/<job_id>/jobstats
