@@ -128,7 +128,7 @@ def main():
     parser.add_argument("root")
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--max-entries", type=int, default=250000)
-    parser.add_argument("--max-seconds", type=float, default=25)
+    parser.add_argument("--max-seconds", type=float, default=30)
     args = parser.parse_args()
 
     try:

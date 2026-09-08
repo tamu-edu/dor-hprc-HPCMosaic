@@ -2,8 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MdErrorOutline, MdSearch } from "react-icons/md";
 import { get_base_url } from "../utils/api_config.js";
+import { generate_file_explorer_path_for_disk } from "../utils/generate_filepath";
 import "../composer/PopupForm.css";
 
+
+const QUOTA_FAQ_URL = "https://hprc.tamu.edu/kb/FAQ/Other/#q-what-is-disk-quota-exceeded";
 
 const formatBytes = (bytes) => {
   const value = Number(bytes);
@@ -22,6 +25,7 @@ const QuotaInspectionButton = ({ disk }) => {
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const abortControllerRef = useRef(null);
+  const isHomeDirectory = String(disk).startsWith("/home/");
 
   const inspectUsage = useCallback(async () => {
     abortControllerRef.current?.abort();
@@ -103,7 +107,18 @@ const QuotaInspectionButton = ({ disk }) => {
             <div className="composer-modal-body">
               <header className="mb-4 border-b border-mosaic-border pb-3 pr-10">
                 <h2 id="quota-inspection-title" className="m-0 text-lg font-bold text-mosaic-primary">Storage usage details</h2>
-                <p className="mt-1 break-all text-sm text-mosaic-secondary">{disk}</p>
+                <div className="mt-1 break-all text-sm text-mosaic-secondary">
+                  {generate_file_explorer_path_for_disk(disk)}
+                </div>
+                {isHomeDirectory && (
+                  <aside className="mt-3 rounded border border-mosaic-caution bg-mosaic-caution-bg px-3 py-2 text-sm leading-relaxed text-mosaic-secondary">
+                    <strong className="text-mosaic-primary">Home directory tip:</strong>{" "}
+                    Hidden folders such as <code>.local</code>, <code>.cache</code>, and <code>.vscode-server</code> can consume much of your quota. Instead of deleting files you need, move large hidden folders to scratch and link them back to home.{" "}
+                    <a href={QUOTA_FAQ_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-mosaic-link underline">
+                      View HPRC symlink instructions
+                    </a>.
+                  </aside>
+                )}
               </header>
 
               {status === "loading" && (
@@ -141,7 +156,7 @@ const QuotaInspectionButton = ({ disk }) => {
                         <tbody>
                           {report.directories.map((directory) => (
                             <tr key={directory.path} className="border-t border-mosaic-border">
-                              <td className="max-w-[520px] break-all px-3 py-2 text-mosaic-primary">{directory.path}</td>
+                              <td className="max-w-[520px] break-all px-3 py-2 text-mosaic-primary">{generate_file_explorer_path_for_disk(directory.path)}</td>
                               <td className="px-3 py-2 text-right text-mosaic-secondary">{directory.file_count.toLocaleString()}</td>
                               <td className="px-3 py-2 text-right text-mosaic-secondary">{directory.subdirectory_count.toLocaleString()}</td>
                               <td className="px-3 py-2 text-right font-bold text-mosaic-primary">{directory.item_count.toLocaleString()}</td>
@@ -161,7 +176,7 @@ const QuotaInspectionButton = ({ disk }) => {
                         <tbody>
                           {report.files.map((file) => (
                             <tr key={file.path} className="border-t border-mosaic-border">
-                              <td className="max-w-[620px] break-all px-3 py-2 text-mosaic-primary">{file.path}</td>
+                              <td className="max-w-[620px] break-all px-3 py-2 text-mosaic-primary">{generate_file_explorer_path_for_disk(file.path)}</td>
                               <td className="whitespace-nowrap px-3 py-2 text-right font-bold text-mosaic-primary">{formatBytes(file.size_bytes)}</td>
                             </tr>
                           ))}

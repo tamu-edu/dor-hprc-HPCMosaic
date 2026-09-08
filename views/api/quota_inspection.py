@@ -21,8 +21,8 @@ from .utils import run_process_output
 SCAN_SCRIPT = Path(__file__).with_name("quota_usage_scan.py")
 SCAN_LIMIT = 10
 SCAN_MAX_ENTRIES = 250000
-SCAN_MAX_SECONDS = 25
-PROCESS_TIMEOUT_SECONDS = 35
+SCAN_MAX_SECONDS = 30
+PROCESS_TIMEOUT_SECONDS = 40
 CACHE_SECONDS = 300
 
 
@@ -62,7 +62,7 @@ def _scan_command(path):
     # SSH invokes a remote shell even when subprocess receives an argument
     # array, so quote every value interpolated into the remote command.
     remote_args = ["python3", "-", path, *common_args]
-    remote_command = "nice -n 15 timeout 30s " + " ".join(
+    remote_command = "nice -n 15 timeout 35s " + " ".join(
         shlex.quote(value) for value in remote_args
     )
     command = [
