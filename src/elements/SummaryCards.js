@@ -17,6 +17,7 @@ import {
   MdWarningAmber,
 } from "react-icons/md";
 import QuotaButton from "./QuotaButton";
+import QuotaInspectionButton from "./QuotaInspectionButton";
 import { get_base_url } from "../utils/api_config.js";
 import { generate_file_explorer_path_for_disk } from "../utils/generate_filepath";
 import { formatIsoDate, isIsoDateBeforeToday } from "../utils/format_date.js";
@@ -150,9 +151,12 @@ export const MyQuotasSummaryCard = () => {
               const quotaExpirationHasPassed = isIsoDateBeforeToday(quota.expiration_date);
 
               return (
-                <div className={cx("grid items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px]", isNarrow ? "grid-cols-1" : "grid-cols-[minmax(0,1fr)_auto]")} key={`${disk}-${index}`} title={quota.additional_info || disk}>
+                <div className={cx("grid items-center gap-2.5 rounded-[5px] border border-mosaic-border bg-mosaic-surface p-[9px]", isNarrow ? "grid-cols-1" : "grid-cols-[minmax(0,1fr)_9rem]")} key={`${disk}-${index}`} title={quota.additional_info || disk}>
                   <div className="grid min-w-0 gap-[5px]">
-                    <strong className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-card-12 font-bold text-mosaic-primary [&_a]:block [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap">{renderQuotaPath(disk)}</strong>
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <strong className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-card-12 font-bold text-mosaic-primary [&_a]:block [&_a]:overflow-hidden [&_a]:text-ellipsis [&_a]:whitespace-nowrap">{renderQuotaPath(disk)}</strong>
+                      <QuotaInspectionButton disk={disk} />
+                    </div>
                     {quota.expiration_date && (
                       <span className={cx("text-card-11 font-bold", quotaExpirationHasPassed ? "text-mosaic-danger" : "text-mosaic-caution")}>
                         Extended quota {quotaExpirationHasPassed ? "expired on" : "expires"}{" "}
