@@ -4,7 +4,26 @@ import { loadRequestSchema } from '../composer/schemas/requestProfile';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
 
+const rawClusterName = String(
+  config.production?.cluster_name || config.development?.cluster_name || ""
+).trim().toLowerCase();
 const helpRequestSchema = loadRequestSchema('helpRequest.json');
+const supportedWalltimeClusters = new Set(['faster', 'grace']);
+const filteredHelpRequestSchema = (() => {
+  if (!helpRequestSchema || !helpRequestSchema.jobQestions?.elements?.jobRequestType) {
+    return helpRequestSchema;
+  }
+
+  const schemaCopy = JSON.parse(JSON.stringify(helpRequestSchema));
+  const jobRequestType = schemaCopy.jobQestions.elements.jobRequestType;
+  if (Array.isArray(jobRequestType.options)) {
+    jobRequestType.options = jobRequestType.options.filter((option) => {
+      if (option.value !== 'walltimeExtension') return true;
+      return supportedWalltimeClusters.has(rawClusterName);
+    });
+  }
+  return schemaCopy;
+})();
 
 const HelpButton = ({ buttonText = "Help Request", buttonStyle = {} }) => {
   const baseUrl = get_base_url();
@@ -106,7 +125,7 @@ const HelpButton = ({ buttonText = "Help Request", buttonStyle = {} }) => {
   return (
     <PopupForm
       buttonText={buttonText}
-      schema={helpRequestSchema}
+      schema={filteredHelpRequestSchema}
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
       title="Help Request"

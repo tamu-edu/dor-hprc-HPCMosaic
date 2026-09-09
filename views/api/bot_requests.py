@@ -20,7 +20,21 @@ from flask import request, jsonify
 
 from . import api
 from .config import cluster_name, request_email, help_email, hprcbot_route
+from .jobs import get_active_jobs
 from .utils import clean_number, get_group_directory_info, get_user_email, split_nonempty_lines
+
+_WALLTIME_RE = re.compile(r"^(?:[0-9]+):[0-5][0-9](?::[0-5][0-9])?$")
+_MAX_WALLTIME_EXTENSION_SECONDS = 7 * 24 * 60 * 60
+
+
+def _walltime_seconds(value):
+    parts = [int(part) for part in value.split(":")]
+    if len(parts) == 2:
+        hours, minutes = parts
+        seconds = 0
+    else:
+        hours, minutes, seconds = parts
+    return hours * 60 * 60 + minutes * 60 + seconds
 
 def _post_to_bot(params, timeout=15):
     """POST params to the HPRC Bot OOD endpoint. Raises on non-200."""
@@ -196,17 +210,24 @@ def request_help():
         email = get_user_email(user)
 
         help_type         = request.form.get("helpRequest", "").strip()
+        job_request_type  = request.form.get("jobRequestType", "question").strip()
         direct_topic      = request.form.get("help_topic", "").strip()
         direct_issue_desc = request.form.get("issue_description", "").strip()
+        is_walltime_request = help_type == "jobs" and job_request_type == "walltimeExtension"
 
         params = {
             "request_type": "Help", "user": user, "email": email,
             "cluster_name": cluster_name,
             "help_topic": help_type or direct_topic,
-            "issue_description": "", "error_message": "",
-            "job_file_path": "", "job_id": "",
-            "program_file_path": "", "additional_information": "",
+            "issue_description": "", "job_id": "", "additional_information": "",
         }
+
+        if not is_walltime_request:
+            params.update({
+                "error_message": "",
+                "job_file_path": "",
+                "program_file_path": "",
+            })
 
         if help_type == "software":
             params["issue_description"]    = f"{request.form.get('softwareName')} (v{request.form.get('softwareVersion')}) - Toolchain: {request.form.get('softwareToolChain')}"
@@ -214,10 +235,35 @@ def request_help():
             params["additional_information"] = request.form.get("softwareInfo", "")
 
         elif help_type == "jobs":
-            params["job_id"]           = request.form.get("jobID", "")
-            params["job_file_path"]    = request.form.get("jobLocation", "")
-            params["issue_description"] = request.form.get("jobIssue", "")
-            params["error_message"]    = request.form.get("jobErrors", "")
+            if job_request_type == "walltimeExtension":
+                job_id = request.form.get("walltimeJobID", "").strip()
+                extension = request.form.get("walltimeExtension", "").strip()
+                reason = request.form.get("walltimeReason", "").strip()
+                active_jobs = get_active_jobs(user=user)
+                running_job_ids = {
+                    str(job.get("job_id")) for job in active_jobs
+                    if job.get("state") == "Running"
+                }
+
+                if not job_id or job_id not in running_job_ids:
+                    return jsonify({"error": "Select a currently running job."}), 400
+                if not _WALLTIME_RE.fullmatch(extension):
+                    return jsonify({"error": "Additional walltime must use HH:MM or HH:MM:SS format."}), 400
+                if _walltime_seconds(extension) > _MAX_WALLTIME_EXTENSION_SECONDS:
+                    return jsonify({"error": "Additional walltime cannot exceed 7 days."}), 400
+                if not reason:
+                    return jsonify({"error": "Explain why the walltime extension is needed."}), 400
+
+                params["help_topic"] = "Walltime Extension"
+                params["help_request_type"] = "Walltime Extension"
+                params["job_id"] = job_id
+                params["issue_description"] = f"Request additional walltime: {extension}"
+                params["additional_information"] = reason
+            else:
+                params["job_id"]           = request.form.get("jobID", "")
+                params["job_file_path"]    = request.form.get("jobLocation", "")
+                params["issue_description"] = request.form.get("jobIssue", "")
+                params["error_message"]    = request.form.get("jobErrors", "")
 
         elif help_type == "accounts":
             acct_type = request.form.get("accountType", "")

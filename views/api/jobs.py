@@ -631,6 +631,12 @@ def get_user_jobs():
         if request.args.get("refresh", "").lower() in {"1", "true", "yes"}:
             _invalidate_active_job_caches()
         jobs = get_active_jobs(user=os.getenv("USER"))
+        requested_state = request.args.get("state", "").strip().lower()
+        if requested_state:
+            state_aliases = {"running": "Running", "pending": "Pending"}
+            if requested_state not in state_aliases:
+                return jsonify({"error": "Unsupported job state filter"}), 400
+            jobs = [job for job in jobs if job.get("state") == state_aliases[requested_state]]
         return jsonify({"jobs": jobs}), 200
 
     except Exception as e:

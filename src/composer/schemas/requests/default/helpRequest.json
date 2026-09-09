@@ -86,23 +86,36 @@
 
    "jobQestions": {
       "type": "collapsibleColContainer",
-      "title": "Job-Related Questions",
+      "title": "Job Help",
       "condition" : "helpRequest.jobs",
       "elements": {
+
+         "jobRequestType": {
+            "type": "select",
+            "label": "What kind of job help do you need?*",
+            "name": "jobRequestType",
+            "required": true,
+            "options": [
+               { "value": "question", "label": "Job-Related Questions" },
+               { "value": "walltimeExtension", "label": "Walltime Extension" }
+            ]
+         },
 
          "jobID": {
             "type": "text",
             "label": "Provide the job ID",
             "name": "jobID",
 	    "required":true,
-            "help": "Provide the job ID"
+            "help": "Provide the job ID",
+            "condition": "jobRequestType.question"
          },
 
           "jobLocation": {
             "type": "text",
             "label": "Provide the location of the job script",
             "name": "jobLocation",
-            "help": "Provide the location of the job script"
+            "help": "Provide the location of the job script",
+            "condition": "jobRequestType.question"
          },
 
 
@@ -111,14 +124,50 @@
             "label": "Provide detailed information about your job issue",
             "name": "jobIssue",
 	    "required":true,
-            "help": "Describe the job issue in detail"
+            "help": "Describe the job issue in detail",
+            "condition": "jobRequestType.question"
          },
 
          "jobIrrors": {
             "type": "textarea",
             "label": "Copy and paste any relevant output",
             "name": "jobErrors",
-            "help": "Provide any output or error messages relevant to the issue"
+            "help": "Provide any output or error messages relevant to the issue",
+            "condition": "jobRequestType.question"
+         },
+
+         "walltimeNote": {
+            "type": "staticText",
+            "value": "Walltime extensions are a courtesy and are not guaranteed. Availability depends on cluster utilization and current resource constraints. HPRC staff will review your request and respond accordingly.",
+            "isHeading": false,
+            "condition": "jobRequestType.walltimeExtension"
+         },
+
+         "walltimeJobID": {
+            "type": "runningJobSelect",
+            "label": "Select a running job*",
+            "name": "walltimeJobID",
+            "required": true,
+            "condition": "jobRequestType.walltimeExtension",
+            "help": "Only your currently running jobs are listed."
+         },
+
+         "walltimeExtension": {
+            "type": "text",
+            "label": "Additional walltime (HH:MM or HH:MM:SS)*",
+            "name": "walltimeExtension",
+            "required": true,
+            "condition": "jobRequestType.walltimeExtension",
+            "help": "Enter the amount of additional time requested."
+         },
+
+         "walltimeReason": {
+            "type": "textarea",
+            "label": "Why is this extension needed?*",
+            "name": "walltimeReason",
+            "required": true,
+            "condition": "jobRequestType.walltimeExtension",
+            "help": "Provide enough detail for HPRC staff to review the request."
          }
       }
    },
