@@ -7,6 +7,7 @@ nodes; a partial report is more useful than an unbounded filesystem scan.
 """
 
 import argparse
+from collections import deque
 import heapq
 import json
 import os
@@ -21,6 +22,12 @@ def _keep_largest(heap, item, limit):
         heapq.heapreplace(heap, item)
 
 
+def _allocated_size(entry_stat):
+    """Prefer allocated blocks so directory totals better match quota usage."""
+    blocks = getattr(entry_stat, "st_blocks", None)
+    return blocks * 512 if blocks is not None else entry_stat.st_size
+
+
 def scan(root, limit, max_entries, max_seconds):
     started_at = time.monotonic()
     deadline = started_at + max_seconds
@@ -31,11 +38,16 @@ def scan(root, limit, max_entries, max_seconds):
         raise ValueError("The selected quota path is not a directory")
 
     root_device = root_stat.st_dev
-    directory_heap = []
+    directory_stats = {}
     file_heap = []
-    pending = [root]
+    # Each queued directory carries the direct child of root that owns its
+    # totals. Breadth-first traversal avoids diving through one branch before
+    # the other direct children have been visited.
+    pending = deque([(root, None)])
     visited_entries = 0
     skipped_directories = 0
+    total_file_count = 0
+    total_size_bytes = 0
     stopped_reason = None
 
     while pending:
@@ -46,9 +58,7 @@ def scan(root, limit, max_entries, max_seconds):
             stopped_reason = "entry_limit"
             break
 
-        directory = pending.pop()
-        file_count = 0
-        subdirectory_count = 0
+        directory, direct_child = pending.popleft()
 
         try:
             iterator = os.scandir(directory)
@@ -72,40 +82,54 @@ def scan(root, limit, max_entries, max_seconds):
                     continue
 
                 if stat.S_ISREG(entry_stat.st_mode):
-                    file_count += 1
+                    allocated_size = _allocated_size(entry_stat)
+                    total_file_count += 1
+                    total_size_bytes += allocated_size
+                    if direct_child is not None:
+                        child_stats = directory_stats[direct_child]
+                        child_stats["file_count"] += 1
+                        child_stats["size_bytes"] += allocated_size
                     _keep_largest(
                         file_heap,
                         (entry_stat.st_size, entry.path),
                         limit,
                     )
                 elif stat.S_ISDIR(entry_stat.st_mode):
-                    subdirectory_count += 1
                     # Do not follow mounts into another filesystem.
                     if entry_stat.st_dev == root_device:
-                        pending.append(entry.path)
+                        if direct_child is None:
+                            child_path = entry.path
+                            directory_stats[child_path] = {
+                                "path": child_path,
+                                "file_count": 0,
+                                "subdirectory_count": 0,
+                                "size_bytes": 0,
+                            }
+                            pending.append((child_path, child_path))
+                        else:
+                            directory_stats[direct_child]["subdirectory_count"] += 1
+                            pending.append((entry.path, direct_child))
         finally:
             iterator.close()
-
-        item_count = file_count + subdirectory_count
-        _keep_largest(
-            directory_heap,
-            (item_count, directory, file_count, subdirectory_count),
-            limit,
-        )
 
         if stopped_reason:
             break
 
-    directories = [
-        {
-            "path": path,
-            "item_count": item_count,
-            "file_count": file_count,
-            "subdirectory_count": subdirectory_count,
-        }
-        for item_count, path, file_count, subdirectory_count
-        in sorted(directory_heap, reverse=True)
-    ]
+    directories = []
+    for child_stats in directory_stats.values():
+        child_stats["item_count"] = (
+            child_stats["file_count"] + child_stats["subdirectory_count"]
+        )
+        child_stats["size_percent"] = round(
+            child_stats["size_bytes"] / total_size_bytes * 100, 2
+        ) if total_size_bytes else 0
+        directories.append(child_stats)
+
+    directories.sort(
+        key=lambda item: (item["size_bytes"], item["file_count"], item["path"]),
+        reverse=True,
+    )
+    directories = directories[:limit]
     files = [
         {"path": path, "size_bytes": size_bytes}
         for size_bytes, path in sorted(file_heap, reverse=True)
@@ -115,6 +139,8 @@ def scan(root, limit, max_entries, max_seconds):
         "root": root,
         "directories": directories,
         "files": files,
+        "total_file_count": total_file_count,
+        "total_size_bytes": total_size_bytes,
         "partial": stopped_reason is not None,
         "stopped_reason": stopped_reason,
         "visited_entries": visited_entries,

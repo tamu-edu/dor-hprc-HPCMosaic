@@ -24,6 +24,7 @@ SCAN_MAX_ENTRIES = 250000
 SCAN_MAX_SECONDS = 30
 PROCESS_TIMEOUT_SECONDS = 40
 CACHE_SECONDS = 300
+CACHE_VERSION = 2
 
 
 def _get_allowed_quota_paths():
@@ -104,7 +105,9 @@ def _run_scan(path):
 
 
 def _cache_path(path):
-    digest = hashlib.sha256(path.encode("utf-8")).hexdigest()[:20]
+    digest = hashlib.sha256(
+        f"{CACHE_VERSION}:{path}".encode("utf-8")
+    ).hexdigest()[:20]
     return os.path.join(
         tempfile.gettempdir(),
         f"hpcmosaic-quota-inspection-{os.getuid()}-{digest}.json",

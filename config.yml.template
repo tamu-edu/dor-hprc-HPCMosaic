@@ -1,5 +1,8 @@
 development: &common_settings
   cluster_name: "${CLUSTERNAME}"
+  # Set LOGIN_NODE during setup. ACES defaults to alogin3.cluster; Grace and
+  # FASTER deployments should provide their own internal login-node hostname.
+  login_node: "${LOGIN_NODE}"
   announcements_file: "var/announcements/announcements.json"
   dashboard_url: "/pun/dev/${APPNAME}"
   file_app_url: "/pun/sys/files/fs"

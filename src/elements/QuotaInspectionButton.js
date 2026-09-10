@@ -19,6 +19,19 @@ const formatBytes = (bytes) => {
   return `${scaled >= 10 || unitIndex === 0 ? scaled.toFixed(0) : scaled.toFixed(1)} ${units[unitIndex]}`;
 };
 
+const formatUsagePercent = (percent) => {
+  const value = Number(percent);
+  if (!Number.isFinite(value) || value <= 0) return "0%";
+  if (value < 0.1) return "<0.1%";
+  return `${value < 10 ? value.toFixed(1) : value.toFixed(0)}%`;
+};
+
+const getParentDirectory = (path) => {
+  const normalizedPath = String(path || "").replace(/\/+$/, "");
+  const separatorIndex = normalizedPath.lastIndexOf("/");
+  return separatorIndex > 0 ? normalizedPath.slice(0, separatorIndex) : "/";
+};
+
 const QuotaInspectionButton = ({ disk }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -142,27 +155,27 @@ const QuotaInspectionButton = ({ disk }) => {
                 <div className="grid gap-5">
                   {report.partial && (
                     <div className="rounded border border-mosaic-caution bg-mosaic-app px-3 py-2 text-sm text-mosaic-secondary">
-                      This is a partial report because the scan reached its safety limit.
+                      This is a partial report because the scan reached its safety limit. Percentages reflect only the portion that was scanned.
                     </div>
                   )}
 
                   <section>
-                    <h3 className="mb-2 text-base font-bold text-mosaic-primary">Directories with the most items</h3>
+                    <h3 className="mb-2 text-base font-bold text-mosaic-primary">Largest direct subdirectories</h3>
                     <div className="overflow-x-auto rounded border border-mosaic-border">
                       <table className="w-full border-collapse text-left text-sm">
                         <thead className="bg-mosaic-app text-mosaic-secondary">
-                          <tr><th className="px-3 py-2">Directory</th><th className="px-3 py-2 text-right">Files</th><th className="px-3 py-2 text-right">Folders</th><th className="px-3 py-2 text-right">Total</th></tr>
+                          <tr><th className="px-3 py-2">Directory</th><th className="px-3 py-2 text-right">Files</th><th className="px-3 py-2 text-right">Size</th><th className="px-3 py-2 text-right">% of usage</th></tr>
                         </thead>
                         <tbody>
                           {report.directories.map((directory) => (
                             <tr key={directory.path} className="border-t border-mosaic-border">
                               <td className="max-w-[520px] break-all px-3 py-2 text-mosaic-primary">{generate_file_explorer_path_for_disk(directory.path)}</td>
                               <td className="px-3 py-2 text-right text-mosaic-secondary">{directory.file_count.toLocaleString()}</td>
-                              <td className="px-3 py-2 text-right text-mosaic-secondary">{directory.subdirectory_count.toLocaleString()}</td>
-                              <td className="px-3 py-2 text-right font-bold text-mosaic-primary">{directory.item_count.toLocaleString()}</td>
+                              <td className="whitespace-nowrap px-3 py-2 text-right text-mosaic-secondary">{formatBytes(directory.size_bytes)}</td>
+                              <td className="whitespace-nowrap px-3 py-2 text-right font-bold text-mosaic-primary">{formatUsagePercent(directory.size_percent)}</td>
                             </tr>
                           ))}
-                          {report.directories.length === 0 && <tr><td colSpan="4" className="px-3 py-6 text-center text-mosaic-secondary">No readable directories found.</td></tr>}
+                          {report.directories.length === 0 && <tr><td colSpan="4" className="px-3 py-6 text-center text-mosaic-secondary">No readable direct subdirectories found.</td></tr>}
                         </tbody>
                       </table>
                     </div>
@@ -176,7 +189,7 @@ const QuotaInspectionButton = ({ disk }) => {
                         <tbody>
                           {report.files.map((file) => (
                             <tr key={file.path} className="border-t border-mosaic-border">
-                              <td className="max-w-[620px] break-all px-3 py-2 text-mosaic-primary">{generate_file_explorer_path_for_disk(file.path)}</td>
+                              <td className="max-w-[620px] break-all px-3 py-2 text-mosaic-primary">{generate_file_explorer_path_for_disk(getParentDirectory(file.path), file.path)}</td>
                               <td className="whitespace-nowrap px-3 py-2 text-right font-bold text-mosaic-primary">{formatBytes(file.size_bytes)}</td>
                             </tr>
                           ))}
