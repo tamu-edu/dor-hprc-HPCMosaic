@@ -1,12 +1,11 @@
 {
-      
    "groupRequest": {
       "type": "radioGroup",
       "label": "Type of group request?*",
       "name": "groupRequest",
       "required": true,
       "options": [
-         { "value": "rgroup", "label": "Request group access" }
+         { "value": "rgroup", "label": "Request access to an existing group" }
       ]
    },
 

@@ -129,6 +129,12 @@
       "condition" : "helpRequest.accounts",
       "elements": {
 
+         "accountScopeNote": {
+            "type": "staticText",
+            "value": "Accounts are for allocations, SUs, and related issues. For access to a shared directory, use Group Management instead.",
+            "isHeading": false
+         },
+
          "accountType": {
             "type": "select",
             "label": "What do you need help with?*",

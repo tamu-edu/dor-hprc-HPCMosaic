@@ -1,5 +1,10 @@
 development: &common_settings
   cluster_name: "Aces"
+  # ACES login node used for bounded quota inspections from portal hosts.
+  # Grace and FASTER deployments can enable the same feature later by setting
+  # this key to their internal login-node hostname; no application code change
+  # is required.
+  login_node: "alogin3.cluster"
   announcements_file: "var/announcements/announcements.json"
   dashboard_url: "/pun/dev/dor-hprc-HPCMosaic-dev"
   file_app_url: "/pun/sys/files/fs"

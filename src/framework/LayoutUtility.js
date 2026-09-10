@@ -16,6 +16,8 @@ const LayoutUtility = ({
   setLayouts, // add this prop to directly update layouts in parent
   isOpen,
   setIsOpen,
+  className = "LayoutUtility relative inline-block",
+  panelClassName = "absolute right-0 mt-2 w-64 theme-surface border theme-border rounded-lg shadow-lg z-10",
 }) => {
     const [activeLayout, setActiveLayout] = useState(null);
     const [actionInProgress, setActionInProgress] = useState(null);
@@ -237,9 +239,9 @@ const LayoutUtility = ({
     };
 
     return (
-        <div className="relative inline-block">
+        <div className={className}>
             {isOpen && !loadingLayouts && (
-                <div className="absolute right-0 mt-2 w-64 theme-surface border theme-border rounded-lg shadow-lg z-10">
+                <div id="dashboard-layout-menu" className={panelClassName}>
                     <div className="flex justify-between items-center px-4 py-2 border-b theme-border">
                         <h3 className="font-medium theme-text-secondary">Layouts</h3>
                         <button 

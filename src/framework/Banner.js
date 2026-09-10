@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Menu, Transition } from '@headlessui/react';
 import Joyride, { STATUS, ACTIONS } from 'react-joyride';
-import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdPalette, MdCheck, MdFormatSize, MdTextFields } from "react-icons/md";
+import { MdAddchart, MdOutlineQuestionAnswer, MdPlayCircleOutline, MdFeedback, MdClose, MdMaximize, MdMinimize, MdLock, MdLockOpen, MdPalette, MdCheck, MdFormatSize, MdTextFields, MdViewQuilt, MdChevronLeft } from "react-icons/md";
 import { toast } from "react-hot-toast";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdOutlineOpenInFull, MdOutlineCloseFullscreen, MdSettings, MdRefresh } from "react-icons/md";
 
@@ -30,6 +30,7 @@ import {
 import { useChatbotVisibility } from "./ChatbotVisibilityContext";
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js";
+import { sharedGet } from "../utils/sharedGet.js";
 
 const layoutItemsAreEqual = (left, right) =>
   left?.i === right?.i &&
@@ -224,7 +225,7 @@ const Banner = ({ setRunTour }) => {
       try {
         let announcementManagerAllowed = false;
         try {
-          const capabilityResponse = await fetch(`${get_base_url()}/api/announcements`);
+          const capabilityResponse = await sharedGet(`${get_base_url()}/api/announcements`);
           if (capabilityResponse.ok) {
             const capabilityData = await capabilityResponse.json();
             announcementManagerAllowed = capabilityData?.can_manage === true;
@@ -488,6 +489,18 @@ const Banner = ({ setRunTour }) => {
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-3">
+            <div className="flex items-center pr-2 md:pr-3 border-r theme-border">
+              <button
+                type="button"
+                onClick={handleDashboardRefresh}
+                className="mosaic-topbar-button min-w-[40px] px-2"
+                title={`Refresh dashboard. Last updated ${dashboardUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                aria-label="Refresh dashboard"
+              >
+                <MdRefresh className="text-xl flex-shrink-0" />
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={openPopup}
@@ -498,20 +511,13 @@ const Banner = ({ setRunTour }) => {
               <span className="hidden md:inline">Add Element</span>
             </button>
 
-            <button
-              type="button"
-              onClick={handleDashboardRefresh}
-              className="mosaic-topbar-button"
-              title={`Refresh dashboard. Last updated ${dashboardUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
-              aria-label="Refresh dashboard"
-            >
-              <MdRefresh className="text-xl flex-shrink-0" />
-              <span className="hidden md:inline">Refresh</span>
-            </button>
-
-            {/* Settings Dropdown - Contains Layout controls */}
+            {/* Dashboard settings */}
             <Menu as="div" className="relative inline-block text-left">
-              <Menu.Button className="mosaic-topbar-button min-w-[48px] md:min-w-auto">
+              <Menu.Button
+                className="mosaic-topbar-button min-w-[48px] md:min-w-auto"
+                title="Dashboard appearance settings"
+                aria-label="Dashboard appearance settings"
+              >
                 <MdSettings className="text-xl flex-shrink-0" />
                 <span className="hidden md:inline">Settings</span>
               </Menu.Button>  
@@ -526,20 +532,48 @@ const Banner = ({ setRunTour }) => {
 	      >
 
                 <Menu.Items className="absolute right-0 mt-2 w-64 origin-top-right theme-surface border theme-border divide-y theme-border rounded-md shadow-lg focus:outline-none z-50">
-	          <div className="py-1">
+                  <div
+                    className="relative p-2"
+                    onMouseEnter={() => setLayoutUtilityOpen(true)}
+                    onMouseLeave={() => setLayoutUtilityOpen(false)}
+                    onFocus={() => setLayoutUtilityOpen(true)}
+                    onBlur={(event) => {
+                      if (!event.currentTarget.contains(event.relatedTarget)) {
+                        setLayoutUtilityOpen(false);
+                      }
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setLayoutUtilityOpen(true)}
+                      className={`flex w-full items-center rounded-md border theme-border px-3 py-2 text-left transition-colors theme-hover-surface ${
+                        layoutUtilityOpen ? 'theme-selected' : ''
+                      }`}
+                      disabled={loadingLayouts}
+                      aria-expanded={layoutUtilityOpen}
+                      aria-controls="dashboard-layout-menu"
+                    >
+                      <MdViewQuilt className="mr-3 text-xl flex-shrink-0 theme-link" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold theme-text-primary">Layouts</span>
+                        <span className="block text-xs theme-text-muted">Save, restore, or reset your view</span>
+                      </span>
+                      <MdChevronLeft className="ml-2 text-xl flex-shrink-0 theme-text-muted" aria-hidden="true" />
+                    </button>
 
- 	            {/*Layout Utility*/}
-	            <Menu.Item>
-	              {({ active }) => (
-      <button onClick={() => setLayoutUtilityOpen(!layoutUtilityOpen)} className={`${active ? 'theme-surface-hover' : ''} flex w-full px-4 py-2 text-sm text-left theme-text-secondary`}>
-
-			  <MdAddchart className="text-lg mr-2" />
-                          Layouts
-			</button>	        
-                      )}
-	            </Menu.Item>
-
-	          </div>
+                    <LayoutUtility
+                      layouts={layouts}
+                      setLayouts={setLayouts}
+                      applyDefaultView={applyDefaultView}
+                      applySavedLayout={applySavedLayout}
+                      saveCurrentLayout={saveCurrentLayout}
+                      loadingLayouts={loadingLayouts}
+                      isOpen={layoutUtilityOpen}
+                      setIsOpen={setLayoutUtilityOpen}
+                      className="LayoutUtility absolute right-full top-0"
+                      panelClassName="w-64 theme-surface border theme-border rounded-lg shadow-lg z-50"
+                    />
+                  </div>
                   <div className="px-4 py-3">
                     <div className="mb-2 flex items-center text-sm font-semibold theme-text-secondary">
                       <MdPalette className="mr-2 text-lg" />
@@ -675,17 +709,6 @@ const Banner = ({ setRunTour }) => {
 	      onClick={() => setLayoutUtilityOpen(false)}
 	/>
       )}
-
-      <LayoutUtility
-        layouts={layouts}
-        setLayouts={setLayouts}
-        applyDefaultView={applyDefaultView}
-        applySavedLayout={applySavedLayout}
-        saveCurrentLayout={saveCurrentLayout}
-        loadingLayouts={loadingLayouts}
-        isOpen={layoutUtilityOpen}
-        setIsOpen={setLayoutUtilityOpen}
-      />
 
       <LayoutLockProvider layoutLocked={layoutLocked} setLayoutLocked={setLayoutLocked}>
         {/* Main Content Area */}

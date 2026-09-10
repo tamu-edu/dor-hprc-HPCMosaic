@@ -1,5 +1,5 @@
 import React from "react";
-import { AiOutlineCluster, AiOutlineDatabase, AiOutlineUser, AiOutlineCode, AiOutlineLineChart, AiOutlinePieChart, AiOutlineProject } from "react-icons/ai";
+import { AiOutlineCluster, AiOutlineDatabase, AiOutlineUser, AiOutlineCode, AiOutlineLineChart, AiOutlineOrderedList, AiOutlinePieChart, AiOutlineProject } from "react-icons/ai";
 import Card from "./Card";
 import ClusterInfo from "../elements/ClusterInfo";
 import PyVenvManager from "../elements/PyVenvManager";
@@ -7,8 +7,7 @@ import QuotaInfo from "../elements/QuotaInfo";
 import UserGroups from "../elements/UserGroups";
 import Accounts from "../elements/Accounts";
 import UserJobs from "../elements/UserJobs";
-import JobHistory from "../elements/JobHistory";
-// import JobExplorer from "../elements/JobExplorer"; TODO make Job Explorer more efficient
+// import JobExplorer from "../elements/JobExplorer";
 import QuotaButton from '../elements/QuotaButton';
 import Composer from '../elements/Composer';
 // import Chatbot from '../elements/Chatbot';
@@ -101,17 +100,6 @@ const CardConfig = {
         defaultH: 12,
         minW: 1,
         minH: 1
-    },
-
-    "Job History": {
-        description: "Browse jobs submitted by the current user during the past 24 hours.",
-        icon: <AiOutlineProject size={30}/>,
-        chartComponent: JobHistory,
-        category: "user",
-        defaultW: 6,
-        defaultH: 12,
-        minW: 3,
-        minH: 8
     },
 
     "My Quotas Summary": {
@@ -250,9 +238,9 @@ const CardConfig = {
         minW: 1, minH: 1
     },
 
- // "Job Explorer": {
-   //     description: "Advanced job monitoring, filtering, and management for Slurm jobs.",
-     //   icon: <AiOutlineProject size={30}/>,
+    //"Job Explorer": {
+      //  description: "Advanced job monitoring, filtering, and management for Slurm jobs.",
+//        icon: <AiOutlineProject size={30}/>,
 //	chartComponent: JobExplorer,
 //	category: "user",
   //      minW: 8, minH: 24

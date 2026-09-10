@@ -88,6 +88,16 @@ body {
   color: var(--mosaic-color-text-primary);
 }
 
+.mosaic-topbar-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.mosaic-topbar-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .dashboard-grid-shell {
   margin: 16px 16px 0;
   padding: 0;

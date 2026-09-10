@@ -92,11 +92,24 @@ const Modal = memo(({ schema, defaultValues, onSubmit, onClose, title, disclaime
                 Important Information
               </div>
               <ul className="composer-notice-list">
-                {disclaimerText.map((text) => (
-                  <li key={text} className="composer-notice-item">
-                    {text}
-                  </li>
-                ))}
+                {disclaimerText.map((item, index) => {
+                  const isStructuredItem = typeof item === 'object' && item !== null;
+
+                  return (
+                    <li
+                      key={isStructuredItem ? `${item.lead || 'notice'}-${index}` : item}
+                      className={`composer-notice-item ${item?.highlight ? 'composer-notice-item-highlight' : ''}`.trim()}
+                    >
+                      {isStructuredItem ? (
+                        <>
+                          {item.lead && <strong>{item.lead}</strong>}
+                          {item.lead && item.text ? ' ' : ''}
+                          {item.text}
+                        </>
+                      ) : item}
+                    </li>
+                  );
+                })}
               </ul>
             </aside>
           )}

@@ -1,12 +1,19 @@
 import React from "react";
 
-export function generate_file_explorer_path_for_disk(disk_path) {
-  const fullUrl = `/pun/sys/dashboard/files/fs${disk_path}`;
+export function generate_file_explorer_path_for_disk(disk_path, label = disk_path) {
+  // Preserve path separators while encoding characters that would otherwise
+  // be interpreted as part of the URL (for example, spaces, #, and ?).
+  const encodedPath = String(disk_path)
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+  const fullUrl = `/pun/sys/dashboard/files/fs${encodedPath}`;
 
   return (
     <a
       className="non-draggable"
       target="_blank"
+      rel="noopener noreferrer"
       style={{
         color: 'var(--mosaic-color-link)',
         fontWeight: 'bold',
@@ -14,7 +21,7 @@ export function generate_file_explorer_path_for_disk(disk_path) {
       }}
       href={fullUrl}
     >
-    {disk_path}
+    {label}
     </a>
   );
 }

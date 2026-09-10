@@ -1,12 +1,11 @@
 {
-      
    "groupRequest": {
       "type": "radioGroup",
       "label": "What type of group request is this?*",
       "name": "groupRequest",
       "required": true,
       "options": [
-         { "value": "rgroup", "label": "Request group access" }
+         { "value": "rgroup", "label": "Request access to an existing group" }
       ]
    },
 
@@ -30,6 +29,14 @@
            "name": "groupName",
            "required": true,
            "help": "Provide the group name you want to access"
+         },
+
+         "justification": {
+            "type": "textarea",
+            "label": "Explain why you are requesting access to this group",
+            "name": "comments",
+            "required": true,
+            "help": "Describe why you need access to this group and its shared directory."
          }
 
       } 

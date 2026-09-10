@@ -1,15 +1,14 @@
 {
-      
    "groupRequest": {
       "type": "radioGroup",
       "label": "What type of group request is this?*",
       "required": true,
       "name": "groupRequest",
       "options": [
-         { "value": "madd", "label": "Add member" },
-         { "value": "mremove", "label": "Remove member" },
-         { "value": "cgroup", "label": "Create new group" },
-         { "value": "rgroup", "label": "Request group access" }
+         { "value": "madd", "label": "Add a member to an existing group" },
+         { "value": "mremove", "label": "Remove a member from an existing group" },
+         { "value": "cgroup", "label": "Create a new group" },
+         { "value": "rgroup", "label": "Request access to an existing group" }
       ]
    },
 
@@ -50,6 +49,14 @@
 	    "required": true,
             "help": "Provide the NetIDs of members to remove from the group, one per line",
             "condition" : "groupRequest.mremove"
+         },
+
+         "justification": {
+            "type": "textarea",
+            "label": "Briefly explain why this membership change is needed",
+            "name": "comments",
+            "required": true,
+            "help": "Describe why the listed members need to be added to or removed from this group."
          }
       }
    },
@@ -63,7 +70,7 @@
 
          "newGHroupNote": {
             "type": "staticText",
-            "value": "In this section, you can provide all the information needed to create a Linux group. The group name cannot contain spaces or special characters other than underscores (_) and hyphens (-). We recommend choosing a descriptive group name.",
+            "value": "In this section, you can provide all the information needed to create a group. The group name cannot contain spaces or special characters other than underscores (_) and hyphens (-). We recommend choosing a descriptive group name.",
             "isHeading": false
          },
 
@@ -81,6 +88,14 @@
            "name": "groupMembers",
 	   "required": true,
            "help": "Provide the NetIDs of members to add to the group, one per line"
+         },
+
+         "justification": {
+            "type": "textarea",
+            "label": "What will this group and shared directory be used for?",
+            "name": "comments",
+            "required": true,
+            "help": "Briefly describe the work that requires this group and shared directory."
          }
       }  
    },   

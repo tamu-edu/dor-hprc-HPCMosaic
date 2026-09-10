@@ -89,6 +89,11 @@ const GroupButton = () => {
   
 
   const disclaimerText = [
+    {
+      lead: "Linux groups are for shared directories.",
+      text: "If your request concerns an allocation, SUs, or another account-related issue, close this form and select Get Help → Accounts.",
+      highlight: true
+    },
     "Group operations require appropriate permissions.",
     "Only group owners and delegates can add or remove members.",
     "New group names must follow the naming guidelines: no spaces; only underscores and hyphens are allowed.",
