@@ -757,6 +757,11 @@ export const GettingStartedCard = () => {
       href: "https://hprc.tamu.edu/kb/",
     },
     {
+      title: "ACES Quick Start",
+      description: "Connect to Grace and submit your first job",
+      href: "https://hprc.tamu.edu/kb/User-Guides/ACES/",
+    },
+    {
       title: "Open OnDemand Portal",
       description: "Use files, shells, jobs, and interactive applications",
       href: "https://hprc.tamu.edu/kb/Software/Portal/",
