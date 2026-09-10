@@ -26,6 +26,30 @@ if [[ -z "${CLUSTERNAME:-}" ]]; then
     fi
 fi
 
+# Set the login node used by portal-only features such as quota inspection.
+# ACES has a known default. Grace and FASTER deployments can pass LOGIN_NODE
+# or enter their internal login hostname here without changing application code.
+if [[ -z "${LOGIN_NODE:-}" ]]; then
+    DEFAULT_LOGIN_NODE=""
+    if [[ "${CLUSTERNAME,,}" == "aces" ]]; then
+        DEFAULT_LOGIN_NODE="alogin3.cluster"
+    fi
+
+    if [[ -t 0 ]]; then
+        if [[ -n "$DEFAULT_LOGIN_NODE" ]]; then
+            read -p "Enter internal login node [$DEFAULT_LOGIN_NODE]: " LOGIN_NODE
+            LOGIN_NODE="${LOGIN_NODE:-$DEFAULT_LOGIN_NODE}"
+        else
+            read -p "Enter internal login node (required for quota inspection): " LOGIN_NODE
+        fi
+    else
+        LOGIN_NODE="$DEFAULT_LOGIN_NODE"
+        if [[ -z "$LOGIN_NODE" ]]; then
+            echo "No LOGIN_NODE set; quota inspection will remain unavailable until it is configured." >&2
+        fi
+    fi
+fi
+
 # Decide env type
 if [[ -t 0 ]]; then
     # Interactive - prompt user
@@ -55,6 +79,7 @@ echo "Cluster name is: $CLUSTERNAME"
 
 # Export variables
 export CLUSTERNAME
+export LOGIN_NODE
 export APPNAME="$CURRENTDIR"
 export USERNAME="$USER"
 
