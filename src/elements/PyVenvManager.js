@@ -19,6 +19,7 @@ const PyVenvManager = () => {
 	const [envData, setEnvData] = useState(null);
 	const [envsLoading, setEnvsLoading] = useState(false);
 	const [envError, setEnvError] = useState(null);
+	const [envErrorDetails, setEnvErrorDetails] = useState(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deletingEnv, setDeletingEnv] = useState(null);
 
@@ -27,10 +28,12 @@ const PyVenvManager = () => {
   const fetchEnvs = async () => {
 	setEnvsLoading(true);
 	setEnvError(null);
+	setEnvErrorDetails(null);
 	try {
 		const envResponse = await fetch(`${curUrl}/api/get_env`);
 		const envJson = await envResponse.json();
 		if (!envResponse.ok) {
+			setEnvErrorDetails(envJson.details || null);
 			throw new Error(envJson.error || `Unable to load environments (${envResponse.status})`);
 		}
 		if (envJson.environments.length == 0) {
@@ -103,6 +106,11 @@ const PyVenvManager = () => {
 			Unable to load virtual environments
 		</h2>
 		<p className="theme-text-secondary mb-4 break-words max-w-2xl">{envError}</p>
+		{envErrorDetails &&
+		<pre className="theme-surface-muted theme-text-secondary border theme-border rounded p-3 mb-4 max-w-3xl max-h-48 overflow-auto text-left whitespace-pre-wrap break-words text-sm">
+			{envErrorDetails}
+		</pre>
+		}
 		<button
 			type="button"
 			onClick={fetchEnvs}

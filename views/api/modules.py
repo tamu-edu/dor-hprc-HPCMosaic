@@ -37,26 +37,30 @@ def _parse_modulair_list(output):
     environments = []
     current_group = ""
     column_starts = None
+    table_indent = 0
     current_environment = None
 
     ansi_escape = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
     for raw_line in output.splitlines():
         line = ansi_escape.sub("", raw_line).rstrip("\r\n ")
+        stripped_line = line.lstrip()
         group_match = re.match(
-            r"These are your virtual environments in group '([^']+)'", line
+            r"These are your virtual environments in group '([^']+)'", stripped_line
         )
         if group_match:
             current_group = group_match.group(1)
             column_starts = None
             current_environment = None
             continue
-        if "virtual environments in your $SCRATCH" in line:
+        if "virtual environments in your $SCRATCH" in stripped_line:
             current_group = ""
             column_starts = None
             current_environment = None
             continue
 
-        if line.startswith("Name") and "Python Version" in line and "Owner" in line:
+        if stripped_line.startswith("Name") and "Python Version" in stripped_line and "Owner" in stripped_line:
+            table_indent = len(line) - len(stripped_line)
+            line = stripped_line
             headings = [
                 ("name", "Name"),
                 ("description", "Description"),
@@ -70,10 +74,13 @@ def _parse_modulair_list(output):
 
         if not column_starts or not line.strip() or set(line.strip()) == {"-"}:
             continue
-        if line.startswith("For example,") or line.startswith("If you loaded"):
+        if stripped_line.startswith("For example,") or stripped_line.startswith("If you loaded"):
             column_starts = None
             current_environment = None
             continue
+
+        if table_indent:
+            line = line[table_indent:]
 
         values = {}
         for index, (key, start) in enumerate(column_starts):
@@ -258,12 +265,17 @@ def get_envs():
             current_app.logger.error(
                 "Unable to parse modulair list output: %r", result.stdout[:4000]
             )
-            return jsonify({
+            response = {
                 "error": (
                     "ModuLair did not return a recognizable environment list. "
                     "Check the server log for the command output."
                 )
-            }), 502
+            }
+            if str(current_app.config.get("dashboard_url", "")).startswith("/pun/dev/"):
+                diagnostic = result.stdout.strip() or result.stderr.strip() or "(no output)"
+                diagnostic = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", diagnostic)
+                response["details"] = diagnostic[:1500]
+            return jsonify(response), 502
 
         return jsonify({"environments": environments}), 200
 
