@@ -9,6 +9,7 @@ Python/toolchain versions.
 import os
 import json
 import re
+import shlex
 import subprocess
 from collections import defaultdict
 from pathlib import Path
@@ -27,6 +28,68 @@ _catalog_cache = {
     "extensions_by_dependency": None,
     "summaries": None,
 }
+
+MODULAIR_LIST_TIMEOUT_SECONDS = 30
+
+
+def _parse_modulair_list(output):
+    """Convert ``modulair list`` fixed-width output into environment records."""
+    environments = []
+    current_group = ""
+    column_starts = None
+    current_environment = None
+
+    for raw_line in output.splitlines():
+        line = raw_line.rstrip()
+        group_match = re.match(
+            r"These are your virtual environments in group '([^']+)'", line
+        )
+        if group_match:
+            current_group = group_match.group(1)
+            column_starts = None
+            current_environment = None
+            continue
+        if "virtual environments in your $SCRATCH" in line:
+            current_group = ""
+            column_starts = None
+            current_environment = None
+            continue
+
+        if line.startswith("Name") and "Python Version" in line and "Owner" in line:
+            headings = [
+                ("name", "Name"),
+                ("description", "Description"),
+                ("python_version", "Python Version"),
+                ("GCCcore_version", "GCC Version"),
+                ("toolchain", "Toolchain"),
+                ("owner", "Owner"),
+            ]
+            column_starts = [(key, line.index(label)) for key, label in headings]
+            continue
+
+        if not column_starts or not line.strip() or set(line.strip()) == {"-"}:
+            continue
+        if line.startswith("For example,") or line.startswith("If you loaded"):
+            column_starts = None
+            current_environment = None
+            continue
+
+        values = {}
+        for index, (key, start) in enumerate(column_starts):
+            end = column_starts[index + 1][1] if index + 1 < len(column_starts) else None
+            values[key] = line[start:end].strip()
+
+        if values["name"]:
+            values["group"] = current_group
+            current_environment = values
+            environments.append(current_environment)
+        elif current_environment and values["description"]:
+            # Long descriptions wrap onto an indented continuation line.
+            current_environment["description"] = " ".join(
+                filter(None, [current_environment["description"], values["description"]])
+            )
+
+    return environments
 
 
 def _get_modules_path():
@@ -159,20 +222,47 @@ def _get_catalog():
 
 @api.route('/get_env', methods=['GET'])
 def get_envs():
-    scratch = os.path.expandvars("/scratch/user/$USER")
-    metadata_path = os.path.join(scratch, "virtual_envs/metadata.json")
-
     try:
-        if not os.path.exists(metadata_path):
-            return jsonify({"environments": []}), 200
+        login_node = str(current_app.config.get("login_node", "")).strip()
+        if not login_node:
+            return jsonify({
+                "error": "No internal login node is configured for this cluster"
+            }), 503
 
-        with open(metadata_path, 'r') as f:
-            metadata = json.load(f)
+        remote_command = "bash -l -c " + shlex.quote(
+            "source /etc/profile >/dev/null 2>&1 && nice -n 15 modulair list"
+        )
+        result = subprocess.run(
+            [
+                "ssh",
+                "-o", "BatchMode=yes",
+                "-o", "ConnectTimeout=5",
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                login_node,
+                remote_command,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            timeout=MODULAIR_LIST_TIMEOUT_SECONDS,
+        )
+        if result.returncode != 0:
+            error_message = result.stderr.strip() or "ModuLair list command failed"
+            return jsonify({"error": error_message}), 500
 
-        return jsonify(metadata), 200
+        return jsonify({"environments": _parse_modulair_list(result.stdout)}), 200
 
-    except json.JSONDecodeError as e:
-        return jsonify({"error": f"Metadata file is corrupted or invalid JSON: {str(e)}"}), 500
+        # Keep this metadata-only implementation temporarily as a fallback if
+        # listing all personal and shared environments proves too slow.
+        # scratch = os.path.expandvars("/scratch/user/$USER")
+        # metadata_path = os.path.join(scratch, "virtual_envs/metadata.json")
+        # if not os.path.exists(metadata_path):
+        #     return jsonify({"environments": []}), 200
+        # with open(metadata_path, "r") as metadata_file:
+        #     return jsonify(json.load(metadata_file)), 200
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "ModuLair listing timed out"}), 504
     except Exception as e:
         return jsonify({"error": f"Unexpected error fetching venvs: {str(e)}"}), 500
 
@@ -240,27 +330,46 @@ def create_venv():
         if not env_name or not gcc_version or not py_version:
             return jsonify({"error": "Missing required parameters (envName, pyVersion, GCCversion)"}), 400
 
-        hostname_result = subprocess.run(['hostname', '-f'], capture_output=True, text=True)
-        current_host = hostname_result.stdout.strip()
+        login_node = str(current_app.config.get("login_node", "")).strip()
+        if not login_node:
+            return jsonify({
+                "error": "No internal login node is configured for this cluster"
+            }), 503
 
-        # Portal nodes need to SSH to a login node to run module commands
-        login_node = 'alogin3.cluster' if 'portal' in current_host else current_host
-
-        create_cmd = (
-            f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {login_node} "
-            f"'bash -l -c \"source /etc/profile && "
-            f"module load {gcc_version} {py_version} && "
-            f"/sw/local/bin/create_venv {env_name} -d \\\"{description}\\\"\"'"
+        # SSH runs the final argument through a remote shell. Quote every value
+        # before building that command so form input cannot alter its structure.
+        create_venv_command = " ".join([
+            "/sw/local/bin/create_venv",
+            shlex.quote(str(env_name)),
+            "-d",
+            shlex.quote(str(description or "")),
+        ])
+        login_shell_command = (
+            "source /etc/profile && "
+            f"module load {shlex.quote(str(gcc_version))} {shlex.quote(str(py_version))} && "
+            f"{create_venv_command}"
         )
+        remote_command = f"bash -l -c {shlex.quote(login_shell_command)}"
+        create_cmd = [
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=5",
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=/dev/null",
+            login_node,
+            remote_command,
+        ]
 
         result = subprocess.run(
-            create_cmd, shell=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8'
+            create_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding='utf-8',
         )
 
         if result.returncode != 0:
             return jsonify({
-                "error": f"Error creating virtual environment:\n{result.stderr}\nHostname: {current_host}"
+                "error": f"Error creating virtual environment:\n{result.stderr}"
             }), 500
 
         return jsonify({"message": f"'{env_name}' created successfully"}), 200
