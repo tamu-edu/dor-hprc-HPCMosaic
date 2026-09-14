@@ -39,6 +39,7 @@ def _parse_modulair_list(output):
     column_starts = None
     table_indent = 0
     current_environment = None
+    current_detail_field = None
 
     ansi_escape = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
     for raw_line in output.splitlines():
@@ -51,11 +52,13 @@ def _parse_modulair_list(output):
             current_group = group_match.group(1)
             column_starts = None
             current_environment = None
+            current_detail_field = None
             continue
         if "virtual environments in your $SCRATCH" in stripped_line:
             current_group = ""
             column_starts = None
             current_environment = None
+            current_detail_field = None
             continue
 
         if stripped_line.startswith("Name") and "Python Version" in stripped_line and "Owner" in stripped_line:
@@ -72,13 +75,72 @@ def _parse_modulair_list(output):
             column_starts = [(key, line.index(label)) for key, label in headings]
             continue
 
-        if not column_starts or not line.strip() or set(line.strip()) == {"-"}:
-            continue
         if stripped_line.startswith("For example,") or stripped_line.startswith("If you loaded"):
             column_starts = None
             current_environment = None
+            current_detail_field = None
             continue
 
+        # Non-interactive ModuLair output uses numbered records instead of its
+        # fixed-width terminal table.
+        numbered_environment = re.match(r"\d+\.\s+(.+?)\s*$", stripped_line)
+        if numbered_environment:
+            current_environment = {
+                "name": numbered_environment.group(1),
+                "description": "",
+                "python_version": "",
+                "GCCcore_version": "",
+                "toolchain": "",
+                "owner": "",
+                "group": current_group,
+            }
+            environments.append(current_environment)
+            current_detail_field = None
+            continue
+
+        if current_environment and not column_starts:
+            versions = re.match(
+                r"Python:\s*(.*?)\s*\|\s*GCC:\s*(.*?)\s*$", stripped_line
+            )
+            if versions:
+                current_environment["python_version"] = versions.group(1)
+                current_environment["GCCcore_version"] = versions.group(2)
+                current_detail_field = None
+                continue
+
+            detail = re.match(
+                r"(Description|Toolchain|Owner):\s*(.*?)\s*$", stripped_line
+            )
+            if detail:
+                field_name = {
+                    "Description": "description",
+                    "Toolchain": "toolchain",
+                    "Owner": "owner",
+                }[detail.group(1)]
+                current_environment[field_name] = detail.group(2)
+                current_detail_field = field_name
+                continue
+
+            # In numbered output, descriptions are unlabeled and appear
+            # between the environment name and the Python/GCC line.
+            if stripped_line and not current_environment["python_version"]:
+                current_environment["description"] = " ".join(
+                    filter(None, [
+                        current_environment["description"], stripped_line
+                    ])
+                )
+                continue
+
+            if current_detail_field and stripped_line:
+                current_environment[current_detail_field] = " ".join(
+                    filter(None, [
+                        current_environment[current_detail_field], stripped_line
+                    ])
+                )
+                continue
+
+        if not column_starts or not line.strip() or set(line.strip()) == {"-"}:
+            continue
         if table_indent:
             line = line[table_indent:]
 
