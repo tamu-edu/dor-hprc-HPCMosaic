@@ -18,37 +18,32 @@ const PyVenvManager = () => {
   
 	const [envData, setEnvData] = useState(null);
 	const [envsLoading, setEnvsLoading] = useState(false);
+	const [envError, setEnvError] = useState(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deletingEnv, setDeletingEnv] = useState(null);
 
 	const curUrl = get_base_url();
 
   const fetchEnvs = async () => {
+	setEnvsLoading(true);
+	setEnvError(null);
 	try {
-		await setEnvsLoading(true); // Start showing loading spinner
 		const envResponse = await fetch(`${curUrl}/api/get_env`);
+		const envJson = await envResponse.json();
 		if (!envResponse.ok) {
-		const errorString = `envResponse had an HTTP error status: ${envResponse.error}`;
-		const envJson = await envResponse.json();
-			if (envJson.code === "NO_METADATA") {
-				await setEnvsLoading(false);
-				await setEnvData("NO ENVIRONMENTS");
-			}
-			throw new Error(errorString);
+			throw new Error(envJson.error || `Unable to load environments (${envResponse.status})`);
 		}
-		const envJson = await envResponse.json();
-		// console.log("envJson:", envJson)
 		if (envJson.environments.length == 0) {
-			await setEnvsLoading(false);
-			await setEnvData("NO ENVIRONMENTS");
+			setEnvData("NO ENVIRONMENTS");
 			return;
 		}
-		// console.log("made it past length 0 statement");
-		// console.log(envJson.environments[0].GCCcore_version);
-		await setEnvData(envJson.environments);
-		await setEnvsLoading(false); // Stop showing loading spinner
+		setEnvData(envJson.environments);
 	} catch(error) {
 		console.error(`Error fetching environment data: ${error}`);
+		setEnvData(null);
+		setEnvError(error.message || "Unable to load virtual environments");
+	} finally {
+		setEnvsLoading(false);
 	}
   }
 
@@ -96,11 +91,26 @@ const PyVenvManager = () => {
 			</div>
 		</div>
 	  }
-	  {!envData &&
+	  {(!envData && !envError && !envsLoading) &&
 	  <Spinner/>
 	  }
 	  {envsLoading && 
 	  <Spinner/>
+	  }
+	  {envError && !envsLoading &&
+	  <div className="w-full h-full flex flex-col justify-center items-center px-6 text-center">
+		<h2 className="text-xl font-semibold mb-2 theme-text-primary">
+			Unable to load virtual environments
+		</h2>
+		<p className="theme-text-secondary mb-4 break-words max-w-2xl">{envError}</p>
+		<button
+			type="button"
+			onClick={fetchEnvs}
+			className="non-draggable theme-button-primary rounded px-4 py-2"
+		>
+			Try again
+		</button>
+	  </div>
 	  }
 	  {(envData && envData != "NO ENVIRONMENTS") &&
 	  <div className="overflow-auto w-full h-full flex-grow flex-col">

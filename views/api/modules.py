@@ -39,8 +39,9 @@ def _parse_modulair_list(output):
     column_starts = None
     current_environment = None
 
+    ansi_escape = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
     for raw_line in output.splitlines():
-        line = raw_line.rstrip()
+        line = ansi_escape.sub("", raw_line).rstrip("\r\n ")
         group_match = re.match(
             r"These are your virtual environments in group '([^']+)'", line
         )
@@ -251,7 +252,20 @@ def get_envs():
             error_message = result.stderr.strip() or "ModuLair list command failed"
             return jsonify({"error": error_message}), 500
 
-        return jsonify({"environments": _parse_modulair_list(result.stdout)}), 200
+        environments = _parse_modulair_list(result.stdout)
+        no_environments_reported = "no virtual environments" in result.stdout.lower()
+        if not environments and not no_environments_reported:
+            current_app.logger.error(
+                "Unable to parse modulair list output: %r", result.stdout[:4000]
+            )
+            return jsonify({
+                "error": (
+                    "ModuLair did not return a recognizable environment list. "
+                    "Check the server log for the command output."
+                )
+            }), 502
+
+        return jsonify({"environments": environments}), 200
 
         # Keep this metadata-only implementation temporarily as a fallback if
         # listing all personal and shared environments proves too slow.
