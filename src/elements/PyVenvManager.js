@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react'
 import CreateVenvForm from "./CreateVenvForm.js"
 import Spinner from "../framework/Spinner.js"
 import { get_base_url } from "../utils/api_config.js"
-import { cardClasses, cx } from "./dashboardUtils";
+import { cardClasses } from "./dashboardUtils";
 
 const ENVIRONMENT_COLUMNS = [
 	{ key: "name", label: "Name" },
@@ -13,6 +13,26 @@ const ENVIRONMENT_COLUMNS = [
 	{ key: "group", label: "Group" },
 	{ key: "toolchain", label: "Toolchain" },
 ];
+
+const CreateEnvironmentButton = ({ onClick }) => (
+	<button
+		type="button"
+		onClick={onClick}
+		className="non-draggable theme-button-primary rounded px-3 py-2 flex items-center gap-2 whitespace-nowrap"
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			className="h-5 w-5"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			aria-hidden="true"
+		>
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+		</svg>
+		<span>New environment</span>
+	</button>
+);
 
 const PyVenvManager = () => {
   
@@ -122,8 +142,11 @@ const PyVenvManager = () => {
 	  }
 	  {(envData && envData != "NO ENVIRONMENTS") &&
 	  <div className="overflow-auto w-full h-full flex-grow flex-col">
-	  	<h2 className={cardClasses.titleText}>Environment Management</h2>
-			<table className="table-auto w-full border-collapse border theme-border m-2">
+		<div className="flex items-center justify-between gap-3 mb-3">
+			<h2 className={cardClasses.titleText}>Environment Management</h2>
+				<CreateEnvironmentButton onClick={() => setIsFormOpen(true)}/>
+			</div>
+			<table className="table-auto w-full border-collapse border theme-border">
 				<thead>
 				<tr className="theme-table-header">
 					{ENVIRONMENT_COLUMNS.map(({ key, label }) => (
@@ -158,33 +181,12 @@ const PyVenvManager = () => {
 					))}
 				</tbody>
 				</table>
-				<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}}
-				className="non-draggable theme-button-primary rounded-lg p-1 m-2">
-				<svg xmlns="http://www.ws.org/2000/svg"
-				className="h-6 w-6"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-				</svg>
-			</button>
 	  </div>
 	  }
 	  {envData == "NO ENVIRONMENTS" &&
 	  <div className="overflow-auto w-full h-full flex flex-grow flex-col justify-center items-center">	
 			<h2 className="text-xl font-semibold mb-4 theme-text-primary"> No virtual environments to manage. </h2>
-			<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}}
-				className="non-draggable theme-button-primary rounded-lg p-1 m-2">
-				<svg xmlns="http://www.ws.org/2000/svg"
-				className="h-6 w-6"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				>
-				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-			</svg>
-		</button>
+			<CreateEnvironmentButton onClick={() => setIsFormOpen(true)}/>
 	  </div>
 	  }
    </div> 

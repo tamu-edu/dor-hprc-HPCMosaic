@@ -33,11 +33,9 @@ MODULAIR_LIST_TIMEOUT_SECONDS = 30
 
 
 def _parse_modulair_list(output):
-    """Convert ``modulair list`` fixed-width output into environment records."""
+    """Convert non-interactive ``modulair list`` output into records."""
     environments = []
     current_group = ""
-    column_starts = None
-    table_indent = 0
     current_environment = None
     current_detail_field = None
 
@@ -50,39 +48,20 @@ def _parse_modulair_list(output):
         )
         if group_match:
             current_group = group_match.group(1)
-            column_starts = None
             current_environment = None
             current_detail_field = None
             continue
         if "virtual environments in your $SCRATCH" in stripped_line:
             current_group = ""
-            column_starts = None
             current_environment = None
             current_detail_field = None
-            continue
-
-        if stripped_line.startswith("Name") and "Python Version" in stripped_line and "Owner" in stripped_line:
-            table_indent = len(line) - len(stripped_line)
-            line = stripped_line
-            headings = [
-                ("name", "Name"),
-                ("description", "Description"),
-                ("python_version", "Python Version"),
-                ("GCCcore_version", "GCC Version"),
-                ("toolchain", "Toolchain"),
-                ("owner", "Owner"),
-            ]
-            column_starts = [(key, line.index(label)) for key, label in headings]
             continue
 
         if stripped_line.startswith("For example,") or stripped_line.startswith("If you loaded"):
-            column_starts = None
             current_environment = None
             current_detail_field = None
             continue
 
-        # Non-interactive ModuLair output uses numbered records instead of its
-        # fixed-width terminal table.
         numbered_environment = re.match(r"\d+\.\s+(.+?)\s*$", stripped_line)
         if numbered_environment:
             current_environment = {
@@ -98,7 +77,7 @@ def _parse_modulair_list(output):
             current_detail_field = None
             continue
 
-        if current_environment and not column_starts:
+        if current_environment:
             versions = re.match(
                 r"Python:\s*(.*?)\s*\|\s*GCC:\s*(.*?)\s*$", stripped_line
             )
@@ -138,26 +117,6 @@ def _parse_modulair_list(output):
                     ])
                 )
                 continue
-
-        if not column_starts or not line.strip() or set(line.strip()) == {"-"}:
-            continue
-        if table_indent:
-            line = line[table_indent:]
-
-        values = {}
-        for index, (key, start) in enumerate(column_starts):
-            end = column_starts[index + 1][1] if index + 1 < len(column_starts) else None
-            values[key] = line[start:end].strip()
-
-        if values["name"]:
-            values["group"] = current_group
-            current_environment = values
-            environments.append(current_environment)
-        elif current_environment and values["description"]:
-            # Long descriptions wrap onto an indented continuation line.
-            current_environment["description"] = " ".join(
-                filter(None, [current_environment["description"], values["description"]])
-            )
 
     return environments
 
