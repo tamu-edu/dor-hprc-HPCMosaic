@@ -1,60 +1,72 @@
 import React, {useState, useEffect} from 'react'
-import config from '../../config.yml';
 import CreateVenvForm from "./CreateVenvForm.js"
 import Spinner from "../framework/Spinner.js"
 import { get_base_url } from "../utils/api_config.js"
-import { cardClasses, cx } from "./dashboardUtils";
+import { cardClasses } from "./dashboardUtils";
+
+const ENVIRONMENT_COLUMNS = [
+	{ key: "name", label: "Name" },
+	{ key: "python_version", label: "Python Version" },
+	{ key: "GCCcore_version", label: "GCCcore Version" },
+	{ key: "description", label: "Description" },
+	{ key: "owner", label: "Owner" },
+	{ key: "group", label: "Group" },
+	{ key: "toolchain", label: "Toolchain" },
+];
+
+const CreateEnvironmentButton = ({ onClick }) => (
+	<button
+		type="button"
+		onClick={onClick}
+		className="non-draggable theme-button-primary rounded px-3 py-2 flex items-center gap-2 whitespace-nowrap"
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			className="h-5 w-5"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			aria-hidden="true"
+		>
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+		</svg>
+		<span>New environment</span>
+	</button>
+);
 
 const PyVenvManager = () => {
   
 	const [envData, setEnvData] = useState(null);
-	const [envKeys, setEnvKeys] = useState(null);
 	const [envsLoading, setEnvsLoading] = useState(false);
+	const [envError, setEnvError] = useState(null);
+	const [envErrorDetails, setEnvErrorDetails] = useState(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deletingEnv, setDeletingEnv] = useState(null);
 
 	const curUrl = get_base_url();
 
   const fetchEnvs = async () => {
+	setEnvsLoading(true);
+	setEnvError(null);
+	setEnvErrorDetails(null);
 	try {
-		await setEnvsLoading(true); // Start showing loading spinner
 		const envResponse = await fetch(`${curUrl}/api/get_env`);
+		const envJson = await envResponse.json();
 		if (!envResponse.ok) {
-		const errorString = `envResponse had an HTTP error status: ${envResponse.error}`;
-		const envJson = await envResponse.json();
-			if (envJson.code === "NO_METADATA") {
-				await setEnvsLoading(false);
-				await setEnvData("NO ENVIRONMENTS");
-				await setEnvKeys(null);
-			}
-			throw new Error(errorString);
+			setEnvErrorDetails(envJson.details || null);
+			throw new Error(envJson.error || `Unable to load environments (${envResponse.status})`);
 		}
-		const envJson = await envResponse.json();
-		// console.log("envJson:", envJson)
 		if (envJson.environments.length == 0) {
-			await setEnvsLoading(false);
-			await setEnvData("NO ENVIRONMENTS");
-			await setEnvKeys(null);
+			setEnvData("NO ENVIRONMENTS");
 			return;
 		}
-		// console.log("made it past length 0 statement");
-		// console.log(envJson.environments[0].GCCcore_version);
-		await setEnvData(envJson.environments);
-		
-		// This is a hack bc I'm not getting the json object in the same order as list_envs's output
-		// from the back-end
-		let keysArr = await Object.keys(envJson.environments[0]);
-		let tmp = keysArr[0];
-		keysArr[0] = keysArr[2];
-		keysArr[2] = tmp; // Swap name to the front
-		tmp = keysArr[1];
-		keysArr[1] = keysArr[3];
-		
-		keysArr[3] = tmp; // Swap the description to the back
-		await setEnvKeys(keysArr);
-		await setEnvsLoading(false); // Stop showing loading spinner
+		setEnvData(envJson.environments);
 	} catch(error) {
 		console.error(`Error fetching environment data: ${error}`);
+		setEnvData(null);
+		setEnvError(error.message || "Unable to load virtual environments");
+	} finally {
+		setEnvsLoading(false);
 	}
   }
 
@@ -102,21 +114,44 @@ const PyVenvManager = () => {
 			</div>
 		</div>
 	  }
-	  {(!envData && !envKeys) && 
+	  {(!envData && !envError && !envsLoading) &&
 	  <Spinner/>
 	  }
 	  {envsLoading && 
 	  <Spinner/>
 	  }
-	  {((envData && envData != "NO ENVIRONMENTS") && envKeys) && 
+	  {envError && !envsLoading &&
+	  <div className="w-full h-full flex flex-col justify-center items-center px-6 text-center">
+		<h2 className="text-xl font-semibold mb-2 theme-text-primary">
+			Unable to load virtual environments
+		</h2>
+		<p className="theme-text-secondary mb-4 break-words max-w-2xl">{envError}</p>
+		{envErrorDetails &&
+		<pre className="theme-surface-muted theme-text-secondary border theme-border rounded p-3 mb-4 max-w-3xl max-h-48 overflow-auto text-left whitespace-pre-wrap break-words text-sm">
+			{envErrorDetails}
+		</pre>
+		}
+		<button
+			type="button"
+			onClick={fetchEnvs}
+			className="non-draggable theme-button-primary rounded px-4 py-2"
+		>
+			Try again
+		</button>
+	  </div>
+	  }
+	  {(envData && envData != "NO ENVIRONMENTS") &&
 	  <div className="overflow-auto w-full h-full flex-grow flex-col">
-	  	<h2 className={cardClasses.titleText}>Environment Management</h2>
-			<table className="table-auto w-full border-collapse border theme-border m-2">
+		<div className="flex items-center justify-between gap-3 mb-3">
+			<h2 className={cardClasses.titleText}>Environment Management</h2>
+				<CreateEnvironmentButton onClick={() => setIsFormOpen(true)}/>
+			</div>
+			<table className="table-auto w-full border-collapse border theme-border">
 				<thead>
 				<tr className="theme-table-header">
-					{envKeys.map((field, index) => (
-					<th className="border theme-border px-4 py-2 theme-text-primary" key={index}>
-						{field.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+					{ENVIRONMENT_COLUMNS.map(({ key, label }) => (
+					<th className="border theme-border px-4 py-2 theme-text-primary" key={key}>
+						{label}
 					</th>
 					))}
 					<th className="border theme-border px-4 py-2 theme-text-primary">
@@ -127,13 +162,11 @@ const PyVenvManager = () => {
 				<tbody>
 					{envData.map((env) => (
 						<tr key={env.name} className="theme-hover-surface transition-colors theme-text-primary">
-							<td className="border theme-border px-4 py-2">{env.group}</td>
-							<td className="border theme-border px-4 py-2">{env.name}</td>
-							<td className="border theme-border px-4 py-2">{env.GCCcore_version}</td>
-							<td className="border theme-border px-4 py-2">{env.description}</td>
-							<td className="border theme-border px-4 py-2">{env.owner}</td>
-							<td className="border theme-border px-4 py-2">{env.python_version}</td>
-							<td className="border theme-border px-4 py-2">{env.toolchain}</td>
+							{ENVIRONMENT_COLUMNS.map(({ key }) => (
+								<td className="border theme-border px-4 py-2" key={key}>
+									{env[key] || ""}
+								</td>
+							))}
 							<td className="border theme-border px-4 py-2"> 
 									<button className="non-draggable theme-button-danger px-2 py-1 rounded"
 									onClick={() => deleteHandler(env.name)} disabled={deletingEnv === env.name}>
@@ -148,33 +181,12 @@ const PyVenvManager = () => {
 					))}
 				</tbody>
 				</table>
-				<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}}
-				className="non-draggable theme-button-primary rounded-lg p-1 m-2">
-				<svg xmlns="http://www.ws.org/2000/svg"
-				className="h-6 w-6"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-				</svg>
-			</button>
 	  </div>
 	  }
-	  {(envData == "NO ENVIRONMENTS" && !envKeys) && 
+	  {envData == "NO ENVIRONMENTS" &&
 	  <div className="overflow-auto w-full h-full flex flex-grow flex-col justify-center items-center">	
 			<h2 className="text-xl font-semibold mb-4 theme-text-primary"> No virtual environments to manage. </h2>
-			<button id="createVenvFormButton" onClick={() => {setIsFormOpen(true)}}
-				className="non-draggable theme-button-primary rounded-lg p-1 m-2">
-				<svg xmlns="http://www.ws.org/2000/svg"
-				className="h-6 w-6"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				>
-				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-			</svg>
-		</button>
+			<CreateEnvironmentButton onClick={() => setIsFormOpen(true)}/>
 	  </div>
 	  }
    </div> 

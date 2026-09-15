@@ -26,7 +26,7 @@ if [[ -z "${CLUSTERNAME:-}" ]]; then
     fi
 fi
 
-# Set the login node used by portal-only features such as quota inspection.
+# Set the login node used by portal features that run work on the cluster.
 # ACES has a known default. Grace and FASTER deployments can pass LOGIN_NODE
 # or enter their internal login hostname here without changing application code.
 if [[ -z "${LOGIN_NODE:-}" ]]; then
@@ -40,12 +40,12 @@ if [[ -z "${LOGIN_NODE:-}" ]]; then
             read -p "Enter internal login node [$DEFAULT_LOGIN_NODE]: " LOGIN_NODE
             LOGIN_NODE="${LOGIN_NODE:-$DEFAULT_LOGIN_NODE}"
         else
-            read -p "Enter internal login node (required for quota inspection): " LOGIN_NODE
+            read -p "Enter internal login node (required for login-node features): " LOGIN_NODE
         fi
     else
         LOGIN_NODE="$DEFAULT_LOGIN_NODE"
         if [[ -z "$LOGIN_NODE" ]]; then
-            echo "No LOGIN_NODE set; quota inspection will remain unavailable until it is configured." >&2
+            echo "No LOGIN_NODE set; features that require an internal login node will remain unavailable until it is configured." >&2
         fi
     fi
 fi
