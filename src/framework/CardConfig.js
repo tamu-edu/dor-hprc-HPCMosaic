@@ -9,7 +9,6 @@ import Accounts from "../elements/Accounts";
 import UserJobs from "../elements/UserJobs";
 // import JobExplorer from "../elements/JobExplorer";
 import QuotaButton from '../elements/QuotaButton';
-import Composer from '../elements/Composer';
 // import Chatbot from '../elements/Chatbot';
 import AcknowledgementForm from '../elements/AcknowledgementForm';
 import ClusterStatus from '../elements/ClusterStatus';

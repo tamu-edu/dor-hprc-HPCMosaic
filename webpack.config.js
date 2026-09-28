@@ -18,7 +18,6 @@ module.exports = {
       react: path.resolve(__dirname, "node_modules/react"),
       "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
       '@config': path.resolve(__dirname, 'config.yml'),
-      '@composer_index': path.resolve(__dirname, 'src/composer', 'ComposerWrapper.js')
     },
   },
   watchOptions: {
@@ -35,7 +34,6 @@ module.exports = {
         include: [
           path.resolve(__dirname, "src"),
           path.resolve(__dirname, "src/Components/Chatbot/frontend/hprc-chatbot-gui"),
-          path.resolve(__dirname, "external/drona_composer/src")
         ],
         use: {
           loader: "babel-loader",
