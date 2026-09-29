@@ -30,13 +30,3 @@ And on a succesful run you will see the changes appear on the dashboard. Note th
 
 ## To have changes propogate every time frontend is modified
 >npm run build-watch
-
-## Extra info
-The project includes submodules located in:
-external/
-
-Specifically, Drona Composer. The repo for which is https://github.com/tamu-edu/dor-hprc-drona-composer
-
-Remember to pull and update submodules when updating the repository:
-> git pull  
-> git submodule update --remote

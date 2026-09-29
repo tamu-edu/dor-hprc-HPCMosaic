@@ -2,14 +2,6 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-#Get and set submodules
-# Initialize git submodules if they exist
-if [ -f .gitmodules ]; then
-    echo "Initializing git submodules..."
-    git submodule init
-    git submodule update
-fi
-
 # Set CLUSTERNAME
 if [[ -z "${CLUSTERNAME:-}" ]]; then
     if [[ -t 0 ]]; then
