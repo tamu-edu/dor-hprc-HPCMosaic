@@ -37,7 +37,7 @@ function Unit(props) {
 
   useEffect(() => {
     if (props.value && props.value !== "") {
-      const match = props.value.match(/^(\d+)(.+)$/);
+      const match = props.value.match(/^(\d+(?:\.\d+)?)(.+)$/);
       if (match) {
         const [_, num, unitValue] = match;
         setNumber(Number(num));

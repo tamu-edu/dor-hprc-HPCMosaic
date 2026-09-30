@@ -24,17 +24,35 @@
       ]
    },
 
-   
+   "buyinRequiredNote": {
+      "type": "staticText",
+      "value": "Quota increases of more than 10 TB or longer than 6 months require a quota buy-in.",
+      "isHeading": false,
+      "condition" : "isLongRequest.Yes && isPIRequest.Yes"
+   },
+
    "isBuyRequest": {
       "type": "radioGroup",
-      "label": "Do you want to purchase a quota buy-in?",
+      "label": "Do you want to purchase a quota buy-in? (required for this request)",
       "name": "isBuyRequest",
-      "condition" : "isPIRequest.Yes",
+      "condition" : "isLongRequest.Yes && isPIRequest.Yes",
       "required" : true,
       "options": [
          { "value": "No", "label": "No" },
          { "value": "Yes", "label": "Yes" }
       ]
+   },
+
+   "buyinDeclinedContainer": {
+      "type": "rowContainer",
+      "condition" : "isLongRequest.Yes && isPIRequest.Yes && isBuyRequest.No",
+      "elements": {
+         "buyinDeclinedNote": {
+            "type": "staticText",
+            "value": "\n\nA quota buy-in is required for requests of more than 10 TB or longer than 6 months. Select Yes to continue, or answer No to the first question if your request is for 10 TB or less and 6 months or shorter.\n\n",
+            "isHeading": true
+         }
+      }
    },
 
    "noBuyContainer": {
@@ -53,15 +71,52 @@
    "buyinQuestions": {
       "type": "collapsibleColContainer",
       "title": "Quota Buy-In Details",
-      "condition" : "isBuyRequest.Yes",
+      "condition" : "isLongRequest.Yes && isPIRequest.Yes && isBuyRequest.Yes",
       "elements": {
           
          "buyinNote": {
             "type": "staticText",
             "value": "TAMU HPRC offers long-term dedicated storage for a fee. For more information and current rates, see <a href=\"https://hprc.tamu.edu/kb/Helpful-Pages/Storage/\" style=\"color: blue;\" target=\"blank\">the knowledge base.</a>",
             "isHeading": false,
-	    "allowHtml": true 
+	    "allowHtml": true
           },
+
+         "buyinCurrentLimitsContainer": {
+            "type": "rowContainer",
+            "elements": {
+               "currentQuota": {
+                  "type": "text",
+                  "label": "Current Quota",
+                  "name": "currentQuota",
+                  "disableChange": true
+               },
+               "currentFileLimit": {
+                  "type": "text",
+                  "label": "Current File Limit",
+                  "name": "currentFileLimit",
+                  "disableChange": true
+               }
+            }
+         },
+
+         "buyinLimitsContainer": {
+            "type": "rowContainer",
+            "elements": {
+               "newQuota": {
+                  "type": "unit",
+                  "label": "New Quota",
+                  "name": "newQuota",
+                  "units": [{ "label": "TB", "value": "TB" }],
+                  "required": true
+               },
+               "newFileLimit": {
+                  "type": "text",
+                  "label": "New File Limit",
+                  "name": "newFileLimit",
+                  "required": true
+               }
+            }
+         },
 
          "expirationDate": {
             "type": "text",
@@ -86,7 +141,7 @@
   "justification": {
     "type": "collapsibleColContainer",
     "title": "Request Justification",
-    "condition" : "isBuyRequest.No || isLongRequest.No ",
+    "condition" : "isLongRequest.No",
     "elements": {
 
 	  "MandatoryNotice": {
@@ -110,12 +165,10 @@
       "type": "rowContainer",
       "elements": {
          "currentQuota": {
-            "type": "unit",
+            "type": "text",
             "label": "Current Quota",
             "name": "currentQuota",
-            "value": "1",
-            "units": [{ "label": "TB", "value": "TB" }],
-	    "required": true
+            "disableChange": true
          },
          "newQuota": {
             "type": "unit",
@@ -134,8 +187,7 @@
             "type": "text",
             "label": "Current File Limit",
             "name": "currentFileLimit",
-            "value": "250000",
-	    "required": true
+            "disableChange": true
          },
          "newFileLimit": {
             "type": "text",
