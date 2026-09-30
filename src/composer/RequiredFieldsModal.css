@@ -1,6 +1,6 @@
 /*
- * Compatibility styles for the portaled modal supplied by external/drona_composer.
- * The external root has no unique hook, so use its complete portal hierarchy to
+ * Compatibility styles for the portaled modal in RequiredFieldsModal.js.
+ * The modal root has no unique hook, so use its complete portal hierarchy to
  * minimize collisions with other Bootstrap-style components.
  */
 .modal.fade.show > .modal-dialog {

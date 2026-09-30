@@ -1,3 +1,0 @@
-[submodule "external/drona_composer"]
-	path = external/drona_composer
-	url = git@github.com:tamu-edu/dor-hprc-drona-composer.git
