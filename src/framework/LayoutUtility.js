@@ -155,7 +155,7 @@ const LayoutUtility = ({
             await refreshLayouts();
         } catch (error) {
             console.error("Error renaming layout:", error);
-            toast.error(`An unexpected error occurred`);
+            toast.error(error.response?.data?.error || `An unexpected error occurred`);
             await refreshLayouts(); // Refresh to restore consistent state
         } finally {
             setActionInProgress(null);
