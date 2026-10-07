@@ -1,0 +1,19 @@
+# Open OnDemand Appverse catalog metadata.
+# https://openondemand.connectci.org/appverse-contributor-documentation
+title: "HPCMosaic"
+description: >-
+  Customizable drag-and-drop dashboard for HPC users: Slurm jobs and queue
+  insight, node and GPU status, storage quotas, project accounts, Python
+  virtual environments, software modules, announcements, and support-request
+  forms. Built for the Texas A&M HPRC clusters; several widgets rely on
+  site-specific tools whose expected output is documented in docs/sysadmin/.
+software: "HPCMosaic"
+app_type: "dashboard"
+implementation_tags:
+  - "passenger"
+  - "modules"
+maintainer:
+  name: "Texas A&M High Performance Research Computing"
+  support_url: "https://github.com/tamu-edu/dor-hprc-HPCMosaic/issues"
+website: "https://hprc.tamu.edu"
+docs: "https://github.com/tamu-edu/dor-hprc-HPCMosaic/tree/main/docs/sysadmin"

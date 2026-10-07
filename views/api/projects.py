@@ -1,11 +1,16 @@
 """Project-account parsing and myproject API routes."""
 
 import logging
+import re
 import subprocess
 
 from flask import jsonify, request
 
 from . import api
+
+MYPROJECT = "/sw/local/bin/myproject"
+# Account values are passed to myproject as an argument; must not start with "-".
+SAFE_ACCOUNT = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$")
 
 
 def _parse_project_accounts(output):
@@ -61,7 +66,7 @@ def _parse_job_history(output):
     history = []
     for line in lines[start + 1:]:
         fields = [f.strip() for f in line.split("|") if f.strip()]
-        if len(fields) >= 8:
+        if len(fields) >= 9:
             history.append({
                 "job_id":       fields[1],
                 "submit_time":  fields[3],
@@ -86,15 +91,19 @@ def get_projectinfo():
         job_history  = request.args.get("job_history")
         pending_jobs = request.args.get("pending_jobs")
 
-        if pending_jobs and account:
-            command = f"/sw/local/bin/myproject -p {account}"
-        elif job_history and account:
-            command = f"/sw/local/bin/myproject -j {account}"
-        else:
-            command = "/sw/local/bin/myproject"
+        if account and not SAFE_ACCOUNT.match(account):
+            return jsonify({"error": "Invalid account"}), 400
 
+        if pending_jobs and account:
+            argv = [MYPROJECT, "-p", account]
+        elif job_history and account:
+            argv = [MYPROJECT, "-j", account]
+        else:
+            argv = [MYPROJECT]
+
+        command = " ".join(argv)
         logging.info(f"Executing: {command}")
-        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        result = subprocess.check_output(argv, stderr=subprocess.STDOUT)
         output = result.decode("utf-8").strip()
 
         response_data = {"executed_command": command, "raw_output": output}
@@ -119,10 +128,12 @@ def set_default_account():
         account_no = request.json.get("account_no")
         if not account_no:
             return jsonify({"error": "Missing account_no"}), 400
+        account_no = str(account_no)
+        if not SAFE_ACCOUNT.match(account_no):
+            return jsonify({"error": "Invalid account_no"}), 400
 
-        command = f"/sw/local/bin/myproject -d {account_no}"
         result = subprocess.run(
-            command, shell=True,
+            [MYPROJECT, "-d", account_no],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8'
         )
 
