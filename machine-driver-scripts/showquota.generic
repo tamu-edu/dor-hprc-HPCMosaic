@@ -1,0 +1,136 @@
+#!/bin/bash
+#
+# show quotas for /home/USERID and /scratch/user/USERID based on Lustre project (directory based) quotas on a single Lustre filesystem
+#
+# last upadte:
+#   - 09/15/2026: TMH : initial version
+#
+
+# flag for verbose output (print project ID)
+VERBOSE=0
+
+# width for first column showing directory path; to accommodate long path
+adj_pos="32"
+
+print_lustre_project_quota () {
+  local _PROJ_DIR=$1
+  local _PROJ_ID=$(lfs project -d $_PROJ_DIR | awk '{ print $1 }')
+  [ $? -ne 0 ] && continue
+  [[ "_$PROJ_ID" == 0 ]] && continue
+  ( lfs quota -q -p $_PROJ_ID $_PROJ_DIR \
+    | tr '\n' ' ' \
+    | awk -v v_pos=${adj_pos} '
+      function append_symbol(str, limit) {
+        if (limit != 0) {return sprintf("%s*", str)} else {return str}
+      }
+      function human(x, multiplier) {
+          where=match(x, "\\*")
+          x=x * multiplier
+          if (x<1024) {return x} else {x/=1024}
+          s="KMGTPEZY";
+          while (x>=1024 && length(s)>1)
+              {x/=1024; s=substr(s,2)}
+          if (length(s)<=6)
+              return append_symbol(sprintf("%.1f%s", x, substr(s,1,1)), where)
+          else
+              return append_symbol(sprintf("%d%s", int(x+0.5), substr(s,1,1)), where)
+      }
+      {printf "%*-s %10s %10s    %10s %10s\n", v_pos, $1, human($2,1024), human($3,1024), $6, $7}'
+  ) || echo "Failed to get Lustre project id for $_PROJ_DIR"
+}
+
+print_usage () {
+  echo "Usage: $0 [-v] [-h] [USERID]"
+  exit 0
+}
+
+# processing paremters
+if [ $# -ge 1 ]; then
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -v) VERBOSE=1 ;;
+      -h) print_usage ;;
+      *) user=$1
+    esac
+    shift
+  done
+else
+  if [ "$USER" == "root" ] ; then
+    print_usage
+  fi
+fi
+
+if [[ "$USER" == "root" ]] && [[ -z $user ]] ; then
+  print_usage
+fi
+
+id=$(id -u $user)
+if [ $? -ne 0 ] ; then
+  echo "$user is not a valid user."
+  exit 1
+fi
+
+msg="Quotas for user '$user' are: "
+if [ -z "$user" ] ; then
+  user=$USER
+  msg="Your current disk quotas are: "
+fi
+
+if [ "$USER" == "root" ] ; then
+  echo $msg
+
+  # suppress printing UID and project ID unless VERBOSE flag is set to 1
+  if [ ! $SUDO_USER ]; then
+    if [ ${VERBOSE} -eq 1 ]; then
+      uid=$(id -u $user)
+      echo "UID for user is $uid"
+
+      # find project id
+      echo "  Project ID for /home/$user is $(lfs project -d /home/$user | awk '{ print $1 }')"
+      echo "  Project ID for /scratch/user/$user is $(lfs project -d /scratch/user/$user | awk '{ print $1 }')"
+      # project id for group dir
+      GIDS=$(id -G $user)
+      for GID in ${GIDS} ; do
+        [[ $GID == $UID ]] && continue
+        GROUP=$(getent group $GID | cut -d ':' -f 1)
+        [[ $? -ne 0 ]] && continue
+
+        if [[ -d "/scratch/group/$GROUP" ]] ; then
+          PROJ_DIR="/scratch/group/$GROUP"
+          PROJ_ID=$(lfs project -d $PROJ_DIR | awk '{ print $1 }')
+          [ $? -ne 0 ] && continue
+          [[ "$PROJ_ID" == 0 ]] && continue
+          echo "  Project ID for ${PROJ_DIR} is ${PROJ_ID}"
+        fi
+      done
+    fi
+  fi
+else
+  if [ "$USER" != "$user" ]; then
+    echo "$0 : Error: cannot show other user's quota ('${user}') from your account ('${USER}')"
+    exit 1
+  fi
+  echo $msg
+fi
+
+printf "%-${adj_pos}s %s\n" 'Disk' 'Disk Usage      Limit    File Usage      Limit'
+
+# list per user quotas
+for BASE_DIR in /home /scratch/user ; do 
+  PROJ_DIR=$BASE_DIR/$user
+  print_lustre_project_quota ${PROJ_DIR}
+done
+
+# list quotas for any group dirs matching the user's secondary groups
+GIDS=$(id -G $user)
+for GID in ${GIDS} ; do
+  [[ $GID == $UID ]] && continue
+  GROUP=$(getent group $GID | cut -d ':' -f 1)
+  [[ $? -ne 0 ]] && continue
+
+  if [[ -d "/scratch/group/$GROUP" ]] ; then
+    PROJ_DIR="/scratch/group/$GROUP"
+    print_lustre_project_quota ${PROJ_DIR}
+  fi
+
+done

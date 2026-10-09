@@ -5,9 +5,10 @@ command that endpoint runs, and the **exact output format the parser
 expects**. To support a card at your site, provide a command that prints this
 format, or change the parser.
 
-The sample outputs below are **illustrative**: the
-TAMU scripts that produce this output are kept in
-[`machine-driver-scripts/`](../../machine-driver-scripts/).
+The sample outputs below are **illustrative**. The TAMU scripts that produce
+this output are not published;
+[`machine-driver-scripts/`](../../machine-driver-scripts/) lists each one and
+links back to its format here.
 
 All backend commands run as the logged-in user inside their PUN. A non-zero
 exit code or unparseable output makes the endpoint return
@@ -45,8 +46,9 @@ Contents:
 /sw/local/bin/pestat -s alloc,mix,idle          # views/api/jobs.py:729
 ```
 
-This is Ole Holm Nielsen's [pestat](https://github.com/OleHolmNielsen/Slurm_tools/tree/master/pestat);
-any version with the standard column layout works. Each line is split on
+This is Ole Holm Nielsen's [pestat](https://github.com/OleHolmNielsen/Slurm_tools/tree/master/pestat).
+TAMU runs the unmodified GitHub version, and any version with the standard
+column layout works. Each line is split on
 whitespace:
 
 | Field index | Meaning | Used as |
@@ -206,6 +208,11 @@ Samples are assumed to be evenly spaced over the job's elapsed time
 /sw/local/bin/retrieve_sinfo                    # views/api/info.py:229
 ```
 
+**TAMU's script is published:**
+[`machine-driver-scripts/retrieve_sinfo`](../../machine-driver-scripts/retrieve_sinfo).
+It only runs `sinfo -o '%P %a %l %s %F %C' --noheader`, so it works at any
+Slurm site. Install it at the path above.
+
 stdout must be **one Python or JSON literal**: a list with one object per
 queue (partition). It is parsed with `ast.literal_eval`. JSON `true`, `false`
 and `null` are **not** accepted; use numbers and strings only. All values are
@@ -219,16 +226,18 @@ displayed or passed through `parseInt`, so strings are fine:
 | `job_size` | Tooltip text: "Can request {job_size} nodes/cores." |
 | `time_limit` | Tooltip text: "Up to {time_limit} runtime limit." |
 
-```python
-[{"queue": "cpu", "CPU_total": "9216", "CPU_avail": "1210",
-  "nodes_total": "96", "nodes_avail": "8", "job_size": "1-64 nodes", "time_limit": "7-00:00:00"},
- {"queue": "gpu", "CPU_total": "3072", "CPU_avail": "640",
-  "nodes_total": "32", "nodes_avail": "4", "job_size": "1-8 nodes", "time_limit": "2-00:00:00"}]
-```
+The published script takes "avail" to mean **idle**: the second field of
+`sinfo`'s `A/I/O/T` counts. It also adds an `avail` key (partition up/down),
+which the card ignores. Example output:
 
-**Plain-Slurm alternative:** generate the same structure from
-`sinfo -h -o "%P|%C|%F|%s|%l"`. `%C` gives CPUs as A/I/O/T and `%F` gives
-nodes as A/I/O/T.
+```json
+[
+  {"queue": "cpu*", "avail": "up", "time_limit": "7-00:00:00", "job_size": "1-infinite",
+   "nodes_avail": "8", "nodes_total": "96", "CPU_avail": "1210", "CPU_total": "9216"},
+  {"queue": "gpu", "avail": "up", "time_limit": "2-00:00:00", "job_size": "1-8",
+   "nodes_avail": "4", "nodes_total": "32", "CPU_avail": "640", "CPU_total": "3072"}
+]
+```
 
 ---
 
@@ -243,6 +252,16 @@ Applies to **My Quotas Summary** (`src/elements/SummaryCards.js`) and
 ```
 /sw/local/bin/showquota          # views/api/info.py:244, views/api/quota_inspection.py:32
 ```
+
+**A generic version of TAMU's script is published:**
+[`machine-driver-scripts/showquota.generic`](../../machine-driver-scripts/showquota.generic).
+Install it as `/sw/local/bin/showquota`. It assumes:
+- **Lustre project quotas** (`lfs project`, `lfs quota -p`)
+- quota directories at `/home/<user>`, `/scratch/user/<user>`, and
+  `/scratch/group/<group>` for each of the user's groups
+
+On other filesystems, keep its output format and replace the quota lookup.
+Unlike TAMU's production `showquota`, it prints no expiry lines.
 
 Parsing (`views/api/info.py:246-318`):
 
@@ -327,6 +346,11 @@ fields and TAMU policy, see [Request forms](#request-forms-composer-schemas).
 These cards are built around TAMU's allocation model: accounts with a
 **service-unit (SU)** allocation per **fiscal year**, and one default account.
 
+**`myproject` is not published.** It depends on TAMU's accounting system and is
+too site-specific to be useful elsewhere. If your site has a comparable tool,
+wrap it to print the format below. Otherwise, remove these two cards from
+`src/framework/CardConfig.js` and `src/framework/DefaultLayout.js`.
+
 ### `myproject` (site tool)
 
 `views/api/projects.py`. The account value must match
@@ -386,8 +410,11 @@ does accounting, so there is no direct Slurm equivalent.
 **Frontend:** `src/elements/PyVenvManager.js`, `src/elements/CreateVenvForm.js`
 **Endpoints:** `GET /api/get_env`, `GET /api/get_py_versions`, `POST /api/create_venv`, `DELETE /api/delete_env/<name>`
 
-Built on **ModuLair**, TAMU HPRC's virtual-environment manager. All four
-commands are site tools.
+Built on **ModuLair**, TAMU HPRC's virtual-environment manager, which is open
+source: [tamu-edu/dor-hprc-venv-manager](https://github.com/tamu-edu/dor-hprc-venv-manager)
+(MIT). Installing it provides `modulair`, `create_venv` and `delete_venv`.
+`toolchains` is a separate TAMU tool (see below); without it, the create form
+can't list Python versions.
 
 `get_env` and `create_venv` run on `login_node` over SSH. If `login_node` is
 empty, they return HTTP 503 ("No internal login node is configured").
@@ -434,6 +461,15 @@ For example, to activate an environment run: ...
 /sw/local/bin/toolchains          # views/api/modules.py:337
 ```
 
+**TAMU's script is published for reference:**
+[`machine-driver-scripts/toolchains`](../../machine-driver-scripts/toolchains)
+(Perl). It won't run unmodified at another site, because:
+- it needs its helper module `ToolChains.pm`, which isn't included
+- it assumes TAMU's EasyBuild layout (`/sw/eb/sw`, `/sw/hprc/sw`)
+
+HPCMosaic only uses its default table output, so a small script that prints
+the same columns for your toolchains is enough.
+
 - Only lines containing the text `Python` are considered, and **the first
   such line is skipped** as a header.
 - Each remaining line is split on whitespace. `[2]` must be a **loadable GCC
@@ -442,9 +478,11 @@ For example, to activate an environment run: ...
   occurrence of each Python version wins.
 
 ```
-Toolchain  Year  GCCcore           ...  ...  ...  Python
-foss       2023a GCCcore/12.3.0    ...  ...  ...  Python/3.11.3
-foss       2022b GCCcore/12.2.0    ...  ...  ...  Python/3.10.8
+  -------------------------------------------------------------------------------------------
+   Toolchain     =   GCC version      &       MPI version        |  Available Python version *
+  -------------------------------------------------------------------------------------------
+   foss/2023b        =   GCC/13.2.0       &    OpenMPI/4.1.6        |       Python/3.11.5
+   foss/2023a        =   GCC/12.3.0       &    OpenMPI/4.1.5        |       Python/3.11.3
 ```
 
 ### `create_venv` (over SSH)
@@ -515,7 +553,7 @@ Format: a JSON array with one record per module version.
 **Endpoints:** `GET /api/announcements`, `/api/admin/announcements*`
 
 These only need the JSON file at `announcements_file`. For the file format and
-admin workflow, see [`ANNOUNCEMENTS.md`](../../ANNOUNCEMENTS.md), and see
+admin workflow, see [`ANNOUNCEMENTS.md`](ANNOUNCEMENTS.md), and see
 [integrations.md](integrations.md#announcements) for how admins are
 identified. Local times are interpreted as `America/Chicago`
 (`views/api/announcement.py:25`, `src/elements/AnnouncementManager.js:80`).
@@ -575,8 +613,8 @@ src/composer/schemas/requests/<profile>/<form>.json
   `launch/`.
 - **For your site:** create `requests/<your cluster>/` and copy in the forms
   you want to change. No code change is needed.
-- Field types and conditional display are described in `CODEBASE_OVERVIEW.md`
-  §6. Field names become the form fields posted to the backend, so keep the
+- Field types and conditional display are described in
+  [`CODEBASE_OVERVIEW.md`](CODEBASE_OVERVIEW.md) §6. Field names become the form fields posted to the backend, so keep the
   names the backend reads (listed in
   [integrations.md](integrations.md#support-request-webhook)).
 

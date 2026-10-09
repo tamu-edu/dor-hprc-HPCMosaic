@@ -10,7 +10,7 @@ First tagged release, prepared for the Open OnDemand Appverse.
 ### Added
 - Sysadmin documentation in `docs/sysadmin/`: deployment guide, per-widget
   input contracts, and external integrations (support webhook, email, SSH).
-- `site-scripts/` for the site tools the backend calls.
+- `machine-driver-scripts/` listing the site tools the backend calls.
 - `appverse.yml` catalog metadata.
 
 ### Changed

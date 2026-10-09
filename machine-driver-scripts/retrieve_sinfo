@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+import subprocess
+import json
+
+def sinfo_json():
+    # Define the command to get the sinfo data
+    command = ['sinfo', '-o', '%P %a %l %s %F %C', '--noheader']
+    # Run the subprocess to get the sinfo data
+    try:
+        output = subprocess.check_output(command, universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while running sinfo: {e}")
+        return json.dumps({})
+    # Process the output
+    data = []
+
+    #print(output)
+    
+    for line in output.strip().split('\n'):
+        if line:
+            parts = line.split()
+            if parts[0] == 'PARTITION':
+                continue
+            # Parse out each part of the line
+            queue, avail, time_limit, job_size, nodes_cpus = parts[0], parts[1], parts[2], parts[3], parts[4:6]
+            nodes_info, cpus_info = nodes_cpus[0], nodes_cpus[1]
+            nodes_split = nodes_info.split('/')
+            cpus_split = cpus_info.split('/')
+            nodes_avail, nodes_total = nodes_split[1], nodes_split[-1]  # assuming the format is always correct
+            cpu_avail, cpu_total = cpus_split[1], cpus_split[-1]  # assuming the format is always correct
+            
+            # Append to data list as dict
+            data.append({
+                'queue': queue,
+                'avail': avail,
+                'time_limit': time_limit,
+                'job_size': job_size,
+                'nodes_avail': nodes_avail,
+                'nodes_total': nodes_total,
+                'CPU_avail': cpu_avail,
+                'CPU_total': cpu_total
+            })
+
+    # Convert the list of data to JSON
+    result_json = json.dumps(data, indent=2)
+    return result_json
+
+def main():
+    # Print the JSON output of sinfo
+    print(sinfo_json())
+
+if __name__ == "__main__":
+    main()

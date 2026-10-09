@@ -195,7 +195,7 @@ Leaving `login_node` empty disables these features. The endpoints return a
 ## Announcements
 
 - **Storage:** a single JSON file at `announcements_file` (see
-  [`ANNOUNCEMENTS.md`](../../ANNOUNCEMENTS.md) for the schema). Writes are
+  [`ANNOUNCEMENTS.md`](ANNOUNCEMENTS.md) for the schema). Writes are
   file-locked and atomic, and use revision numbers to catch concurrent edits.
 - **Who is an admin:** any user whose PUN can **write** to that file. That
   user gets `can_manage: true` from `/api/announcements` and sees the

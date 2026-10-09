@@ -11,7 +11,7 @@ equivalents, edit the code, or hide the widget.
 | This page | Requirements, install, `config.yml`, dependency matrix, site checklist |
 | [widgets.md](widgets.md) | Per widget: endpoints, commands run, and the exact output format each parser expects |
 | [integrations.md](integrations.md) | Support-request webhook payloads, email, login-node SSH, announcements, group directories |
-| [../../machine-driver-scripts/](../../machine-driver-scripts/) | The TAMU site scripts the backend calls |
+| [../../machine-driver-scripts/](../../machine-driver-scripts/) | List of the TAMU site scripts the backend calls (not published) |
 
 ## How it works
 
@@ -114,13 +114,13 @@ the names in the "Add Element" drawer (`src/framework/CardConfig.js`).
 | [My Jobs Summary](widgets.md#my-jobs-summary--user-jobs) | `/api/jobs`, `/jobs/past_jobs`, `/jobs/<id>`, `/jobs/<id>/jobstats`, `/cancel_job/<id>`, `/priority/queue-insight` | `squeue`, `sacct`, `scontrol`, `scancel`, `sprio`, `sinfo`; optional jobstats logs | Standard (jobstats optional) | Job charts hidden when jobstats logs are absent |
 | [User Jobs](widgets.md#my-jobs-summary--user-jobs) | `/api/jobs`, `/cancel_job/<id>` | `squeue`, `scancel` | Standard | — |
 | [Cluster Nodes Overview](widgets.md#nodes-available--cluster-nodes-overview) | `/api/nodes`, `/node/<n>`, `/node/<n>/jobs` | `sinfo`, `scontrol`, `squeue` | Standard (hides a `STAFF` partition chip) | — |
-| [Node Utilization](widgets.md#node-utilization) | `/api/sinfo` | `/sw/local/bin/retrieve_sinfo` | Site | Card shows an error |
-| [My Quotas Summary](widgets.md#quota-cards) | `/api/showquota`, `/quota`, `/quota/inspection` | `/sw/local/bin/showquota`; SSH for inspection; support webhook | Site | Card shows an error |
+| [Node Utilization](widgets.md#node-utilization) | `/api/sinfo` | `/sw/local/bin/retrieve_sinfo` ([included](../../machine-driver-scripts/retrieve_sinfo); plain `sinfo`) | Standard, with the included script | Card shows an error |
+| [My Quotas Summary](widgets.md#quota-cards) | `/api/showquota`, `/quota`, `/quota/inspection` | `/sw/local/bin/showquota` ([generic version included](../../machine-driver-scripts/showquota.generic); Lustre); SSH for inspection; support webhook | Site | Card shows an error |
 | [Quota Information](widgets.md#quota-cards) | `/api/showquota`, `/quota` | `showquota`; support webhook | Site | Card shows an error |
 | [User Groups](widgets.md#user-groups) | `/api/groups`, `/showquota`, `/group` | `groups`; `showquota`; `/scratch/group/`; support webhook | Mixed | Group list works; requests fail |
-| [Accounts](widgets.md#accounts--project-information) | `/api/projectinfo`, `/set_default_account` | `/sw/local/bin/myproject` | Site | Card shows an error |
-| [Project Information](widgets.md#accounts--project-information) | same | `myproject` | Site | Card shows an error |
-| [Python Venv Manager](widgets.md#python-venv-manager) | `/api/get_env`, `/create_venv`, `/delete_env/<n>`, `/get_py_versions` | `modulair`, `create_venv`, `delete_venv`, `toolchains`; SSH; Lmod | Site | Card shows an error |
+| [Accounts](widgets.md#accounts--project-information) | `/api/projectinfo`, `/set_default_account` | `/sw/local/bin/myproject` (not published; TAMU-specific) | Site | Card shows an error; remove the card |
+| [Project Information](widgets.md#accounts--project-information) | same | `myproject` (not published) | Site | Card shows an error; remove the card |
+| [Python Venv Manager](widgets.md#python-venv-manager) | `/api/get_env`, `/create_venv`, `/delete_env/<n>`, `/get_py_versions` | `modulair`, `create_venv`, `delete_venv` ([ModuLair](https://github.com/tamu-edu/dor-hprc-venv-manager), open source); `toolchains`; SSH; Lmod | Site (mostly open source) | Card shows an error |
 | [Software Modules](widgets.md#software-modules) | `/api/available_modules/summary`, `/available_modules/details` | `modules/<cluster>-modules.json` | Site-generated file | "No modules catalog" error |
 | [Announcements Summary](widgets.md#announcements) | `/api/announcements` | `announcements.json` | Standard | Empty list |
 | [Announcement Manager](widgets.md#announcements) (admins only) | `/api/admin/announcements*` | Write access to `announcements.json` | Standard | Hidden from non-admins |
@@ -136,7 +136,7 @@ delete its entry from `src/framework/CardConfig.js` (and from
 
 Each item lists the exact code to change. Line numbers are as of v1.0.0.
 
-**Site scripts** (provide an equivalent at the same path, change the path, or hide the card):
+**Site scripts** (install the ones in [`machine-driver-scripts/`](../../machine-driver-scripts/), provide an equivalent at the same path, change the path, or hide the card):
 - [ ] `/sw/local/bin/showquota`: `views/api/info.py:244`, `views/api/quota_inspection.py:32`
 - [ ] `/sw/local/bin/myproject`: `views/api/projects.py:11` (`MYPROJECT`)
 - [ ] `/sw/local/bin/pestat`: `views/api/jobs.py:729`
@@ -175,8 +175,10 @@ Each item lists the exact code to change. Line numbers are as of v1.0.0.
 - `/api/jobs/summary` and `/api/utilization` run `squeue` for **all** users,
   cached for 10-20 s per PUN. On very large clusters, watch the load on
   slurmctld.
-- `Node Utilization` reads site-specific `retrieve_sinfo` output, not `sinfo`
-  directly.
+- `Node Utilization` reads `sinfo` through a separate script
+  (`retrieve_sinfo`, included) rather than calling it directly.
+- The Accounts and Project Information cards need TAMU's unpublished
+  `myproject` and have no generic replacement.
 - `System Load` shows the OOD web node's load average.
 - Several frontend components read `config.production.cluster_name`
   directly. `src/composer/schemas/requestProfile.js` notes that the YAML loader

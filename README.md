@@ -24,8 +24,8 @@ CSS frontend.
 - Slurm client commands on the OOD web node (`sinfo`, `squeue`, `scontrol`,
   `sacct`, `scancel`; `sprio` optional)
 - Python 3 and Node.js/npm on the OOD web node
-- Optional: Lmod, passwordless SSH to a login node, and the site scripts in
-  [`site-scripts/`](site-scripts/)
+- Optional: Lmod, passwordless SSH to a login node, and the site scripts
+  listed in [`machine-driver-scripts/`](machine-driver-scripts/)
 
 See the [requirements and dependency matrix](docs/sysadmin/README.md#dependency-matrix).
 
@@ -54,7 +54,7 @@ lists each one with its file and line.
 - [Deployment guide and `config.yml` reference](docs/sysadmin/README.md)
 - [Per-widget input formats](docs/sysadmin/widgets.md)
 - [Support-request webhook, email, SSH, announcements](docs/sysadmin/integrations.md)
-- [Announcement file format and admin workflow](ANNOUNCEMENTS.md)
+- [Announcement file format and admin workflow](docs/sysadmin/ANNOUNCEMENTS.md)
 
 ## Development
 
@@ -63,7 +63,7 @@ lists each one with its file and line.
 | Frontend code or `config.yml` | `npm run build` (or `npm run build-watch` while developing) |
 | Backend code | Restart the web server from the OOD portal (Help → Restart Web Server) |
 
-`CODEBASE_OVERVIEW.md` describes the code layout.
+[`docs/sysadmin/CODEBASE_OVERVIEW.md`](docs/sysadmin/CODEBASE_OVERVIEW.md) describes the code layout.
 
 ## Known limitations
 
