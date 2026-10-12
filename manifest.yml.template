@@ -1,4 +1,6 @@
 name: ${CLUSTERNAME} Dashboard (HPCMosaic${ENV_SUFFIX})
-description: ${CLUSTERNAME} utilities
+description: |
+  Customizable drag-and-drop dashboard for ${CLUSTERNAME} users: jobs, node
+  status, quotas, project accounts, software modules, and support requests.
 icon: fa://columns
 category: Dashboard

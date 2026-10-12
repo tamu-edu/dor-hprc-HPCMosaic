@@ -373,7 +373,7 @@ const Banner = ({ setRunTour }) => {
         return { success: true, layoutName };
       } catch (error) {
         console.error("Error saving layout:", error);
-        toast.error("Failed to save layout.");
+        toast.error(error.response?.data?.error || "Failed to save layout.");
         return null;
       }
     }

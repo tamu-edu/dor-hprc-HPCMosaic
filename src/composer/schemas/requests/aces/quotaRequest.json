@@ -67,12 +67,10 @@
       "type": "rowContainer",
       "elements": {
          "currentQuota": {
-            "type": "unit",
+            "type": "text",
             "label": "Current Quota",
             "name": "currentQuota",
-            "value": "1",
-            "units": [{ "label": "TB", "value": "TB" }],
-	    "required": true
+            "disableChange": true
          },
          "newQuota": {
             "type": "unit",
@@ -91,8 +89,7 @@
             "type": "text",
             "label": "Current File Limit",
             "name": "currentFileLimit",
-            "value": "250000",
-	    "required": true
+            "disableChange": true
          },
          "newFileLimit": {
             "type": "text",

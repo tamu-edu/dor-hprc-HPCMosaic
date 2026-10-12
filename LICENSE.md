@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2015 Phusion
+Copyright (c) 2020-2026 High Performance Research Computing, Texas A&M University
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

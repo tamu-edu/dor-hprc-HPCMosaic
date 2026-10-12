@@ -8,14 +8,98 @@ import os
 import re
 import subprocess
 import logging
+import shutil
 
 PREFERENCES_FILENAME = "_preferences.json"
 
+# Per-user app data lives under $HOME so it works on systems without /scratch.
+# HPCMOSAIC_DATA_DIR overrides the location (useful for local testing).
+DATA_DIR_ENV = "HPCMOSAIC_DATA_DIR"
+DEFAULT_DATA_DIRNAME = ".HPCMosaic"
+LEGACY_LAYOUTS_DIR = "/scratch/user/{user}/ondemand/layouts"
+
+# Names accepted for newly created layouts (save, rename target).
+_NEW_LAYOUT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 _.-]{0,63}$")
+
+
+def get_data_dir():
+    """Return the base directory for per-user HPCMosaic data."""
+    override = os.environ.get(DATA_DIR_ENV)
+    if override:
+        return os.path.expanduser(override)
+    return os.path.join(os.path.expanduser("~"), DEFAULT_DATA_DIRNAME)
+
+
+def _migrate_legacy_layouts(user, dest):
+    """
+    Create `dest`, seeding it with *.json files from the old scratch layouts
+    directory if one exists. The scratch copy is left untouched as a backup.
+    Files are staged in a temp dir and renamed into place so concurrent
+    requests never see a partially copied directory.
+    """
+    legacy = LEGACY_LAYOUTS_DIR.format(user=user)
+    try:
+        legacy_files = [
+            f for f in os.listdir(legacy)
+            if f.endswith('.json') and os.path.isfile(os.path.join(legacy, f))
+        ]
+    except OSError:
+        legacy_files = []
+
+    if not legacy_files:
+        os.makedirs(dest, exist_ok=True)
+        return
+
+    staging = f"{dest}.tmp-{os.getpid()}"
+    try:
+        os.makedirs(staging, exist_ok=True)
+        for name in legacy_files:
+            shutil.copy2(os.path.join(legacy, name), os.path.join(staging, name))
+        os.rename(staging, dest)
+        logging.info(f"Migrated {len(legacy_files)} layout file(s) from {legacy} to {dest}")
+    except OSError as e:
+        # Another request may have created dest first; either way fall back
+        # to whatever dest holds (or an empty dir).
+        logging.warning(f"Layout migration from {legacy} skipped: {e}")
+        shutil.rmtree(staging, ignore_errors=True)
+        os.makedirs(dest, exist_ok=True)
+
 
 def get_layouts_dir(user):
-    """Return the layouts directory path for a user, creating it if needed."""
-    path = f"/scratch/user/{user}/ondemand/layouts"
-    os.makedirs(path, exist_ok=True)
+    """Return the layouts directory path for a user, creating (and migrating) it if needed."""
+    path = os.path.join(get_data_dir(), "layouts")
+    if not os.path.isdir(path):
+        os.makedirs(get_data_dir(), exist_ok=True)
+        _migrate_legacy_layouts(user, path)
+    return path
+
+
+def resolve_layout_path(layouts_dir, layout_name, creating=False):
+    """
+    Return the file path for a named layout, or raise ValueError if the name
+    is unsafe. `creating=True` applies a strict allowlist for new names;
+    otherwise any plain file name is accepted so pre-existing layouts with
+    unusual names can still be loaded, renamed, or deleted.
+    """
+    if not isinstance(layout_name, str) or not layout_name:
+        raise ValueError("Layout name is required")
+    if creating:
+        if not _NEW_LAYOUT_NAME_RE.match(layout_name):
+            raise ValueError(
+                "Layout names must be 1-64 characters: letters, digits, spaces, "
+                "'.', '_' or '-', starting with a letter or digit"
+            )
+    elif (
+        any(c in layout_name for c in ('/', '\\', '\0'))
+        or layout_name in ('.', '..')
+        or layout_name.startswith('_')
+    ):
+        raise ValueError("Invalid layout name")
+
+    base = os.path.realpath(layouts_dir)
+    path = os.path.realpath(os.path.join(base, f"{layout_name}.json"))
+    if os.path.dirname(path) != base:
+        raise ValueError("Invalid layout name")
     return path
 
 

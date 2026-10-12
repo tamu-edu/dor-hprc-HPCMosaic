@@ -1,6 +1,5 @@
 from flask import Flask, render_template, redirect, jsonify
 from flask_cors import CORS
-from views.job_composer import job_composer
 from views.api import api
 import yaml
 import os
@@ -45,21 +44,11 @@ app.config.update(config)
 app.config['user'] = os.environ['USER']
 
 app.register_blueprint(api, url_prefix='/api')
-app.register_blueprint(job_composer, url_prefix="/jobs/composer")
 
 @app.route("/")
 def index():
-    environments = get_directories("./environments")
-    return render_template("index.html", environments=environments)
+    return render_template("index.html")
 
-def get_directories(path):
-    return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
-
-@app.route("/config")
-def config():
-    return detect_env()
-        
 
 if __name__ == "__main__":
         app.run(debug=True)

@@ -4,6 +4,7 @@ Cluster information retrieval routes.
 These routes run read-only shell commands to surface cluster state
 (quota, node utilization, user groups, etc.) to the frontend.
 """
+import ast
 import os
 import re
 import subprocess
@@ -228,7 +229,7 @@ def get_sinfo():
             "/sw/local/bin/retrieve_sinfo", shell=True, stderr=subprocess.STDOUT
         )
         output = result.decode("utf-8")
-        return jsonify(eval(output)), 200
+        return jsonify(ast.literal_eval(output.strip())), 200
 
     except subprocess.CalledProcessError as e:
         return jsonify({"error": f"Command failed: {e.output.decode('utf-8')}"}), 500

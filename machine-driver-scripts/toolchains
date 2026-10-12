@@ -1,0 +1,697 @@
+#!/usr/bin/env perl
+
+#===============================================================================
+#         FILE: toolchains
+#
+#  DESCRIPTION: Show a table of toolchains and their GCC and MPI dependency versions
+#               Can also display a list of compatible sw modules
+#
+#        USAGE: toolchains [toolchain_version | sw_module1 sw_module2 ...]
+#      OPTIONS: -a -v -1 -h
+#         BUGS: 
+#
+# DEPENDENCIES: ToolChains.pm
+#        NOTES: 
+#       AUTHOR: Michael Dickens cmdickens@tamu.edu
+# ORGANIZATION: High Performance Research Computing, Texas A&M University
+#      VERSION: 1.1.1
+# LAST UPDATED: 10/23/2025
+#     REVISION: 1
+#===============================================================================
+# for hprc Compiler and MPI toolchains, use a text file of a find results and just query Core directory
+
+# nice to haves
+# TODO maybe make first sw_name in @ARGV main focus and can include a specific version Trinity/2.15.1
+# TODO maybe make first value in @ARGV the only toolchains that will be displayed
+
+# FIXME if multiple compiled modules found (/sw/eb/sw and /sw/hprc/sw dirs), keep the latest version 
+
+use strict;
+use Getopt::Long qw(:config no_ignore_case gnu_getopt);
+use Term::ANSIColor;    # for underlined or colored text
+
+# next two lines used to find ToolChains.pm which should be in the same directory as this toolchains executable
+use FindBin;
+use lib $FindBin::Bin;
+
+use ToolChains;
+#use Sort::Versions;    # integrated the Sort::Versions code into this script
+use Data::Dumper;
+$Data::Dumper::Sortkeys = 1;
+
+my $usage = qq{
+Synopsis:
+    toolchains will list the compatible toolchains.
+    toolchains can be specified to only show a specific toolchain, year or gcc version.
+
+Example Usage:
+    toolchains                      # display foss and intel toolchains with GCC, MPI dependencies and available Python versions
+    toolchains -a                   # display all toolchains with GCC, MPI dependencies and available Python versions
+    toolchains foss                 # display just the foss toolchains
+    toolchains 2023b                # display all toolchains that have 2023b (foss/2023b and intel/2023b)
+    toolchains 23b                  # display all toolchains that have 2023b (foss/2023b and intel/2023b)
+    toolchains 10.2.0               # display just the GCC/10.2.0 lines
+    toolchains 10.2                 # display just the GCC/10.2.0 lines
+
+Options:
+    -a  show all toolchain versions
+    -v  show version
+    -h  show this help message
+
+};
+
+my $help;
+my $print_one_line_each_toolchain;
+my $all_toolchains;
+my $show_version;
+my $skip_hidden_modules = 1;
+my $version = '0.1.1';
+
+# 0.1.1  fixed match for gompic toolchain
+
+GetOptions (
+    "1" => \$print_one_line_each_toolchain,
+    "a|all" => \$all_toolchains,
+    "v|version" => \$show_version,
+    "h|help" => \$help,
+);
+
+if ($show_version) {
+    print "toolchains version: $version\n";
+    exit;
+}
+
+if ($help) {
+    print "$usage\n";
+    exit;
+}
+
+my $show_table = 1;                                         # (for no args)
+my $show_table_for_just_one_toolchain = 0;                  # foss
+
+my @main_compilers = qw(foss intel);
+my @other_compilers = qw(iimpic gompi gompic fosscuda gfbf iccifort intel-compilers);
+my @main_version_sufixes = qw(Python Perl Java CUDA PyTorch OpenBlas TensorFlow);
+my @additional_version_suffixes = qw(-testing);     # use this in case some versionsuffix isn't matched by the regex
+
+my @all_compilers = (@main_compilers, @other_compilers);
+
+my %all_compilers;
+foreach (@all_compilers) {
+    $all_compilers{$_} = 1;    
+}
+
+my $single_argument;
+
+#if (@ARGV == 1) {
+    $single_argument = @ARGV[0];
+#}
+#elsif (@ARGV > 1) {
+#    $show_table = 0;
+#}
+
+# populate the values for the following hashes based on the versions in the output of the "module load foss/YYYYs" then "module load Python" results
+my ($gcc_versions, $mpi_versions, $python_versions) = &get_versions();
+
+my %GCC_version = %{ $gcc_versions };
+my %MPI_version = %{ $mpi_versions };
+my %python_version = %{ $python_versions };
+
+my %core_modules;
+my %sw_core_module_avail;
+my %sw_latest_version;
+my %uniq_gcc_version2map;
+
+my %reverse_gcc_map;
+#my %reverse_gcc_map = (    # just showing the data structure below
+#          'GCC/13.2.0' => {
+#                            'gompi/2023b' => 1,
+#                            'foss/2023b' => 1,
+#                            'foss/2023.09' => 1
+#    },
+#);
+
+my %GCC_mapping;        # fill from GCC_version to get mapping:  GCC/13.2.0  => foss/2023b
+my %toolchain_names;    # fill from GCC_version to get mapping:  2023b   foss/2023b
+my %toolchain_year;     # fill from GCC_version to get mapping:  2023b   foss/2023b
+my $highest_number_of_available_modules = 0;
+my %module_avail_toolchains;    # $module_avail_toolchains{'SAMtools'} = "foss/2018b"
+my %sw_module_not_found;    # sw is not installed or user entered name incorrectly
+
+while ( my ($toolchain,$gcc_version) = each %GCC_version ) {
+    $GCC_mapping{$gcc_version} = $toolchain;    # GCC/13.2.0  => foss/2023b
+#    print "===> gcc_version[$gcc_version]\tGCC_mapping{gcc_version}[$GCC_mapping{$gcc_version}]\ttoolchain[$toolchain]\n";
+    $reverse_gcc_map{$gcc_version}{$toolchain} = 1;
+    $gcc_version =~ s,GCC(core)?/,,;
+    $GCC_mapping{$gcc_version} = $toolchain;    # 13.2.0  => foss/2022a
+    $gcc_version =~ s/\.0$//;
+    $GCC_mapping{$gcc_version} = $toolchain;    # 13.2.0  => foss/2022a
+    my ($toolchain_name, $toolchain_year) = ($1, $2) if $toolchain =~ /^(\w+)\/(\S+)$/;
+    $toolchain_names{$toolchain_name} = 1;  # get a list of all unique toolchain names without the year
+    $toolchain_year{$toolchain_year} = $toolchain_year;   # 2023b => 2023b
+
+    my $short_year = $toolchain_year;
+    $short_year =~ s/^\w\w//;
+    $toolchain_year{$short_year} = $toolchain_year if $toolchain_year =~ /^\d\d/;  # 23b => 2023b     # this allows user to use either 23b or 2023b
+}
+
+#print '$reverse_gcc_map' . Dumper(\%reverse_gcc_map);
+
+my %toolchain_displayed;
+
+if (defined $single_argument) {
+    @all_compilers = @main_compilers if ! exists $toolchain_names{$single_argument};
+}
+elsif (! defined $all_toolchains) {
+    @all_compilers = @main_compilers;
+}
+
+if ($single_argument) {
+    # either filter on a specific toolchain or GCC version
+    if (exists $all_compilers{$single_argument} || exists $GCC_mapping{$single_argument} || exists $toolchain_names{$single_argument} || exists $toolchain_year{$single_argument}) {
+        $show_table_for_just_one_toolchain = 1;
+    }
+    else {
+        print "=== toolchain or GCC version not found for $single_argument\n"; exit;
+    }
+}
+
+if ($show_table) {
+    print "\n  -------------------------------------------------------------------------------------------\n";
+    printf "%-13s %5s %13s %6s %14s %8s %18s", "   Toolchain" , "=", "GCC version", "&", "MPI version", "|", " Available Python version ";
+    print color ('bold');
+    print "*\n";
+    print color ('reset');
+    print "  -------------------------------------------------------------------------------------------";
+    foreach my $compiler_type (@all_compilers) {
+        keys %GCC_version;
+        foreach my $compiler_w_year (reverse sort keys %GCC_version) {
+            next if $compiler_w_year !~ /$compiler_type\//;     # add \/ so fosscuda doesn't show up in the foss section
+            # next line is to skip showing if toolchains is not installed on this cluster either because the toolchain is too old or not installed yet
+            next if ! -d "/sw/eb/sw/$compiler_w_year";
+
+            my $delimiter = "&";
+            my $footnote = '';
+            my $print_line = 1;
+            my ($compiler_name, $compiler_year) = ($1, $2) if $compiler_w_year =~ /(.+)\/(.+)$/;
+            if ($show_table_for_just_one_toolchain) {
+#                print "compiler_name[$compiler_name]\tsingle_argument[$single_argument]\tGCC_version{compiler_name}[[$GCC_version{$compiler_w_year}]\n";
+                if ($compiler_name eq $single_argument || $GCC_version{$compiler_w_year} =~ /$single_argument(.0)?$/ || $compiler_year =~ /$single_argument/) {
+                    $delimiter = $compiler_name =~ /^(intel-compilers|gfbf|iccifort)$/ ? "|" : $delimiter;
+                    $footnote = $compiler_name =~ /^(gfbf)$/ ? "*" : $footnote;
+                    printf "\n%-17s %-3s %-16s %-4s %-18s %-7s %-20s", "   $compiler_w_year" , "=", "$GCC_version{$compiler_w_year}", $delimiter, "$MPI_version{$compiler_w_year} $footnote", "|", "$python_version{$compiler_year}";
+                    $toolchain_displayed{$compiler_type} = 1;
+                    next;
+                }
+            }
+            else {
+                    $delimiter = $compiler_name =~ /^(intel-compilers|gfbf|iccifort)$/ ? "|" : $delimiter;
+                    $footnote = $compiler_name =~ /^(gfbf)$/ ? "*" : $footnote;
+                printf "\n%-17s %-3s %-16s %-4s %-18s %-7s %-20s", "   $compiler_w_year" , "=", "$GCC_version{$compiler_w_year}", $delimiter, "$MPI_version{$compiler_w_year} $footnote", "|", "$python_version{$compiler_year}";
+                $toolchain_displayed{$compiler_type} = 1;
+            }
+        }
+        if (exists $toolchain_displayed{$compiler_type}) {
+            print "\n  ";
+            print color ('underline');
+            print "                                                                                         \n";
+            print color ('reset');
+        }
+    }
+    print "\n";
+    print "      Use 'toolchains -a' to show all toolchains\n" unless defined $all_toolchains;
+    print color ('bold');
+    print "    * ";
+    print color ('reset');
+    print "Available but not loaded; you will need to also load this module to use it.\n";
+    print "      Do not load the foss and the intel Toolchains at the same time.\n" if exists $toolchain_displayed{'foss'}  && exists $toolchain_displayed{'intel'};
+    print "      Do not load Toolchains that have a different name/year at the same time.\n" if exists $all_compilers{$single_argument};
+    unless ($show_table_for_just_one_toolchain) {
+        print "      Do not load Toolchains that have a different name/year at the same time.\n";
+        print "      'module load foss/2023b'  will also load GCC/13.2.0, GCCcore/13.2.0 and OpenMPI/4.1.6\n";
+        print "      'module load intel/2023a' will also load GCCcore/12.3.0 and impi/2021.9.0\n";
+        print "      'module load GCC/13.2.0'  will also load GCCcore/13.2.0 but not foss/2023b or OpenMPI/4.1.6\n";
+        print "      'module load GCCcore/13.2.0' will only load GCCcore/13.2.0\n";
+    }
+    print "\n";
+}
+else {
+    &find_compatible_eb_modules(@ARGV);
+}
+
+sub find_compatible_eb_modules {
+    my @modules = @_;
+    my %sw_module_names;    # case sensitive module names
+    my $only_show_specific_toolchain;
+    my %modules_per_toolchain;
+    my %modules_not_avail_per_toolchain;
+    my %final_toolchains_to_load;
+
+    my %main_toolchain_required;
+
+    my $all_compilers_regex_pattern = join '|', map quotemeta, 'GCC', 'GCCcore', @main_compilers, @other_compilers; #  GCC|GCCcore|foss|intel|gompi|fosscuda|gfbf
+    my $main_compilers_regex_pattern = join '|', map quotemeta, @main_compilers, @other_compilers;  #  foss|intel|gompi|fosscuda|gfbf
+    my $main_version_suffixes_regex_pattern = join '|', map quotemeta, @main_version_sufixes;  #  foss|intel|gompi|fosscuda|gfbf
+    my $additional_version_suffixes_regex_pattern = join '|', map quotemeta, @additional_version_suffixes;  #  foss|intel|gompi|fosscuda|gfbf
+
+    my %avoid_dup_entries;
+    my %version_suffix;
+
+    foreach my $sw_lcname (@modules) {
+        # avoid duplicate entries
+        if (exists $avoid_dup_entries{$sw_lcname}) {
+            print "=== skipping duplicate entry for $sw_lcname\n";
+            next;
+        }
+        $avoid_dup_entries{$sw_lcname} = 1;
+
+        # /sw/eb/sw/SAMtools   use -0555 since eb removes write permissions when sw is successfully installed
+        my $eb_sw_dir = qx(find /sw/eb/sw/ -maxdepth 1 -iname $sw_lcname -perm -0555 -type d);
+        chomp $eb_sw_dir;
+
+        # /sw/hprc/sw/SAMtools   use -0555 since eb removes write permissions when sw is successfully installed
+        my $hprc_sw_dir = qx(find /sw/hprc/sw/ -maxdepth 1 -iname $sw_lcname -type d);
+        chomp $hprc_sw_dir;
+
+        # /sw/hprc/sw/SAMtools   use -0555 since eb removes write permissions when sw is successfully installed
+        my $hprc_lms_sw_dir = qx(find /sw/restricted/lms/sw/ -maxdepth 1 -iname $sw_lcname -type d);
+        chomp $hprc_lms_sw_dir;
+
+        # check to make sure the software module name exists in either eb or hprc builds
+        if (! $eb_sw_dir && ! $hprc_sw_dir && ! $hprc_lms_sw_dir) {
+            $sw_module_not_found{$sw_lcname} = 1;
+        }
+        # skip if not found in eb build; will capture hprc Core/Compiler/MPI modules later
+        next if ! $eb_sw_dir;
+
+        # the sort -V part will select the newest software version if there are multiple per toolchain (foss and gompi still need fix)
+        my $sw_version_list = qx(find $eb_sw_dir -maxdepth 1 -perm -a-w | sort -V);
+        chomp $sw_version_list;
+        my @sw_versions = split("\n", $sw_version_list);
+
+        # get available sw versions for gcc and/or main toolchains
+        foreach my $sw_version (@sw_versions) {
+            my $version_suffix;
+            # then verify with ./toolchains seqtk bwa blast+ vcftools which should be 
+            #   foss/2021b and BLAST+/2.12.0 seqtk/1.3 VCFtools/0.1.16 BWA/0.7.17
+
+            next if $sw_version eq $eb_sw_dir;  # skip the main directory
+            next if $sw_version =~ /^\./ && $skip_hidden_modules;  # skip hidden modules
+
+            my $quote_eb_sw_dir = quotemeta($eb_sw_dir);
+            $sw_version =~ s,$quote_eb_sw_dir/,,;     # after substitution, will look like: 1.10-GCC-8.3.0
+            my $sw_module_name = $&;            # captures what was removed from string which is  BLAST+
+
+            $sw_module_name = qx(basename $sw_module_name);
+            chomp $sw_module_name;
+            $sw_module_name =~ s,/$,,;      # after substitution, will look like: SAMtools
+
+            # FIXME test the versionsuffix for these at each release:
+            # Amber/22-CUDA-11.5-Python-3.9.6
+            # Caffe/1.0-CUDA-10.1.105-Python-3.7.2
+            # GPflow/2.9.0-CUDA-11.7.0-TensorFlow-2.11.0
+            # Horovod/0.22.1-CUDA-11.3.1-TensorFlow-2.6.0
+            # Juicer_tools/1.22.01-Java-1.9.0.4-CUDA-8.0.61
+            # OpenMM/7.5.1-DeepMind-patch
+            # ParaView/5.11.0-mpi-cuda
+            # pscom/5.4-default-CUDA-11.4.1
+            # torchaudio/0.12.0-PyTorch-1.12.0-CUDA-11.7.0
+            # BWA/0.7.17-GCC-8.2.0-2.31.1
+            # SAMtools/1.9-GCC-7.3.0-2.30
+            # Bowtie2/2.3.5.1-iccifort-2019.5.281
+
+# FIXME ./toolchains bwa dorado
+#        dorado/0.1.1-CUDA-11.7.0
+#        dorado/0.5.3-CUDA-11.7.0
+#        dorado/0.7.2-Linux64
+#        dorado/0.7.3-Linux64
+#        Dorado/0.0.3-Linux64
+#        Dorado/0.5.3-CUDA-11.8.0
+#        Dorado/0.6.1-Linux64
+
+
+            # capture versionsuffix here
+            if ($sw_version =~ s/((-($main_version_suffixes_regex_pattern)-[0-9\.]+(-[0-9\.]+)?|$additional_version_suffixes_regex_pattern|-(C|c)entos6\w+|-pthreads-\w+|-(x64-)?(l|L)inux(\.|_)?(x86_)?(64)?(-64bit)?|-[a-zA-Z_]+|-[a-zA-Z_-]+)){1,3}$//) {
+                $version_suffix = $&;    # -Python-3.8.6    # using $& takes a performance hit; try ${^MATCH}
+            }
+            
+            $sw_module_names{$sw_module_name} = 1;
+
+            my $toolchain_name_version = '';
+            if ($sw_version =~ s/-($all_compilers_regex_pattern)-[a-z0-9.]+(-[a-z0-9.]+)?$//) {
+                # compiler/version found
+                $toolchain_name_version = $&;    # now it is: -foss-2022b
+            }
+            else {
+                $sw_core_module_avail{$sw_module_name} = $sw_version;   
+            }
+            $toolchain_name_version =~ s,^-,,;  # now it is: foss-2022b
+            $toolchain_name_version =~ s,-,/,;  # now it is: foss/2022b
+
+            # skip /sw/eb/sw/Salmon/0.8.2 that doesn't have toolchain appended like 0.10.2-foss-2019b
+            next if $toolchain_name_version =~ /^$eb_sw_dir/;
+
+            $module_avail_toolchains{$toolchain_name_version}{$sw_module_name} = $sw_version;
+            $uniq_gcc_version2map{$toolchain_name_version} = 1; # these are the toolchains that have at least one available sw module
+            print "toolchain{$toolchain_name_version}sw_module_name{$sw_module_name}sw_version{$sw_version} = version_suffix[$version_suffix]\n";
+            $version_suffix{$toolchain_name_version}{$sw_module_name}{$sw_version} = $version_suffix;
+        }
+    }
+
+    # next line will add hprc modules to the available modules per toolchain
+    &find_compatible_hprc_modules(@ARGV);
+
+    ##################################################################################################################
+    # 
+#print Dumper(\%module_avail_toolchains); exit;
+# FIXME Use of each() on hash after insertion without resetting hash iterator results in undefined behavior, Perl interpreter: 0x21a9010 at ./toolchains line 303.
+
+# FIXME need to pass down gompi/2021b to foss/2021b and GCC/11.2.0 but also to GCCcore/11.2.0
+    while (my ($toolchain, $sw_names) = each %module_avail_toolchains) {
+        while (my ($sw_name, $sw_version) = each %$sw_names) {
+            #print "\n=== toolchain[$toolchain]\tsw_name[$sw_name]\tsw_version[$sw_version]\n"; # === toolchain[GCCcore/11.2.0]   sw_name[BWA]    sw_version[0.7.17]
+            &get_latest_sw_version($sw_name, $sw_version);
+#            print Dumper(\%reverse_gcc_map); exit;
+            keys %reverse_gcc_map;
+            foreach my $found_sw_toolchain (keys %{$reverse_gcc_map{$toolchain}}) {
+            #    print "found_sw_toolchain[$found_sw_toolchain]\tsw_name[$sw_name]\tsw_version[$sw_version]\n";
+                $module_avail_toolchains{$found_sw_toolchain}{$sw_name} = $sw_version;
+            }
+        }
+    }
+
+# this block was an attempt to fix the block above when errors about resetting hash iterator showed up
+#    foreach my $toolchain (keys %module_avail_toolchains) {
+#        my $sw_names = $module_avail_toolchains{$toolchain};
+#        foreach my $sw_name (keys %$sw_names) {
+#            my $sw_version = %$sw_names{$sw_name};
+#            print "\n=== toolchain[$toolchain]\tsw_name[$sw_name]\tsw_version[$sw_version]\n"; # === toolchain[GCCcore/11.2.0]   sw_name[BWA]    sw_version[0.7.17]
+#            &get_latest_sw_version($sw_name, $sw_version);
+##            print Dumper(\%reverse_gcc_map); exit;
+#            keys %reverse_gcc_map;
+#            foreach my $found_sw_toolchain (keys %{$reverse_gcc_map{$toolchain}}) {
+#                print "found_sw_toolchain[$found_sw_toolchain]\tsw_name[$sw_name]\tsw_version[$sw_version]\n";
+#                $module_avail_toolchains{$found_sw_toolchain}{$sw_name} = $sw_version;
+#            }
+#        }
+#    }
+#print Dumper(\%module_avail_toolchains);
+    # add GCCcore and GCC modules up to each main toolchain using %reverse_gcc_map
+    ##################################################################################################################
+
+
+    # count which toolchains have the most sw modules
+    # if all modules are found for a specific toolchain, then only display that toolchain(s)
+    while (my ($toolchain, $sw_names) = each %module_avail_toolchains) {
+        foreach my $sw_name (keys %sw_latest_version) {
+            if (! exists $module_avail_toolchains{$toolchain}{$sw_name} && ! exists $module_avail_toolchains{'Linux_x86_64'}{$sw_name} && ! exists $sw_core_module_avail{$sw_name}) {
+                $modules_not_avail_per_toolchain{$toolchain}{$sw_name} = 1; 
+            }
+        }
+        my $count = keys %{$sw_names};
+        $modules_per_toolchain{$toolchain} = $count;
+        $highest_number_of_available_modules = $count if $count > $highest_number_of_available_modules;
+    }
+
+
+print "highest_number_of_available_modules[$highest_number_of_available_modules]\n";
+# TODO print message if highest_number_of_available_modules == 1
+    # find toolchain(s) that have all or the most modules available
+    my $toolchain_with_one_module;
+    while (my ($toolchain, $count) = each %modules_per_toolchain) {
+        if ($count == $highest_number_of_available_modules) {
+            $final_toolchains_to_load{$toolchain} = 1;
+        }
+        $toolchain_with_one_module = $toolchain;
+    }
+    if ($highest_number_of_available_modules == 1) {
+        # TODO print only module avail
+        foreach my $sw_name_to_load (keys %{$module_avail_toolchains{$toolchain_with_one_module}}) {
+            print "\nOnly one module was found. Use 'module spider $sw_name_to_load' to see how to load this module.\n\n";
+            exit;
+        }
+    }
+
+        
+# FIXME ./toolchains bwa samtools alphafold
+
+#./toolchains bwa samtools
+# FIXME BWA/0.7.17 should show up for not only GCCcore/11.2.0 (available) but also GCC/11.2.0 and foss/2021b
+# because gompi/2021b supports GCCcore/11.2.0
+#          'GCCcore/11.2.0' => {
+#                                'BWA' => '0.7.17'
+#                              },
+#          'gompi/2021b' => {
+#                             'SAMtools' => '1.14'
+#                           },
+
+#    print "core_modules" . Dumper(\%core_modules);
+#    print "sw_latest_version" . Dumper(\%sw_latest_version);
+#    print "reverse_gcc_map" . Dumper(\%reverse_gcc_map);
+#    print "module_avail_toolchains" . Dumper(\%module_avail_toolchains);
+#    print "sw_latest_version" . Dumper(\%sw_latest_version);
+#    print "modules_per_toolchain" . Dumper(\%modules_per_toolchain);
+#    print "sw_module_not_found" . Dumper(\%sw_module_not_found);
+#    print "uniq_gcc_version2map" . Dumper(\%uniq_gcc_version2map);
+#    print "main_toolchain_required" . Dumper(\%main_toolchain_required);
+#    print "modules_not_avail_per_toolchain" . Dumper(\%modules_not_avail_per_toolchain);
+
+# TODO check if module is available in at least one toolchain and adjust wording accordingly: "may_be|is available for other deps"
+# TODO sort and display foss/sorted_version, intel/sorted_version, others/sorted_version, GCC/sorted_version, GCCcore/sorted_version
+    # print out final toolchains then sw modules to load for each toolchain
+# TODO sort toolchains into array then loop through array:  @sorted_final_toolchains_to_load = sort { versioncmp($h{$a}, $h{$b}) } keys %final_toolchains_to_load;
+foreach my $i (1..2) {  # print foss and intel first then go through %final_toolchains_to_load again and print the others
+    keys %final_toolchains_to_load;
+    foreach my $toolchain (reverse sort keys %final_toolchains_to_load) {    # foss/2019b foss/2020a
+        next if $i == 1 && $toolchain !~ /^(foss|intel)\//; 
+        next if $i == 2 && $toolchain =~ /^(foss|intel)\//; 
+        print "module purge\n";
+        print "module load $toolchain";
+        print "\n" unless $print_one_line_each_toolchain;
+
+        # print out available sw modules for each toolchain
+        foreach my $sw_name_to_load (keys %{$module_avail_toolchains{$toolchain}}) {
+            my $sw_version = $module_avail_toolchains{$toolchain}{$sw_name_to_load};
+            my $versionsuffix = $version_suffix{$toolchain}{$sw_name_to_load}{$sw_version} || '';
+
+            # see which is the newer version module_avail_toolchains or sw_core_module_avail
+            if (exists $sw_core_module_avail{$sw_name_to_load}) {
+                #my $newest_version = qx(echo $sw_core_module_avail{$sw_name_to_load} $sw_version | tr ' ' '\n' | sort -r -V | head -1);
+                #chomp $newest_version;
+                # the next two lines replace the two above to skip using unix commands
+                my @sorted_list = sort { versioncmp($a, $b) } ( "$sw_core_module_avail{$sw_name_to_load}", "$sw_version" );
+                my $newest_version = $sorted_list[0];
+
+                if ($sw_version ne $newest_version) {
+                    next;
+                }
+                else {
+                    # remove the older version from sw_core_module_avail and use core version which is newer
+                    delete $sw_core_module_avail{$sw_name_to_load};
+                } 
+            }
+            print "module load" unless $print_one_line_each_toolchain;
+            print " $sw_name_to_load/${sw_version}${versionsuffix}";
+            print "\n" unless $print_one_line_each_toolchain;
+        }
+
+        # print out core sw moduiles
+        foreach my $sw_core_name_to_load (keys %sw_core_module_avail) {
+            my $sw_version = $sw_core_module_avail{$sw_core_name_to_load};
+# TODO check versionsuffix for core modules
+            my $versionsuffix = $version_suffix{$toolchain}{$sw_core_name_to_load}{$sw_version} || '';
+            print "module load" unless $print_one_line_each_toolchain;
+            print " $sw_core_name_to_load/${sw_version}";
+            print "\n" unless $print_one_line_each_toolchain;
+        }
+
+        # print out sw_name not available for current toolchain
+        foreach my $sw_name (keys %sw_latest_version) {
+            if (exists $modules_not_avail_per_toolchain{$toolchain}{$sw_name}) {
+                print "# $sw_name not available for this toolchain but it may be available for other toolchains\n";
+            }
+        }
+
+        # print out sw_name not found
+        foreach my $sw_name (keys %sw_module_not_found) {
+            # FIXME make sure not found in hprc Core mods too
+            unless (exists $sw_core_module_avail{$sw_name}) {
+                print "# $sw_name not found; it may be misspelled or installed as a conda environment\n";
+            }
+        }
+        print "\n--------------------------------------------------------------------------------\n";
+    }
+}
+#print "modules_not_avail_per_toolchain" . Dumper(\%modules_not_avail_per_toolchain);
+
+    return 1;
+}
+
+
+sub find_compatible_hprc_modules {
+    my @modules = @_;
+    my %sw_core_module_counted;
+
+    foreach my $module (@modules) {
+        my $module_found = qx(grep -i "/$module/" hprc_mods.txt);       # TODO need to sort so newest version will be listed first
+        foreach my $module_path (split(/\n/, $module_found)) {
+            chomp $module_path;
+            # FIXME dorado
+            next if $module_path =~ /Dorado/;      # skip Dorado since there is a /sw/eb/sw/dorado
+            next if $module_path =~ /OpenMPI\/[^\/]+.lua/;      # skip /sw/hprc/mods/all/Compiler/GCC/11.2.0/OpenMPI/4.1.1.lua for now
+
+            # first get Core hprc manually installed modules
+            if ($module_path =~ /\/sw\/hprc\/mods\/all\/Core\/([^\/]+)\/([^\/]+).lua/) {  # /sw/hprc/mods/all/Core/Fiji/1.53p.lua  # version_suffix ?
+                my ($sw_module_name, $sw_version) = ($1, $2);
+                print "=== sw_module_name,[$sw_module_name]\tsw_version[$sw_version]\n";
+                next if $sw_version =~ /^\./ && $skip_hidden_modules;   # skip hidden modules
+
+                &get_latest_sw_version($sw_module_name, $sw_version);
+
+                if (exists $core_modules{$sw_module_name}) {
+                    print "sw_module_name[$sw_module_name]\tsw_version[$sw_version]\tcore_modules{sw_module_name}[$core_modules{$sw_module_name}]\n";
+                    my @sorted_versions = reverse sort { versioncmp($a, $b) } ("$sw_version", "$core_modules{$sw_module_name}");
+                    if ($sorted_versions[0] ne $core_modules{$sw_module_name}) {
+                        print "=== USING: $sw_version instead of $core_modules{$sw_module_name}\n";
+                        $core_modules{$sw_module_name} = $sw_version;
+                    }
+                    print "sw_module_name[$sw_module_name]\tsw_version[$sw_version]\tcore_modules{sw_module_name}[$core_modules{$sw_module_name}]\n";
+                }
+                else {
+                    print "ADDING: sw_module_name[$sw_module_name]\tsw_version[$sw_version]\n";
+                    $core_modules{$sw_module_name} = $sw_version;
+                }
+                # add core_module count to highest_number_of_available_modules for all toochains
+                $highest_number_of_available_modules++ unless exists $sw_core_module_counted{$sw_module_name};
+                $sw_core_module_counted{$sw_module_name} = 1;
+
+# ?? This code block not needed
+#                foreach my $sw_name (keys %sw_module_not_found) {
+#                    if ($sw_name =~ /^$sw_module_name$/i) {
+#                        $sw_core_module_avail{$sw_name} = 1;
+#                    }
+#                    else {
+#                        print "sw_name[$sw_name] !~ sw_module_name[$sw_module_name]\n";
+#                    }
+#                }
+            }
+            # TODO second get GCC and MPI hprc manually installed modules
+        }
+    }
+
+    # add all available core module to each toolchain
+    foreach my $core_module (keys %core_modules) {
+        foreach my $toolchain (keys %uniq_gcc_version2map) {
+            $module_avail_toolchains{$toolchain}{$core_module} = $core_modules{$core_module};
+        }
+    }
+}
+#print '$sw_module_not_found: ' . Dumper(\%sw_module_not_found);
+
+sub get_latest_sw_version {
+    # may not work for all version naming conventions
+    my $sw_name = shift;
+    my $sw_version = shift;
+    my $tmp_version = $sw_version;
+    $tmp_version =~ s/^(\d+)\.(\d+)\./$1$2/;    # used to compare versions in format: 11.11.11
+
+    if (exists $sw_latest_version{$sw_name}) {
+        my $tmp_latest_version = $sw_latest_version{$sw_name};
+        $tmp_latest_version =~ s/^(\d+)\.(\d+)\./$1$2/;
+        $sw_latest_version{$sw_name} = $sw_version if $tmp_version > $tmp_latest_version;
+    }
+    else {
+        $sw_latest_version{$sw_name} = $sw_version
+    }
+    # 2022-1 2020-1
+    # moe2022 moe2020
+    # 2021.08.21 2020.12.01
+    # g16_B01 g16_C01
+    # Biopython/1.75-Python-3.7.4  Biopython/1.77-Python-3.7.4
+}
+
+# versioncpm and versions are from the Sort::Versions perl CPAN module
+sub versioncmp ($$) {
+    my @A = ($_[0] =~ /([-.]|\d+|[^-.\d]+)/g);
+    my @B = ($_[1] =~ /([-.]|\d+|[^-.\d]+)/g);
+
+    my ($A, $B);
+    while (@A and @B) {
+    $A = shift @A;
+    $B = shift @B;
+    if ($A eq '-' and $B eq '-') {
+        next;
+    } elsif ( $A eq '-' ) {
+        return -1;
+    } elsif ( $B eq '-') {
+        return 1;
+    } elsif ($A eq '.' and $B eq '.') {
+        next;
+    } elsif ( $A eq '.' ) {
+        return -1;
+    } elsif ( $B eq '.' ) {
+        return 1;
+    } elsif ($A =~ /^\d+$/ and $B =~ /^\d+$/) {
+        if ($A =~ /^0/ || $B =~ /^0/) {
+        return $A cmp $B if $A cmp $B;
+        } else {
+        return $A <=> $B if $A <=> $B;
+        }
+    } else {
+        $A = uc $A;
+        $B = uc $B;
+        return $A cmp $B if $A cmp $B;
+    }
+    }
+    @A <=> @B;
+}
+
+sub versions () {
+    my $callerpkg = (caller)[0];
+    my $caller_a = "${callerpkg}::a";
+    my $caller_b = "${callerpkg}::b";
+    no strict 'refs';
+    return versioncmp($$caller_a, $$caller_b);
+}
+
+#print "sw_core_module_avail:" . Dumper(\%sw_core_module_avail);
+# FIXME
+
+# ./toolchains vcftools annovar
+
+##########################################
+# FIXME
+# ./toolchains samtools seqtk juicer_tools
+# shows binary Juicer_tools not available for each toolchain and highest_number_of_available_modules[2]
+# also doesn't show full versionsuffix for Juicer_tool
+#module purge
+#module load Java/1.9.0.4-CUDA-8.0.61
+#module load Juicer_tools/1.22.01-Java-1.9.0.4-CUDA-8.0.61
+# SAMtools not available for this toolchain but it may be available for other toolchains
+
+#FIXME ./toolchains samtools bwa-mem2   # bwa-mem2/2.2.1-Linux64 is a binary and should be on all toolchains
+
+##########################################
+#toolchains samtools trinity salmon seqtk bedtools bwa
+# due to gompi and foss not integrated yet
+
+#module purge
+#module load foss/2021b
+#module load seqtk/1.3
+#module load BEDTools/2.30.0
+#module load Salmon/0.10.2
+#module load Trinity/2.14.0
+#module load SAMtools/1.14
+
+
+# remove element from hash        #delete($modules_not_avail_per_toolchain{$toolchain}{$sw_name}
+# TODO VALIDATION
+# test that -a is ignored when searching compatible sw modules
+# ./toolchains bwa seqtk samtools vcftools              # that only 4 are available
+# ./toolchains bwa seqtk samtools vcftools lltools      # module not found
+# ./toolchains fiji fsl samtools bwa vcftools           # should be FSL/6.0.7.8
+# ./toolchains snakemake biopython                      # should return Biopython/1.77-Python-3.7.4 for foss/2019b
+# ./toolchains bamtools samtools ucsctools seqtk        # should find UCSCtools/2021.08.21
+
+
+# FIXME zebulon module should be .lua file

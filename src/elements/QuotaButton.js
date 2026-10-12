@@ -3,6 +3,7 @@ import PopupForm from '../composer/PopupForm';
 import { loadRequestSchema } from '../composer/schemas/requestProfile';
 import config from "../../config.yml";
 import { get_base_url } from "../utils/api_config.js"
+import { parseStorageToMiB } from "./dashboardUtils";
 
 const quotaRequestSchema = loadRequestSchema('quotaRequest.json');
 
@@ -17,11 +18,18 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
     return isLongRequest === 'Yes' && isPIRequest === 'No';
   };
 
+  // On clusters that offer buy-ins, requests over 10 TB or longer than 6 months must be buy-ins.
+  const isMissingRequiredBuyIn = (isLongRequest, isBuyRequest) => {
+    return supportsBuyIn && isLongRequest === 'Yes' && isBuyRequest === 'No';
+  };
+
   const validateQuotaReady = (formData) => {
     const isLongRequest = formData.get('isLongRequest');
     const isPIRequest = formData.get('isPIRequest');
+    const isBuyRequest = formData.get('isBuyRequest');
 
-    return !isBlockedNonPiLongRequest(isLongRequest, isPIRequest);
+    return !isBlockedNonPiLongRequest(isLongRequest, isPIRequest) &&
+      !isMissingRequiredBuyIn(isLongRequest, isBuyRequest);
   };
 
   const handleSubmit = async (formData) => {
@@ -38,6 +46,11 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
       alert(supportsBuyIn
         ? 'Only PIs can request quota increases of more than 10 TB, requests longer than 6 months, or quota buy-ins. Please ask your PI to submit the request.'
         : 'Only PIs can request quota increases of more than 10 TB or requests longer than 6 months. Please ask your PI to submit the request.');
+      return false;
+    }
+
+    if (isMissingRequiredBuyIn(isLongRequest, formData.get('isBuyRequest'))) {
+      alert('Quota increases of more than 10 TB or longer than 6 months require a quota buy-in. Please select Yes for the buy-in to continue.');
       return false;
     }
 
@@ -139,9 +152,12 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
     defaultValues.directory = disk;
     
     if (currentQuota) {
-      // Extract just the number part if it includes units
-      const quotaMatch = currentQuota.match(/(\d+(\.\d+)?)/);
-      defaultValues.currentQuota = quotaMatch ? quotaMatch[1] : "1";
+      // showquota reports limits like "1T" or "512G"; the form works in TB and the
+      // quota field only pre-fills when the value carries its unit (e.g. "0.5TB").
+      const currentQuotaTB = parseStorageToMiB(currentQuota) / (1024 * 1024);
+      if (currentQuotaTB > 0) {
+        defaultValues.currentQuota = `${Number(currentQuotaTB.toFixed(3))}TB`;
+      }
     }
     
     if (currentFileLimit) {
@@ -155,12 +171,14 @@ const QuotaButton = ({ disk = null, currentQuota = null, currentFileLimit = null
   const disclaimerText = [
     "Only owners of the storage space can request a quota increase.",
     "Quota requests are subject to review and approval by HPRC administrators. Please provide a strong and detailed justification for your request.",
-    "Only a PI can request quota increases exceeding 10 TB or lasting more than six months. These requests require approval from the HPRC Director."
+    supportsBuyIn
+      ? "Only a PI can request quota increases exceeding 10 TB or lasting more than six months. These requests require a quota buy-in and approval from the HPRC Director."
+      : "Only a PI can request quota increases exceeding 10 TB or lasting more than six months. These requests require approval from the HPRC Director."
   ];
 
   return (
     <PopupForm
-      buttonText={buttonText || (disk ? "Request" : "Request Quota Increase")}
+      buttonText={buttonText || (disk ? "Request Increase" : "Request Quota Increase")}
       schema={quotaRequestSchema}
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}

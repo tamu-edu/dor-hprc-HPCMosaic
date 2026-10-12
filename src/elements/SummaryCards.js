@@ -184,7 +184,7 @@ export const MyQuotasSummaryCard = () => {
                         disk={disk}
                         currentQuota={quota.disk_limit}
                         currentFileLimit={quota.file_limit}
-                        buttonText="Request"
+                        buttonText="Request Increase"
                         buttonClassName={cx("min-h-[22px] max-w-full rounded border border-mosaic-accent-hover bg-mosaic-accent px-2 py-[3px] text-card-11 font-bold text-mosaic-accent-text no-underline", isNarrow ? "whitespace-normal leading-tight" : "whitespace-nowrap leading-none")}
                       />
                     ) : (

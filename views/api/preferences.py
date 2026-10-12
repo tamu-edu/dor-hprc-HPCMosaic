@@ -2,7 +2,7 @@
 User preferences routes.
 
 Preferences are stored as a single _preferences.json file in the user's
-layouts directory. Using one file (rather than one endpoint per preference)
+layouts directory (~/.HPCMosaic/layouts/, see utils.get_layouts_dir). Using one file (rather than one endpoint per preference)
 means adding new preferences never requires new backend endpoints — just add
 a field to the JSON object.
 save_preferences accepts partial updates: only the keys provided are changed,

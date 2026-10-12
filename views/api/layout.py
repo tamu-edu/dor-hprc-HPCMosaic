@@ -2,7 +2,13 @@
 Layout persistence routes.
 
 Layouts are stored as individual JSON files under:
-  /scratch/user/{USER}/ondemand/layouts/{layout_name}.json
+  ~/.HPCMosaic/layouts/{layout_name}.json
+(base dir overridable with $HPCMOSAIC_DATA_DIR; see utils.get_data_dir).
+On first access, files from the old /scratch/user/{USER}/ondemand/layouts/
+location are copied over (see utils.get_layouts_dir).
+
+Layout names are validated by utils.resolve_layout_path so they can't escape
+the layouts directory.
 
 Internal config files (prefixed with '_') are excluded from the layout list
 so that _preferences.json doesn't appear as a user-created layout.
@@ -12,7 +18,7 @@ import os
 import json
 from flask import request, jsonify
 from . import api
-from .utils import get_layouts_dir
+from .utils import get_layouts_dir, resolve_layout_path
 
 
 @api.route('/save_layout', methods=['POST'])
@@ -27,7 +33,10 @@ def save_layout():
 
         user = os.getenv("USER", "default_user")
         layouts_dir = get_layouts_dir(user)
-        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+        try:
+            layout_file_path = resolve_layout_path(layouts_dir, layout_name, creating=True)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
         with open(layout_file_path, 'w') as f:
             json.dump(layout_data, f, indent=4)
@@ -66,7 +75,10 @@ def load_layout():
 
         user = os.getenv("USER", "default_user")
         layouts_dir = get_layouts_dir(user)
-        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+        try:
+            layout_file_path = resolve_layout_path(layouts_dir, layout_name)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
         if not os.path.exists(layout_file_path):
             return jsonify({"error": f"Layout '{layout_name}' does not exist"}), 404
@@ -90,7 +102,10 @@ def delete_layout():
 
         user = os.getenv("USER", "default_user")
         layouts_dir = get_layouts_dir(user)
-        layout_file_path = os.path.join(layouts_dir, f"{layout_name}.json")
+        try:
+            layout_file_path = resolve_layout_path(layouts_dir, layout_name)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
         if not os.path.exists(layout_file_path):
             return jsonify({"error": f"Layout '{layout_name}' does not exist"}), 404
@@ -114,8 +129,11 @@ def rename_layout():
 
         user = os.getenv("USER", "default_user")
         layouts_dir = get_layouts_dir(user)
-        old_path = os.path.join(layouts_dir, f"{old_name}.json")
-        new_path = os.path.join(layouts_dir, f"{new_name}.json")
+        try:
+            old_path = resolve_layout_path(layouts_dir, old_name)
+            new_path = resolve_layout_path(layouts_dir, new_name, creating=True)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
         if not os.path.exists(old_path):
             return jsonify({"error": f"Layout '{old_name}' does not exist"}), 404

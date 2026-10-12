@@ -6,3 +6,6 @@ node_modules/
 static/bundle.js
 var/announcements/
 modules/
+logs/
+config.yml
+manifest.yml
