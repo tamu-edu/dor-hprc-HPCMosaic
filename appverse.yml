@@ -7,7 +7,7 @@ description: >-
   virtual environments, software modules, announcements, and support-request
   forms. Built for the Texas A&M HPRC clusters; several widgets rely on
   site-specific tools whose expected output is documented in docs/sysadmin/.
-software: "HPCMosaic"
+software: "Dashboards"
 app_type: "dashboard"
 implementation_tags:
   - "passenger"
