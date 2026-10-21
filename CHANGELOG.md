@@ -3,7 +3,7 @@
 All notable changes to HPCMosaic are documented here. This project uses
 [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2026-10-12
 
 First tagged release, prepared for the Open OnDemand Appverse.
 
