@@ -1,7 +1,8 @@
 # Site scripts
 
-HPCMosaic's backend calls these tools at hardcoded paths. Each tool's expected
-output format is documented in
+HPCMosaic's backend calls these tools at the paths below by default. To use
+a different location, set it under `tools:` in `config.yml`. Each tool's
+expected output format is documented in
 [`docs/sysadmin/widgets.md`](../docs/sysadmin/widgets.md).
 
 ## What's available

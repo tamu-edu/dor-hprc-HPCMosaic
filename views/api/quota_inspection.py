@@ -15,6 +15,7 @@ from pathlib import Path
 from flask import current_app, jsonify, request
 
 from . import api
+from .config import tool_path
 from .utils import run_process_output
 
 
@@ -29,7 +30,7 @@ CACHE_VERSION = 2
 
 def _get_allowed_quota_paths():
     """Return only paths reported for the current user by showquota."""
-    output = run_process_output(["/sw/local/bin/showquota"], timeout=10)
+    output = run_process_output([tool_path("showquota")], timeout=10)
     paths = set()
 
     for line in output.splitlines()[2:]:

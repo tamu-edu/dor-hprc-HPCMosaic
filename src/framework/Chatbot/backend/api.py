@@ -2,7 +2,6 @@ import sys
 import os
 from typing import Dict, Any, Tuple
 from flask import Flask, request, jsonify, Response, render_template, redirect, send_from_directory
-from flask_cors import CORS
 from werkzeug.exceptions import BadRequest
 import logging
 from dotenv import load_dotenv
@@ -42,14 +41,12 @@ class APIError(Exception):
 class Config:
     """Application configuration"""
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-    HOST = os.environ.get('FLASK_HOST', '0.0.0.0')
+    HOST = os.environ.get('FLASK_HOST', '127.0.0.1')
     PORT = int(os.environ.get('FLASK_PORT', 5000))
     VALID_RATINGS = {1, 2, 3, 4, 5}  # Set of valid rating values
 
 # app = Flask(__name__)
 app = Flask(__name__, static_folder="static/build")
-
-CORS(app)
 
 def validate_chat_request(data: Dict[str, Any]) -> str:
     """
@@ -181,18 +178,17 @@ def handle_feedback_request() -> Response:
         logger.exception("Error processing feedback request")
         raise APIError("Failed to process feedback request")
 
+# Log only method, path and status. Headers carry the OOD session cookie and
+# bodies carry user messages, so neither is written to app.log.
 @app.before_request
 def log_request_info() -> None:
     """Log information about incoming requests"""
-    logger.info(f"Request: {request.method} {request.url}")
-    logger.debug(f"Headers: {dict(request.headers)}")
-    logger.debug(f"Body: {request.get_data()}")
+    logger.info(f"Request: {request.method} {request.path}")
 
 @app.after_request
 def log_response_info(response: Response) -> Response:
     """Log information about outgoing responses"""
     logger.info(f"Response status: {response.status}")
-    logger.debug(f"Response headers: {dict(response.headers)}")
     return response
 
 if __name__ == "__main__":

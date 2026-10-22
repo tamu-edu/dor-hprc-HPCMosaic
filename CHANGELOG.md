@@ -3,6 +3,40 @@
 All notable changes to HPCMosaic are documented here. This project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Fixes from the Appverse automated review.
+
+### Added
+- Site tool paths are configurable under `tools:` in `config.yml`
+  (`showquota`, `myproject`, `pestat`, `retrieve_sinfo`, `cpuavail`,
+  `toolchains`, `delete_venv`, `create_venv`, `modulair`). Unset tools keep
+  their previous `/sw/local/bin` defaults, so existing deployments need no
+  config change.
+- `smtp_host` and `smtp_port` in `config.yml` for the quota-request email
+  fallback (default `smtp.tamu.edu:25`, as before).
+
+### Changed
+- The license file is now `LICENSE` (was `LICENSE.md`).
+- `python app.py` no longer enables the Werkzeug debugger by default; set
+  `FLASK_DEBUG=1` to opt in. It binds to `127.0.0.1`. Passenger deployments
+  are unaffected.
+- `retrieve_sinfo`, `showquota` and `cpuavail` are run without a shell.
+- The announcements lock file is created `0660` (was `0664`); the
+  announcements file stays `0664` so all users can read it and all admins can
+  write it.
+- Chatbot backend: defaults to `127.0.0.1` instead of `0.0.0.0` when run
+  directly, logs only method, path and status (no headers or bodies), and
+  times out Pryon API requests (10 s connect, 60 s between streamed chunks).
+
+### Removed
+- CORS from the dashboard and the chatbot backend (both are same-origin), and
+  the `Flask-Cors` dependency.
+- Unused code: `run_command()` in `views/api/utils.py`,
+  `views/HPRCBot_request_handler.py`, and the legacy templates `layout.html`,
+  `layout_no_banner.html`, `test.html`, `config.html` and
+  `index_no_banner.html` (which loaded scripts from CDNs).
+
 ## [1.0.0] - 2026-10-12
 
 First tagged release, prepared for the Open OnDemand Appverse.

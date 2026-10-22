@@ -298,12 +298,20 @@ def _require_same_origin():
     return None
 
 
+# The app runs as each user, so files written by one announcement admin must
+# stay writable by the others (shared admin group set up by setup.sh). The
+# data file must also be world-readable so every user can see announcements.
+# Neither is world-writable.
+_ANNOUNCEMENT_FILE_MODE = 0o664  # owner/group rw, others read
+_LOCK_FILE_MODE = 0o660  # owner/group rw; only writers take the lock
+
+
 @contextmanager
 def _announcement_lock(path):
     lock_path = f"{path}.lock"
     with open(lock_path, "a+", encoding="utf-8") as lock_file:
         try:
-            os.chmod(lock_path, 0o664)
+            os.chmod(lock_path, _LOCK_FILE_MODE)  # nosec B103 - shared admin group, see above
         except OSError:
             pass
         fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
@@ -321,7 +329,9 @@ def _write_document_atomic(path, document):
     )
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8") as temporary_file:
-            os.fchmod(temporary_file.fileno(), 0o664)
+            # mkstemp creates 0600, which would hide announcements from users
+            # and lock out other admins after this save.
+            os.fchmod(temporary_file.fileno(), _ANNOUNCEMENT_FILE_MODE)  # nosec B103 - see above
             json.dump(document, temporary_file, indent=2)
             temporary_file.write("\n")
             temporary_file.flush()

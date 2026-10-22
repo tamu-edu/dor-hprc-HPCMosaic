@@ -11,6 +11,22 @@ development: &common_settings
   request_email: "help@hprc.tamu.edu"
   help_email: "help@hprc.tamu.edu"
   hprcbot_route: 'http://courant.hprc.tamu.edu:8553'
+  # Mail relay for the quota-request email fallback (defaults shown).
+  # smtp_host: smtp.tamu.edu
+  # smtp_port: 25
+  # Site tools the backend runs. Uncomment and set any path that differs at
+  # your site; unset tools default to the TAMU paths shown. Expected output
+  # formats are in docs/sysadmin/widgets.md.
+  # tools:
+  #   showquota: /sw/local/bin/showquota
+  #   myproject: /sw/local/bin/myproject
+  #   pestat: /sw/local/bin/pestat
+  #   retrieve_sinfo: /sw/local/bin/retrieve_sinfo
+  #   cpuavail: /sw/local/bin/cpuavail
+  #   toolchains: /sw/local/bin/toolchains
+  #   delete_venv: /sw/local/bin/delete_venv
+  #   create_venv: /sw/local/bin/create_venv   # path on login_node
+  #   modulair: modulair                       # on login_node's PATH
   dashboard_fonts:
     default: "inter"
     options:

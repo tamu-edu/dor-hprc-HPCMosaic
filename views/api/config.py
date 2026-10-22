@@ -29,6 +29,31 @@ request_email  = _production.get('request_email')
 help_email     = _production.get('help_email')
 hprcbot_route  = _production.get('hprcbot_route')
 
+# Mail relay for the quota-request email fallback (bot_requests.py).
+smtp_host      = _production.get('smtp_host') or 'smtp.tamu.edu'
+smtp_port      = int(_production.get('smtp_port') or 25)
+
+# Site tools the backend runs. Override any of these under `tools:` in
+# config.yml; anything not listed keeps the TAMU default below. Output formats
+# each tool must produce are documented in docs/sysadmin/widgets.md.
+_DEFAULT_TOOLS = {
+    "showquota":      "/sw/local/bin/showquota",
+    "myproject":      "/sw/local/bin/myproject",
+    "pestat":         "/sw/local/bin/pestat",
+    "retrieve_sinfo": "/sw/local/bin/retrieve_sinfo",
+    "cpuavail":       "/sw/local/bin/cpuavail",
+    "toolchains":     "/sw/local/bin/toolchains",
+    "delete_venv":    "/sw/local/bin/delete_venv",
+    "create_venv":    "/sw/local/bin/create_venv",   # runs on login_node
+    "modulair":       "modulair",                    # runs on login_node, found on PATH
+}
+tools = {**_DEFAULT_TOOLS, **(_production.get('tools') or {})}
+
+
+def tool_path(name):
+    """Return the configured path for a site tool (see `tools:` in config.yml)."""
+    return tools[name]
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 

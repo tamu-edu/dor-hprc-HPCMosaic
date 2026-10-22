@@ -86,6 +86,8 @@ directly.
 | `request_email` | `help@hprc.tamu.edu` | Recipient of quota-request email when the webhook fails | Your helpdesk address |
 | `help_email` | `help@hprc.tamu.edu` | Shown in backend error messages | Your helpdesk address |
 | `hprcbot_route` | `http://courant.hprc.tamu.edu:8553` | Base URL for all support-request forms | Your receiver, or leave it and hide the request buttons. See [integrations.md](integrations.md#support-request-webhook). |
+| `smtp_host`, `smtp_port` | commented out (`smtp.tamu.edu`, `25`) | Quota-request email fallback | Your mail relay. No TLS or authentication is used. |
+| `tools` | commented out (TAMU defaults apply) | Every widget that runs a site tool | Map of tool name to path, e.g. `showquota: /opt/site/bin/showquota`. Only list the ones that differ. Read from the `development` block. |
 | `dashboard_fonts` | font list | Settings menu | Optional |
 
 Two known quirks:
@@ -136,12 +138,8 @@ delete its entry from `src/framework/CardConfig.js` (and from
 
 Each item lists the exact code to change. Line numbers are as of v1.0.0.
 
-**Site scripts** (install the ones in [`machine-driver-scripts/`](../../machine-driver-scripts/), provide an equivalent at the same path, change the path, or hide the card):
-- [ ] `/sw/local/bin/showquota`: `views/api/info.py:244`, `views/api/quota_inspection.py:32`
-- [ ] `/sw/local/bin/myproject`: `views/api/projects.py:11` (`MYPROJECT`)
-- [ ] `/sw/local/bin/pestat`: `views/api/jobs.py:729`
-- [ ] `/sw/local/bin/retrieve_sinfo`: `views/api/info.py:229`
-- [ ] `/sw/local/bin/toolchains`, `create_venv`, `delete_venv`, and `modulair`: `views/api/modules.py:262,324,337,389`
+**Site scripts** (install the ones in [`machine-driver-scripts/`](../../machine-driver-scripts/), provide an equivalent, or hide the card):
+- [ ] Tool paths: set any that differ under `tools:` in `config.yml` (see the commented block in `config.yml.template`). Covers `showquota`, `myproject`, `pestat`, `retrieve_sinfo`, `cpuavail`, `toolchains`, `delete_venv`, `create_venv` and `modulair`; unset tools default to `/sw/local/bin/<name>` (`modulair` from `PATH`). Defaults live in `views/api/config.py`.
 - [ ] `modules/<cluster>-modules.json`: generate it (see [widgets.md](widgets.md#software-modules))
 
 **Cluster layout and policy:**
@@ -154,7 +152,7 @@ Each item lists the exact code to change. Line numbers are as of v1.0.0.
 
 **Services and identity:**
 - [ ] Email fallback `<user>@tamu.edu` and mapping file: `views/api/utils.py:194-223`
-- [ ] SMTP host `smtp.tamu.edu:25`: `views/api/bot_requests.py:124`
+- [ ] SMTP relay (default `smtp.tamu.edu:25`): set `smtp_host` / `smtp_port` in `config.yml`
 - [ ] Support webhook: `hprcbot_route` in `config.yml`, path suffix `/HPRCapp/OOD` in `views/api/bot_requests.py:27`
 - [ ] "Is this the portal host?" check (`"portal"` in the FQDN): `views/api/quota_inspection.py:51`
 - [ ] Announcement timezone `America/Chicago`: `views/api/announcement.py:25`, `src/elements/AnnouncementManager.js:80`

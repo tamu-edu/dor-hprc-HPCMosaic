@@ -19,7 +19,7 @@ import requests as http_requests
 from flask import request, jsonify
 
 from . import api
-from .config import cluster_name, request_email, help_email, hprcbot_route
+from .config import cluster_name, request_email, help_email, hprcbot_route, smtp_host, smtp_port
 from .utils import clean_number, get_group_directory_info, get_user_email, split_nonempty_lines
 
 def _post_to_bot(params, timeout=15):
@@ -121,7 +121,7 @@ def request_quota():
             msg['From']    = email
             msg['To']      = request_email
 
-            with smtplib.SMTP("smtp.tamu.edu", 25) as server:
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
                 failures = server.send_message(msg)
 
             if not failures:

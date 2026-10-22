@@ -1,5 +1,4 @@
 from flask import Flask, render_template, redirect, jsonify
-from flask_cors import CORS
 from views.api import api
 import yaml
 import os
@@ -23,8 +22,6 @@ def detect_env():
     else:
         return "unknown"
 
-# DEVELOPMENT
-CORS(app)
 # env = os.environ["RACK_ENV"]
 env = detect_env()
 
@@ -51,5 +48,6 @@ def index():
 
 
 if __name__ == "__main__":
-        app.run(debug=True)
-	#app.run(debug=True,threaded=True)
+    # Local development only; Passenger imports `app` and never runs this block.
+    # The Werkzeug debugger allows code execution, so it is opt-in and bound to localhost.
+    app.run(host="127.0.0.1", debug=os.environ.get("FLASK_DEBUG") == "1")

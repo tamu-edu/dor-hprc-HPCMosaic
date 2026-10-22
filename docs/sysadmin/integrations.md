@@ -66,8 +66,8 @@ Every payload includes:
 plain-text summary.
 - Subject: `[<cluster>] Quota Request: <user>`
 - From: the user's email; To: `request_email`
-- Relay: `smtp.tamu.edu` port 25, no TLS or authentication
-  (`bot_requests.py:124`). **Change this host for your site.**
+- Relay: `smtp_host` / `smtp_port` in `config.yml` (default `smtp.tamu.edu`
+  port 25), no TLS or authentication. **Set these for your site.**
 
 If the email also fails, the user gets HTTP 202 with a "contact `help_email`"
 message.
