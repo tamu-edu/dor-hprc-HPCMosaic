@@ -54,16 +54,36 @@ The Software Modules card doesn't run any commands. It reads
 `generate_module_catalog.py` builds that file from Lmod. It runs
 `module spider` once to list every module, then once per module to read its
 description and prerequisites. That's thousands of lookups, so run it as a
-batch job rather than on a login node:
+batch job rather than on a login node.
+
+The job must run from a directory the compute nodes can reach. OOD apps
+usually live on the portal host's local disk (`/var/www/ood/apps/...`), which
+compute nodes can't see. Submitting from there fails at once with exit code
+`0:53` and no log files. Stage the scripts in shared storage, then copy the
+result into the app:
 
 ```bash
-cd machine-driver-scripts
-sbatch generate_module_catalog.sbatch            # writes <cluster>-modules.json here
-sbatch generate_module_catalog.sbatch /path/to/aces-modules.json
+mkdir -p $SCRATCH/module-catalog
+cp machine-driver-scripts/generate_module_catalog.{py,sbatch} $SCRATCH/module-catalog/
+cd $SCRATCH/module-catalog
+sbatch generate_module_catalog.sbatch "$PWD/aces-modules.json"
+
+# After the job finishes, on the portal host. Copy then rename, so the
+# dashboard never reads a half-copied file:
+cp aces-modules.json <app root>/modules/.aces-modules.json.tmp
+mv <app root>/modules/.aces-modules.json.tmp <app root>/modules/aces-modules.json
 ```
 
+Outside the checkout the script can't read `config.yml`, so pass the output
+path to fix the file name. If your app directory is on shared storage, you
+can instead submit from `machine-driver-scripts/` and write straight to
+`../modules/`.
+
 The job requests 48 CPUs for one hour, and the script starts one worker per
-CPU. Edit the `#SBATCH` lines for your nodes, and add `--partition` or
+CPU. Fewer CPUs work too, but the run takes longer. If your queue is busy,
+try for example `sbatch --cpus-per-task=8 --time=04:00:00 ...`. The script
+only writes when it finishes, so a job that hits its time limit writes
+nothing. Edit the `#SBATCH` lines for your nodes, and add `--partition` or
 `--account` if your site requires them.
 
 Without Slurm, run it directly. It uses 5 workers unless you pass
@@ -81,8 +101,8 @@ python3 generate_module_catalog.py --cluster aces --output /path/to/app/modules/
   which may not match, so check the name or pass `--cluster` or `--output`.
 - **Install:** copy the file into `<app root>/modules/`. The dashboard
   reloads it when its modification time or size changes, so no restart is
-  needed. The script replaces its output in one step, so it can also write
-  straight into `modules/` if the job can reach the app directory.
+  needed. The script replaces its own output in one step, but a plain `cp`
+  doesn't, so copy to a temporary name and `mv` it into place.
 - **Refresh:** re-run it after software installs, for example from a monthly
   `scrontab` or cron entry.
 - **Failures:** if `module spider` lists nothing, the script exits without

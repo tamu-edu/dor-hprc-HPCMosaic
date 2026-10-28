@@ -110,8 +110,8 @@ if [[ -f "$MODULES_FILE" ]]; then
     echo "Found module catalog: $MODULES_FILE"
 else
     echo "WARNING: No module catalog at $MODULES_FILE; the Software Modules card will show an error." >&2
-    echo "  Generate it on the cluster with:" >&2
-    echo "    cd $PWD/machine-driver-scripts && sbatch generate_module_catalog.sbatch $MODULES_FILE" >&2
+    echo "  Build it with machine-driver-scripts/generate_module_catalog.sbatch from a" >&2
+    echo "  directory compute nodes can reach (e.g. \$SCRATCH), then copy it to that path." >&2
     echo "  See machine-driver-scripts/README.md#module-catalog." >&2
 fi
 

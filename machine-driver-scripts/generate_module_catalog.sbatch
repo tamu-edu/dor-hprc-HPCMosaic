@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Build the Software Modules catalog for the cluster this job runs on.
 #
-# Submit from this directory:
+# Submit from the directory holding generate_module_catalog.py:
 #   sbatch generate_module_catalog.sbatch [OUTPUT]
+# Compute nodes must be able to reach that directory, or the job fails at
+# once without logs (exit code 0:53). An app installed under /var/www on the
+# portal host usually isn't reachable, so copy both files to $SCRATCH first.
 # OUTPUT defaults to <cluster>-modules.json in this directory, named from
 # cluster_name in ../config.yml, otherwise from SLURM_CLUSTER_NAME.
 # Copy it into <app root>/modules/ on the dashboard host. Add --partition or
