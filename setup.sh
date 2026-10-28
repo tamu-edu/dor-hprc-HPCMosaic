@@ -99,6 +99,22 @@ fi
 chgrp hprc "$ANNOUNCEMENTS_FILE"
 chmod 0664 "$ANNOUNCEMENTS_FILE"
 
+# The Software Modules catalog is also ignored by Git. Building it takes
+# thousands of Lmod lookups, so setup only checks for it and explains how to
+# generate it. The backend looks for the lower-cased cluster name.
+MODULES_DIR="$PWD/modules"
+MODULES_FILE="$MODULES_DIR/${CLUSTERNAME,,}-modules.json"
+
+mkdir -p "$MODULES_DIR"
+if [[ -f "$MODULES_FILE" ]]; then
+    echo "Found module catalog: $MODULES_FILE"
+else
+    echo "WARNING: No module catalog at $MODULES_FILE; the Software Modules card will show an error." >&2
+    echo "  Generate it on the cluster with:" >&2
+    echo "    cd $PWD/machine-driver-scripts && sbatch generate_module_catalog.sbatch $MODULES_FILE" >&2
+    echo "  See machine-driver-scripts/README.md#module-catalog." >&2
+fi
+
 # Virtual environment
 echo "Setting up Python virtual environment..."
 python3 -m venv .venv

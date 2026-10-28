@@ -518,9 +518,10 @@ The card reads a static JSON file:
 ```
 
 `cluster_name` must match `[a-z0-9_-]+`. The `modules/` directory is
-git-ignored, and the repo has no generator. Build the file from your module
-tree (for example from Lmod `spider` output) and refresh it when your software
-changes. It's re-read whenever its modification time changes.
+git-ignored. On Lmod sites, generate the file with
+[`machine-driver-scripts/generate_module_catalog.py`](../../machine-driver-scripts/README.md#module-catalog),
+or build it some other way in the format below. Refresh it when your software
+changes. It's re-read whenever its modification time or size changes.
 
 Format: a JSON array with one record per module version.
 

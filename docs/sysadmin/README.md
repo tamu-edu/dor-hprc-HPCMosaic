@@ -62,7 +62,11 @@ cd hpcmosaic
    the script.** With `set -e`, the script stops at that line if the group
    doesn't exist. Members of this group can manage announcements; see
    [integrations.md](integrations.md#announcements).
-5. Creates `.venv`, runs `pip install -r requirements.txt`, then
+5. Creates `modules/` and checks for `modules/<cluster>-modules.json`. If it's
+   missing, prints the command to generate it. Setup doesn't build the catalog
+   itself, because that takes a batch job (see
+   [Module catalog](../../machine-driver-scripts/README.md#module-catalog)).
+6. Creates `.venv`, runs `pip install -r requirements.txt`, then
    `npm install` and `npm run build`.
 
 When you change backend code, restart the PUN (OOD portal → Help → Restart Web
@@ -140,7 +144,7 @@ Each item lists the exact code to change. Line numbers are as of v1.0.0.
 
 **Site scripts** (install the ones in [`machine-driver-scripts/`](../../machine-driver-scripts/), provide an equivalent, or hide the card):
 - [ ] Tool paths: set any that differ under `tools:` in `config.yml` (see the commented block in `config.yml.template`). Covers `showquota`, `myproject`, `pestat`, `retrieve_sinfo`, `cpuavail`, `toolchains`, `delete_venv`, `create_venv` and `modulair`; unset tools default to `/sw/local/bin/<name>` (`modulair` from `PATH`). Defaults live in `views/api/config.py`.
-- [ ] `modules/<cluster>-modules.json`: generate it (see [widgets.md](widgets.md#software-modules))
+- [ ] `modules/<cluster>-modules.json`: generate it with [`generate_module_catalog.py`](../../machine-driver-scripts/README.md#module-catalog) (format in [widgets.md](widgets.md#software-modules))
 
 **Cluster layout and policy:**
 - [ ] GPU partition name `gpu`: `views/api/info.py:27` (`GPU_PARTITION`) and `src/elements/dashboardUtils.js:179`

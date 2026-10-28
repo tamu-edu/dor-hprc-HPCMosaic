@@ -5,7 +5,8 @@ All notable changes to HPCMosaic are documented here. This project uses
 
 ## [Unreleased]
 
-Fixes from the Appverse automated review.
+Fixes from the Appverse automated review, and a generator for the Software
+Modules catalog.
 
 ### Added
 - Site tool paths are configurable under `tools:` in `config.yml`
@@ -15,6 +16,13 @@ Fixes from the Appverse automated review.
   config change.
 - `smtp_host` and `smtp_port` in `config.yml` for the quota-request email
   fallback (default `smtp.tamu.edu:25`, as before).
+- `machine-driver-scripts/generate_module_catalog.py` and a matching
+  `.sbatch` job build the Software Modules catalog
+  (`modules/<cluster>-modules.json`) from Lmod. The file is named from
+  `cluster_name` in `config.yml`, falling back to `SLURM_CLUSTER_NAME`, and
+  is replaced in one step so the dashboard never reads a partial catalog.
+  `setup.sh` creates `modules/` and, if the catalog is missing, prints the
+  command to build it.
 
 ### Changed
 - The license file is now `LICENSE` (was `LICENSE.md`).
