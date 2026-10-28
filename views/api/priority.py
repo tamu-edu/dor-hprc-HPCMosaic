@@ -276,7 +276,6 @@ def get_queue_statistics(job, partition_jobs=_QUEUE_NOT_PROVIDED):
     distribution = None if active_jobs is None else {"running": 0, "higher_priority": 0, "same_priority": 0, "lower_priority": 0}
     pending_jobs = []
     if active_jobs is not None:
-        print("ACTIVE JOBS: ", active_jobs)
         for active_job in active_jobs:
             if active_job.get("partition") != partition:
                 continue
