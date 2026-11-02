@@ -13,6 +13,7 @@ from datetime import datetime
 from flask import jsonify
 from . import api
 from .cache import TTLCache
+from .config import tool_path
 from .utils import (
     get_user_email,
     parse_key_value_tokens,
@@ -226,7 +227,7 @@ def get_user_data():
 def get_sinfo():
     try:
         result = subprocess.check_output(
-            "/sw/local/bin/retrieve_sinfo", shell=True, stderr=subprocess.STDOUT
+            [tool_path("retrieve_sinfo")], stderr=subprocess.STDOUT
         )
         output = result.decode("utf-8")
         return jsonify(ast.literal_eval(output.strip())), 200
@@ -241,7 +242,7 @@ def get_sinfo():
 def get_quota():
     try:
         result = subprocess.check_output(
-            "/sw/local/bin/showquota", shell=True, stderr=subprocess.STDOUT
+            [tool_path("showquota")], stderr=subprocess.STDOUT
         )
         lines = result.decode("utf-8").strip().split("\n")
 
@@ -476,7 +477,7 @@ def get_node_jobs(node_name):
 def get_cpuavail():
     try:
         result = subprocess.check_output(
-            "/sw/local/bin/cpuavail", shell=True, stderr=subprocess.STDOUT
+            [tool_path("cpuavail")], stderr=subprocess.STDOUT
         )
 
         lines = result.decode("utf-8").strip().split("\n")

@@ -50,7 +50,6 @@ passenger_wsgi.py         Passenger entry (imports app)
 views/api/                ALL backend routes (one Blueprint named `api`)
   __init__.py             Blueprint + route index docstring + module imports (register new modules here)
   config.py, utils.py, cache.py, slurm_jobs.py   shared helpers
-views/HPRCBot_request_handler.py   UNUSED (older centralized bot/email handler; bot_requests.py is live)
 src/index.js              React root: ThemeProvider > ChatbotVisibilityProvider > DndProvider > SandboxGrid
 src/framework/            Dashboard shell: Banner, Content (grid), Sidebar (card picker), CardConfig (registry), layout persistence
 src/elements/             The widgets ("elements"/cards) and their helper components
@@ -58,7 +57,7 @@ src/composer/             Vendored JSON-schema form renderer + per-cluster reque
 src/context/              ThemeContext (themes, font size/family), LayoutLockContext
 src/utils/                api_config (base URL), sharedGet (request dedupe cache), format_date, generate_filepath
 static/                   Webpack output + legacy vendored libs (bootstrap, jquery, DataTables, chartjs 2) — legacy libs are only referenced by unused templates
-templates/index.html      The only rendered template. layout*.html / test.html / index_no_banner.html are legacy leftovers (still say "DRONA COMPOSER")
+templates/index.html      The only template (just <div id="root"> + bundle.js)
 modules/                  (gitignored) must contain `<cluster>-modules.json` for the Software Modules card
 var/announcements/        (gitignored) announcements.json runtime store
 src/framework/Chatbot/    Separate standalone chatbot project (Vite/TS frontend + Python backend). Not wired into the dashboard
@@ -163,12 +162,12 @@ One Flask Blueprint `api` (in `__init__.py`), mounted at `/api`. Each module doe
 | `projects.py` | `/projectinfo`, `/set_default_account` | `/sw/local/bin/myproject` |
 | `modules.py` | Venvs (`/get_env`, `/create_venv` via **SSH to `login_node`**, `/delete_env`, `/get_py_versions`) and module catalog (`/available_modules*` from `modules/<cluster>-modules.json`) | `ssh`, `/sw/local/bin/{create_venv,delete_venv,toolchains}`, `modulair` |
 | `quota_inspection.py` + `quota_usage_scan.py` | `/quota/inspection` — pipes `quota_usage_scan.py` to `python3 -` over SSH on the login node; bounded scan (30 s / 250k entries), results cached 5 min; paths restricted to the user's `showquota` paths | `ssh`, `showquota` |
-| `bot_requests.py` | `/quota`, `/group`, `/help`, `/software`, `/account`, `/submit_acknowledgement` — POST to HPRC Bot at `{hprcbot_route}/HPRCapp/OOD`; quota falls back to SMTP (`smtp.tamu.edu:25`) | HPRC Bot, SMTP |
+| `bot_requests.py` | `/quota`, `/group`, `/help`, `/software`, `/account`, `/submit_acknowledgement` — POST to HPRC Bot at `{hprcbot_route}/HPRCapp/OOD`; quota falls back to SMTP (`smtp_host`/`smtp_port` in config, default `smtp.tamu.edu:25`) | HPRC Bot, SMTP |
 | `announcement.py` | `/announcements` (public, returns `can_manage`), `/admin/announcements` CRUD + `/order`. File-locked, atomic writes, revision-based optimistic concurrency (409 on conflict), same-origin check. **Admin = has filesystem write access to the announcements file** (group `hprc`, set up by `setup.sh`) | `var/announcements/announcements.json` |
 | `layout.py`, `preferences.py` | Named layouts and per-user prefs JSON under `~/.HPCMosaic/layouts/` (migrated from scratch on first access) | filesystem |
 
 **Shared helpers:**
-- `utils.py`: `run_process_output(argv_list, timeout)` (**preferred** — no shell), `run_command(str)` (shell=True, legacy), `get_user_email` (reads `/usr/local/etc/email_mapping.access.login`, falls back to `user@tamu.edu`), `get_group_directory_info`, `get_data_dir` / `get_layouts_dir` / `resolve_layout_path`, `safe_int/float`, `parse_storage_to_mib`, etc.
+- `utils.py`: `run_process_output(argv_list, timeout)` (runs an argv list, no shell), `get_user_email` (reads `/usr/local/etc/email_mapping.access.login`, falls back to `user@tamu.edu`), `get_group_directory_info`, `get_data_dir` / `get_layouts_dir` / `resolve_layout_path`, `safe_int/float`, `parse_storage_to_mib`, etc.
 - `cache.py`: `TTLCache.get_or_set(key, ttl, loader)` — in-process cache with in-flight dedupe; used for Slurm queries (e.g. active jobs 10 s, summary 20 s, sacct 300 s, node snapshot 20 s).
 - `slurm_jobs.py`: `scontrol show job -o` parser.
 
@@ -183,6 +182,6 @@ One Flask Blueprint `api` (in `__init__.py`), mounted at `/api`. Each module doe
 - `views/api/config.py` always uses the `development` section of `config.yml`.
 - Some legacy endpoints build shell strings with request data (`projects.py` `myproject -p {account}`, `-d {account_no}`) — treat as injection-risky; sanitize or convert to argv if touching them.
 - The static `CARD_NAME_ALIASES` / `LEGACY_CARD_NAME_ALIASES` exist because card keys were renamed ("Accounts Usage Summary" → "Accounts", old "Accounts" → "Project Information", "GPU Utilization" → "GPU Resources").
-- `static/bundle.js` is a build artifact; never edit it. Legacy `static/` libraries and `templates/layout*.html` are leftovers from the Drona era.
+- `static/bundle.js` is a build artifact; never edit it. Legacy `static/` libraries are leftovers from the Drona era.
 - `__pycache__/` dirs are present but should not be committed.
 - Frontend console logging is noisy (emoji logs in `layoutUtils.js`, form debug logs); fine to trim when touching those files.

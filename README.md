@@ -47,7 +47,8 @@ hardcoded to `hprc`.
 ## Configuration
 
 Site settings are in `config.yml`, generated from `config.yml.template`. Other
-site-specific values (tool paths, partition names, links) are set in code. The
+site-specific values (partition names, links) are set in code. Site tool paths
+are configurable under `tools:` in `config.yml`. The
 [site checklist](docs/sysadmin/README.md#making-it-work-at-your-site-checklist)
 lists each one with its file and line.
 

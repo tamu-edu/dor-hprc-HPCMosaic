@@ -7,8 +7,9 @@ import subprocess
 from flask import jsonify, request
 
 from . import api
+from .config import tool_path
 
-MYPROJECT = "/sw/local/bin/myproject"
+MYPROJECT = tool_path("myproject")
 # Account values are passed to myproject as an argument; must not start with "-".
 SAFE_ACCOUNT = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$")
 

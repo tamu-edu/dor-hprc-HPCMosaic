@@ -43,7 +43,7 @@ Contents:
 ### `pestat` (site tool, open source)
 
 ```
-/sw/local/bin/pestat -s alloc,mix,idle          # views/api/jobs.py:729
+/sw/local/bin/pestat -s alloc,mix,idle          # path: tools.pestat in config.yml
 ```
 
 This is Ole Holm Nielsen's [pestat](https://github.com/OleHolmNielsen/Slurm_tools/tree/master/pestat).
@@ -205,7 +205,7 @@ Samples are assumed to be evenly spaced over the job's elapsed time
 ### `retrieve_sinfo` (site tool)
 
 ```
-/sw/local/bin/retrieve_sinfo                    # views/api/info.py:229
+/sw/local/bin/retrieve_sinfo                    # path: tools.retrieve_sinfo in config.yml
 ```
 
 **TAMU's script is published:**
@@ -250,7 +250,7 @@ Applies to **My Quotas Summary** (`src/elements/SummaryCards.js`) and
 ### `showquota` (site tool)
 
 ```
-/sw/local/bin/showquota          # views/api/info.py:244, views/api/quota_inspection.py:32
+/sw/local/bin/showquota          # path: tools.showquota in config.yml
 ```
 
 **A generic version of TAMU's script is published:**
@@ -518,9 +518,10 @@ The card reads a static JSON file:
 ```
 
 `cluster_name` must match `[a-z0-9_-]+`. The `modules/` directory is
-git-ignored, and the repo has no generator. Build the file from your module
-tree (for example from Lmod `spider` output) and refresh it when your software
-changes. It's re-read whenever its modification time changes.
+git-ignored. On Lmod sites, generate the file with
+[`machine-driver-scripts/generate_module_catalog.py`](../../machine-driver-scripts/README.md#module-catalog),
+or build it some other way in the format below. Refresh it when your software
+changes. It's re-read whenever its modification time or size changes.
 
 Format: a JSON array with one record per module version.
 

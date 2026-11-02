@@ -15,6 +15,7 @@ from collections import defaultdict
 from pathlib import Path
 from flask import current_app, request, jsonify
 from . import api
+from .config import tool_path
 
 MODULES_DIR = Path(__file__).resolve().parents[2] / "modules"
 # Optional explicit override used by tests and one-off deployments.
@@ -259,7 +260,8 @@ def get_envs():
             }), 503
 
         remote_command = "bash -l -c " + shlex.quote(
-            "source /etc/profile >/dev/null 2>&1 && nice -n 15 modulair list"
+            "source /etc/profile >/dev/null 2>&1 && nice -n 15 "
+            f"{shlex.quote(tool_path('modulair'))} list"
         )
         result = subprocess.run(
             [
@@ -321,7 +323,7 @@ def delete_env(envToDelete):
             os.environ["SCRATCH"] = os.path.expandvars("/scratch/user/$USER")
 
         result = subprocess.run(
-            ['/sw/local/bin/delete_venv', envToDelete],
+            [tool_path("delete_venv"), envToDelete],
             input='y\n', capture_output=True, text=True
         )
         return jsonify({"message": result.stdout.strip()}), 200
@@ -334,7 +336,7 @@ def delete_env(envToDelete):
 def get_py_versions():
     try:
         result = subprocess.run(
-            ["/sw/local/bin/toolchains"],
+            [tool_path("toolchains")],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8",
@@ -386,7 +388,7 @@ def create_venv():
         # SSH runs the final argument through a remote shell. Quote every value
         # before building that command so form input cannot alter its structure.
         create_venv_command = " ".join([
-            "/sw/local/bin/create_venv",
+            shlex.quote(tool_path("create_venv")),
             shlex.quote(str(env_name)),
             "-d",
             shlex.quote(str(description or "")),

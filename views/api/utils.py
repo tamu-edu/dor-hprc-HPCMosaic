@@ -267,25 +267,3 @@ def clean_number(value):
 
     return None
 
-
-def run_command(command):
-    """
-    Run a shell command and return its stdout as a string.
-    Raises RuntimeError on non-zero exit code.
-    """
-
-    try:
-        result = subprocess.run(
-            command, shell=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8'
-        )
-
-        if result.returncode != 0:
-            error_msg = result.stderr.strip() or result.stdout.strip()
-            raise RuntimeError(error_msg)
-        return result.stdout.strip()
-
-    except Exception as e:
-        logging.error(f"Command error: {e}")
-        raise RuntimeError(str(e))
-

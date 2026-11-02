@@ -5,6 +5,7 @@ import subprocess
 from flask import request, jsonify
 from . import api
 from .cache import TTLCache
+from .config import tool_path
 from .slurm_jobs import get_scontrol_job_fields, parse_scontrol_job_output
 from .utils import parse_positive_int, run_process_output, safe_int
 
@@ -726,7 +727,7 @@ def get_utilization():
     try:
         def _load_utilization():
             pestat_output = run_process_output(
-                ["/sw/local/bin/pestat", "-s", "alloc,mix,idle"],
+                [tool_path("pestat"), "-s", "alloc,mix,idle"],
                 timeout=20,
             )
             node_counts = {"allocated": 0, "mixed": 0, "idle": 0}

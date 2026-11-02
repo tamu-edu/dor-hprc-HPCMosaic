@@ -8,6 +8,10 @@ USERNAME = os.environ["username"]
 PASSWORD = os.environ["password"]
 COLLECTION_ID = os.environ["collection_id"]
 
+# (connect, read) seconds. For streamed responses the read timeout is the
+# longest allowed gap between chunks, not the total response time.
+REQUEST_TIMEOUT = (10, 60)
+
 LOGIN_URL = "https://login.pryon.net/oauth/token"
 BASE_URL = "https://api.pryon.net/"
 GENERATE_URL = BASE_URL + "api/conversation/v1/exchange-events/sse"
@@ -27,7 +31,10 @@ class Conversation:
         if(self.access_token):
             headers["Authorization"] = f'Bearer {self.access_token}'
         try:
-            response = requests.post(endpoint, headers=headers, json=data, stream=stream)
+            response = requests.post(
+                endpoint, headers=headers, json=data, stream=stream,
+                timeout=REQUEST_TIMEOUT,
+            )
             return response
         except Exception as e:
             print(f"An exception occured when making a post request to {endpoint}:")
